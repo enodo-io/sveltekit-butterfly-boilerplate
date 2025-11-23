@@ -235,7 +235,7 @@ export async function testPreloadLinks(page: Page): Promise<SEOTestResult> {
     }
 
     // Skip small assets
-    if (src.startsWith('/_app/immutable/assets/')) {
+    if (src.includes('/_app/immutable/assets/')) {
       continue;
     }
 
