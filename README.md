@@ -1,4 +1,4 @@
-# Butterfly SvelteKit Boilerplate
+# SvelteKit Butterfly Boilerplate
 
 A high-performance, SEO-optimized SvelteKit boilerplate for the [Enodo Butterfly CMS](https://butterfly.enodo.app). Built with simplicity and best practices in mind.
 
