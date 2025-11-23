@@ -81,8 +81,8 @@
       {#each pages as page, i (i)}
         <li
           class="sm:d-flex"
-          class:d-none={page !== current && page !== current - 1 && page !== current + 1}
-          class:d-flex={page === current || page !== current - 1 || page !== current + 1}
+          class:d-none={page !== current && page !== 1 && page !== max}
+          class:d-flex={page === current || page !== 1 || page !== max}
           class:sep={typeof page !== 'number'}
         >
           {#if typeof page !== 'number'}
