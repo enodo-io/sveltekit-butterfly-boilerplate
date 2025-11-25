@@ -13,6 +13,7 @@
   const { open = false, onClose = () => {}, content }: Props = $props();
 
   let isVisible = $state(open);
+  let prefersReducedMotion = $state(false);
 
   $effect(() => {
     isVisible = open;
@@ -39,9 +40,18 @@
     if (isVisible) document.body.style.overflow = 'hidden';
     window.addEventListener('keydown', handleKey);
 
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    prefersReducedMotion = mediaQuery.matches;
+
+    const handleChange = (e: MediaQueryListEvent) => {
+      prefersReducedMotion = e.matches;
+    };
+    mediaQuery.addEventListener('change', handleChange);
+
     return () => {
       document.body.style.overflow = '';
       window.removeEventListener('keydown', handleKey);
+      mediaQuery.removeEventListener('change', handleChange);
     };
   });
 </script>
@@ -54,7 +64,7 @@
     aria-label="Fermer la modale"
     onclick={onBackdropClick}
     onkeydown={(e) => (e.key === 'Enter' || e.key === ' ') && close()}
-    transition:fade={{ duration: 210 }}
+    transition:fade={prefersReducedMotion ? undefined : { duration: 210 }}
   >
     <button aria-label="Close modal" onclick={close} class="ps-fixed t2 r2 p4 fc-light z-modal"
       ><X size={24} /></button
@@ -63,7 +73,7 @@
       class="modal"
       role="dialog"
       aria-modal="true"
-      transition:scale={{ duration: 250, start: 0.8 }}
+      transition:scale={prefersReducedMotion ? undefined : { duration: 250, start: 0.8 }}
     >
       {@render content()}
     </div>
