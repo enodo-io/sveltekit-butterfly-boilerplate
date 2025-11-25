@@ -1,9 +1,8 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
+  import { onMount } from 'svelte';
   import { fade, scale } from 'svelte/transition';
   import { X } from '@lucide/svelte';
-
-  import { onMount } from 'svelte';
 
   type Props = {
     open: boolean;
