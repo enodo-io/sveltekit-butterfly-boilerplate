@@ -16,6 +16,6 @@ export default function getOrganization(data: App.PageData): Organization {
   return {
     '@type': 'Organization',
     name: data.settings.title,
-    logo: `${PUBLIC_BASE_URL}/logo-1024x576.png`,
+    logo: `${PUBLIC_BASE_URL}/logo-268×60.png`,
   };
 }
