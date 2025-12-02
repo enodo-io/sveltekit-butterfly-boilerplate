@@ -67,8 +67,8 @@
     <link
       rel="canonical"
       href={page.data.layer['content.type'] === 'post' &&
-      (page.data.scope as Butterfly.ApiResponse<Butterfly.Post>).data.attributes.canonical
-        ? (page.data.scope as Butterfly.ApiResponse<Butterfly.Post>).data.attributes.canonical
+      (page.data.scope as Butterfly.ApiResponse).data.attributes.canonical
+        ? (page.data.scope as Butterfly.ApiResponse).data.attributes.canonical
         : page.data.meta.url}
     />
     <meta property="og:url" content={page.data.meta.url} />
@@ -77,7 +77,7 @@
       <meta
         property="og:image"
         content={getMediaUrl({
-          media: getRelated<Butterfly.Media>(
+          media: getRelated(
             page.data.scope.data.relationships.thumbnail.data,
             page.data.scope.included,
           ) as Butterfly.Media,

@@ -38,10 +38,7 @@
       {/each}
     {:then authors}
       {#each authors.data as author, i (author.id)}
-        {@const thumb = getRelated<Butterfly.Media>(
-          author.relationships.thumbnail.data,
-          authors.included,
-        )}
+        {@const thumb: Butterfly.Media | undefined = getRelated(author.relationships.thumbnail.data, authors.included)}
         <div class="ps-relative d-flex fd-row-reverse g4 ai-center jc-end">
           <h2 class="fs-trafalgar fw-700 fc-light-700">
             <a class="link--overlay" href={resolve(`/authors/${author.id}`)}

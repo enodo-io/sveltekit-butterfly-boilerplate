@@ -62,11 +62,7 @@
       </h2>
     </header>
     <div class="d-grid g4 sm:grid__2 md:grid__3">
-      <Feed
-        feed={feed as Promise<Butterfly.ApiResponse<Butterfly.Post[]>>}
-        length={4}
-        lazyloadAfter={i > 0 ? 0 : 3}
-      />
+      <Feed feed={feed as Promise} length={4} lazyloadAfter={i > 0 ? 0 : 3} />
     </div>
   </section>
 {/each}
