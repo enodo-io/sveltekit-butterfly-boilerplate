@@ -7,7 +7,9 @@
   type Props = { element: Butterfly.PostBody.Facebook };
   const { element }: Props = $props();
 
+  // svelte-ignore state_referenced_locally
   const cleanElement = element;
+  // svelte-ignore state_referenced_locally
   if (element.data.oembed) {
     cleanElement.data.oembed.html = element.data.oembed.html.replace(
       '<div id="fb-root"></div>',

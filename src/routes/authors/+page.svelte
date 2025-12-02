@@ -10,6 +10,7 @@
   import { generateJsonLd } from '$lib/JsonLD';
 
   let { data }: PageProps = $props();
+  // svelte-ignore state_referenced_locally
   const jsonLd: Graph | WithContext<Thing> | null = generateJsonLd(data, ['WebPage']);
 </script>
 

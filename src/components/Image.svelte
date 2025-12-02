@@ -36,12 +36,14 @@
     cover: 850 / 315,
     stories: 1080 / 1920,
   };
+  // svelte-ignore state_referenced_locally
   const height = Math.round(
     ['default', 'source'].includes(format)
       ? width / ((media?.attributes.width || 1366) / (media?.attributes.height || 768))
       : width / ratio[format as 'thumb' | 'square' | 'cover' | 'stories'],
   );
 
+  // svelte-ignore state_referenced_locally
   const srcset = media
     ? [...new Set(widths.flatMap((w) => [w, w * 2]))]
         .filter((w) => w <= media.attributes.width)

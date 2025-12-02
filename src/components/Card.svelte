@@ -37,9 +37,11 @@
     ...others
   }: Props = $props();
 
+  // svelte-ignore state_referenced_locally
   const url: `/${string}` = post.attributes.canonical?.startsWith(PUBLIC_BASE_URL)
     ? (post.attributes.canonical.replace(PUBLIC_BASE_URL, '') as `/${string}`)
     : `/${post.attributes.slug}-${post.id}.html`;
+  // svelte-ignore state_referenced_locally
   const thumb = getRelated<Butterfly.Media>(post.relationships.thumbnail.data, included);
 </script>
 

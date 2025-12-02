@@ -11,6 +11,7 @@
   };
   const { open = false, onClose = () => {}, content }: Props = $props();
 
+  // svelte-ignore state_referenced_locally
   let isVisible = $state(open);
   let prefersReducedMotion = $state(false);
 

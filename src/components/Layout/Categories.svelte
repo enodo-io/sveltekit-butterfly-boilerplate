@@ -50,6 +50,7 @@
     }
   });
 
+  // svelte-ignore state_referenced_locally
   const childrens: Butterfly.Category[] = categories.filter((c: Butterfly.Category) =>
     parent
       ? c.relationships.parentCategory.data?.id === parent.id

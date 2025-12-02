@@ -20,6 +20,7 @@
   );
   let more: Promise<Butterfly.ApiResponse<Butterfly.Post[]>>[] = $state([]);
   let loading = $state(false);
+  // svelte-ignore state_referenced_locally
   let pageIndex = data.layer['page.index'] || 1;
 
   const loadMore = async () => {
@@ -46,6 +47,7 @@
     return !!p.links.next;
   };
 
+  // svelte-ignore state_referenced_locally
   let current = data.scope.data?.id;
   $effect(() => {
     if (data.scope.data?.id !== current) {

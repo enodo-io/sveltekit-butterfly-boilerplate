@@ -5,6 +5,7 @@
   type Props = { element: Butterfly.PostBody.FAQ };
   const { element }: Props = $props();
 
+  // svelte-ignore state_referenced_locally
   const id = slugify(element.data.question, { lower: true, strict: true });
 </script>
 
