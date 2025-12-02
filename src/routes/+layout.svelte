@@ -64,11 +64,12 @@
     <meta name="description" content={page.data.meta.description} />
     <meta property="og:description" content={page.data.meta.description} />
 
+    <!-- prettier-ignore -->
     <link
       rel="canonical"
       href={page.data.layer['content.type'] === 'post' &&
-      (page.data.scope as Butterfly.ApiResponse).data.attributes.canonical
-        ? (page.data.scope as Butterfly.ApiResponse).data.attributes.canonical
+      (page.data.scope as Butterfly.ApiResponse<Butterfly.Post>).data.attributes.canonical
+        ? (page.data.scope as Butterfly.ApiResponse<Butterfly.Post>).data.attributes.canonical
         : page.data.meta.url}
     />
     <meta property="og:url" content={page.data.meta.url} />
