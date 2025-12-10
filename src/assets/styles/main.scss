@@ -8,6 +8,7 @@
 @use '@fontsource/poppins/900' as Poppins900;
 @use '@fontsource-variable/open-sans';
 @use '@fontsource/fira-mono';
+@use './normalize';
 
 @use '@enodo/foundation-css/variables/breakpoints' as bp;
 @use '@enodo/foundation-css' with (
@@ -76,6 +77,7 @@
 );
 @use './cards';
 @use './shimmer';
+@use './defaults';
 
 :root {
   --bg-modal: rgba(48, 51, 107, 0.7);
@@ -99,6 +101,31 @@ body {
   color: var(--light-900);
   display: flex;
   flex-direction: column;
+}
+
+h1 {
+  @extend .fs-canon;
+}
+
+h2 {
+  @extend .fs-trafalgar;
+}
+
+h3 {
+  @extend .fs-paragon;
+}
+
+h4 {
+  @extend .fs-double-pica;
+}
+
+h5,
+h6 {
+  @extend .fs-great-primer;
+}
+body,
+p {
+  @extend .fs-body-copy;
 }
 
 main {

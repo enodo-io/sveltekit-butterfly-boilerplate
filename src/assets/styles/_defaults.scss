@@ -1,0 +1,66 @@
+figure,
+blockquote {
+  margin: 0;
+}
+
+iframe {
+  border: 0;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5 {
+  font-weight: 500;
+}
+
+h6,
+em,
+q {
+  font-style: italic;
+}
+
+q {
+  &::before {
+    content: open-quote;
+  }
+
+  &::after {
+    content: close-quote;
+  }
+}
+
+
+strong {
+  font-weight: 600;
+}
+
+u {
+  text-decoration: underline;
+}
+
+strike {
+  text-decoration: line-through;
+}
+
+abbr {
+  text-decoration: underline dotted;
+}
+
+sup {
+  vertical-align: super;
+  font-size: smaller;
+}
+
+sub {
+  vertical-align: sub;
+  font-size: smaller;
+}
+
+button {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: inherit;
+}
