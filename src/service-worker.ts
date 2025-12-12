@@ -28,7 +28,6 @@ const ASSETS = [
   ...files, // everything in `static`
 ];
 
-// Check if a request is for external media
 function isMediaRequest(url: URL): boolean {
   try {
     const mediaUrl = new URL(PUBLIC_MEDIA_URL);
@@ -38,13 +37,11 @@ function isMediaRequest(url: URL): boolean {
   }
 }
 
-// Parse Cache-Control header
 function parseCacheControl(cacheControl: string | null): Map<string, string | number | boolean> {
   const directives = new Map<string, string | number | boolean>();
 
   if (!cacheControl) return directives;
 
-  // Split by comma and parse each directive
   cacheControl.split(',').forEach((directive) => {
     const trimmed = directive.trim().toLowerCase();
 
@@ -64,12 +61,10 @@ function parseCacheControl(cacheControl: string | null): Map<string, string | nu
   return directives;
 }
 
-// Check if a response should be cached based on Cache-Control and Expires headers
 function shouldCacheResponse(response: Response): boolean {
   const cacheControl = response.headers.get('Cache-Control');
   const directives = parseCacheControl(cacheControl);
 
-  // Don't cache if no-store directive is present
   if (directives.has('no-store')) {
     return false;
   }
@@ -77,13 +72,11 @@ function shouldCacheResponse(response: Response): boolean {
   return true;
 }
 
-// Check if a cached response has expired
 function isCacheExpired(response: Response): boolean {
   const cacheControl = response.headers.get('Cache-Control');
   const directives = parseCacheControl(cacheControl);
   const expires = response.headers.get('Expires');
 
-  // If no-cache or must-revalidate, consider it expired (need revalidation)
   if (directives.has('no-cache') || directives.has('must-revalidate')) {
     return true;
   }
@@ -128,45 +121,8 @@ function isCacheExpired(response: Response): boolean {
   return false;
 }
 
-// Check if a URL looks like an image based on its extension
-function isImageUrl(url: URL): boolean {
-  const pathname = url.pathname.toLowerCase();
-  const imageExtensions = [
-    '.jpg',
-    '.jpeg',
-    '.png',
-    '.gif',
-    '.webp',
-    '.svg',
-    '.avif',
-    '.bmp',
-    '.ico',
-  ];
-  return imageExtensions.some((ext) => pathname.endsWith(ext));
-}
-
-// Check if a response is an image based on Content-Type
-function isImageResponse(response: Response): boolean {
-  const contentType = response.headers.get('Content-Type');
-  if (!contentType) return false;
-
-  const imageTypes = [
-    'image/jpeg',
-    'image/jpg',
-    'image/png',
-    'image/gif',
-    'image/webp',
-    'image/svg+xml',
-    'image/avif',
-    'image/bmp',
-    'image/x-icon',
-    'image/vnd.microsoft.icon',
-  ];
-  return imageTypes.some((type) => contentType.toLowerCase().startsWith(type));
-}
-
 // Check if a request should be cached based on URL
-// Cache resources from our own domain, Butterfly API/media, or external images
+// Cache resources from our own domain or Butterfly API/media
 // Everything else (trackers, ads, scripts, etc.) is not cached
 function shouldCacheByUrl(url: URL): boolean {
   try {
@@ -183,20 +139,13 @@ function shouldCacheByUrl(url: URL): boolean {
       return true;
     }
 
-    // Also cache external images (based on URL extension)
-    if (isImageUrl(url)) {
-      return true;
-    }
-
     return false;
   } catch {
-    // If we can't parse URLs, don't cache
     return false;
   }
 }
 
 self.addEventListener('install', (event) => {
-  // Create a new cache and add all files to it
   async function addFilesToCache() {
     const cache = await caches.open(CACHE);
     await cache.addAll(ASSETS);
@@ -237,7 +186,18 @@ self.addEventListener('fetch', (event) => {
         return await fetch(event.request);
       } catch {
         // If fetch fails for excluded domains, just throw (don't try to cache)
-        throw new Error('fetch failed');
+        throw new Error('[SW] Fetch failed');
+      }
+    }
+
+    // immutable cache from butterfly medias
+    const isMedia = isMediaRequest(url);
+    const mediaCache = isMedia ? await caches.open(MEDIA_CACHE) : null;
+
+    if (isMedia && mediaCache) {
+      const mediaCachedResponse = await mediaCache.match(event.request);
+      if (mediaCachedResponse && !isCacheExpired(mediaCachedResponse)) {
+        return mediaCachedResponse;
       }
     }
 
@@ -252,80 +212,40 @@ self.addEventListener('fetch', (event) => {
       }
     }
 
-    // Check if this is a media request (external media domain)
-    const isMedia = isMediaRequest(url);
-    // Check if this is an external image (based on URL)
-    const isExternalImage = isImageUrl(url) && !isMedia;
-
-    // Open media cache for both Butterfly media and external images
-    const mediaCache = isMedia || isExternalImage ? await caches.open(MEDIA_CACHE) : null;
-
-    // For media requests, check the persistent media cache first
-    if (isMedia && mediaCache) {
-      const cachedResponse = await mediaCache.match(event.request);
-      if (cachedResponse && !isCacheExpired(cachedResponse)) {
-        return cachedResponse;
-      }
-    }
-
-    // For external images, check the media cache too (persistent)
-    if (isExternalImage && mediaCache) {
-      const mediaCachedResponse = await mediaCache.match(event.request);
-      if (mediaCachedResponse && !isCacheExpired(mediaCachedResponse)) {
-        return mediaCachedResponse;
-      }
-    }
-
-    // Check the versioned cache for other requests (if not expired)
     const cachedResponse = await cache.match(event.request);
     if (cachedResponse && !isCacheExpired(cachedResponse)) {
       return cachedResponse;
     }
 
-    // for everything else, try the network first, but
-    // fall back to the cache if we're offline
     try {
       const response = await fetch(event.request);
 
-      // if we're offline, fetch can return a value that is not a Response
-      // instead of throwing - and we can't pass this non-Response to respondWith
       if (!(response instanceof Response)) {
-        throw new Error('invalid response from fetch');
+        throw new Error('[SW] Invalid response from fetch');
       }
 
-      // Verify it's actually an image if URL suggested it (via Content-Type)
-      const isImage = isExternalImage && isImageResponse(response);
-
-      // Only cache if response is successful and Cache-Control allows it
       if (response.status === 200 && shouldCacheResponse(response)) {
-        // Store media and external images in the persistent media cache
-        if ((isMedia || isImage) && mediaCache) {
+        if (isMedia && mediaCache) {
           mediaCache.put(event.request, response.clone());
         } else {
-          // Store everything else in the versioned cache
           cache.put(event.request, response.clone());
         }
       }
 
       return response;
     } catch (err) {
-      // If network fails, try to serve from cache even if expired (stale-while-revalidate behavior)
-      // First try the versioned cache
-      const cachedResponse = await cache.match(event.request);
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-
-      // Then try media cache for media requests and external images
-      if ((isMedia || isExternalImage) && mediaCache) {
+      if (isMedia && mediaCache) {
         const mediaCachedResponse = await mediaCache.match(event.request);
         if (mediaCachedResponse) {
           return mediaCachedResponse;
         }
       }
 
-      // if there's no cache, then just error out
-      // as there is nothing we can do to respond to this request
+      const cachedResponse = await cache.match(event.request);
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+
       throw err;
     }
   }
