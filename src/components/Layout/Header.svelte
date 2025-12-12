@@ -118,7 +118,7 @@
 
   @mixin dropdown-transition($visible: false, $desktop: false) {
     @if $visible {
-      max-height: 100vh;
+      max-height: 100dvh;
       opacity: 1;
       @if $desktop {
         transform: translateY(0) scale(1);
@@ -160,7 +160,7 @@
     }
   }
   .backdrop {
-    height: calc(100vh - var(--su11) - 1px);
+    height: calc(100dvh - var(--su11) - 1px);
     background: var(--bg-modal);
     display: flex;
     position: fixed;

@@ -103,7 +103,7 @@
     }
     :global(img),
     :global(video) {
-      max-height: 100vh;
+      max-height: 100dvh;
       width: auto;
       object-fit: contain;
       border-radius: var(--br-md);
