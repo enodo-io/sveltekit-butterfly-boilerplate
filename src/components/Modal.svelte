@@ -61,7 +61,7 @@
     class="backdrop t show z-modal-bg"
     role="button"
     tabindex="0"
-    aria-label="Fermer la modale"
+    aria-label="Close modal"
     onclick={onBackdropClick}
     onkeydown={(e) => (e.key === 'Enter' || e.key === ' ') && close()}
     transition:fade={{ duration: prefersReducedMotion ? 0 : 210 }}
