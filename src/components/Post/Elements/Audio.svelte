@@ -7,8 +7,9 @@
   type Props = { element: Butterfly.PostBody.Audio; resources: Butterfly.Resource[] };
   const { element, resources }: Props = $props();
 
-  // svelte-ignore state_referenced_locally
-  const media = getRelated<Butterfly.Audio>({ type: 'audio', id: element.data.mediaId }, resources);
+  const media = $derived(
+    getRelated<Butterfly.Audio>({ type: 'audio', id: element.data.mediaId }, resources),
+  );
 </script>
 
 {#snippet content()}

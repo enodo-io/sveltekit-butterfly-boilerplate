@@ -2,11 +2,10 @@
   import type * as Butterfly from '@enodo/butterfly-ts';
   import slugify from 'slugify';
   import InlineNodes from '../InlineNodes.svelte';
-  type Props = { element: Butterfly.PostBody.FAQ };
-  const { element }: Props = $props();
 
-  // svelte-ignore state_referenced_locally
-  const id = slugify(element.data.question, { lower: true, strict: true });
+  type Props = { element: Butterfly.PostBody.FAQ; id?: string };
+  const { element, id = slugify(element.data.question, { lower: true, strict: true }) }: Props =
+    $props();
 </script>
 
 <div class="post--faq">

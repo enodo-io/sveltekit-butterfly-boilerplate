@@ -19,6 +19,8 @@
     resume?: boolean;
     widths?: number[];
     sizes?: string;
+    url?: `/${string}`;
+    thumb?: Butterfly.Media;
     // sizes: { query: string; width: string }[];
   };
   const {
@@ -34,15 +36,12 @@
       `(min-width: ${breakpoints.sm}px) and (max-width: ${breakpoints.md}px) 50vw, ` +
       `100vw`,
     widths = [320, 380, 480, 540],
+    url = post.attributes.canonical?.startsWith(PUBLIC_BASE_URL)
+      ? (post.attributes.canonical.replace(PUBLIC_BASE_URL, '') as `/${string}`)
+      : `/${post.attributes.slug}-${post.id}.html`,
+    thumb = getRelated<Butterfly.Media>(post.relationships.thumbnail.data, included),
     ...others
   }: Props = $props();
-
-  // svelte-ignore state_referenced_locally
-  const url: `/${string}` = post.attributes.canonical?.startsWith(PUBLIC_BASE_URL)
-    ? (post.attributes.canonical.replace(PUBLIC_BASE_URL, '') as `/${string}`)
-    : `/${post.attributes.slug}-${post.id}.html`;
-  // svelte-ignore state_referenced_locally
-  const thumb = getRelated<Butterfly.Media>(post.relationships.thumbnail.data, included);
 </script>
 
 <article class="card" {...others}>

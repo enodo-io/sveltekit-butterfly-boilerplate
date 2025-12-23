@@ -6,8 +6,7 @@
   type Props = { element: Butterfly.PostBody.List };
   const { element }: Props = $props();
 
-  // svelte-ignore state_referenced_locally
-  const nodeName = element.type === 'bulletList' ? 'ul' : 'ol';
+  const nodeName = $derived(element.type === 'bulletList' ? 'ul' : 'ol');
 </script>
 
 <svelte:element

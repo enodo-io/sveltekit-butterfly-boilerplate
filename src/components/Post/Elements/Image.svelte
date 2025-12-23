@@ -7,8 +7,9 @@
   type Props = { element: Butterfly.PostBody.Image; resources: Butterfly.Resource[] };
   const { element, resources }: Props = $props();
 
-  // svelte-ignore state_referenced_locally
-  const media = getRelated<Butterfly.Image>({ type: 'image', id: element.data.mediaId }, resources);
+  const media = $derived(
+    getRelated<Butterfly.Image>({ type: 'image', id: element.data.mediaId }, resources),
+  );
 </script>
 
 {#snippet content()}

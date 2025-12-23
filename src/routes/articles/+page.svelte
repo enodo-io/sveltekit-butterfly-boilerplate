@@ -10,8 +10,7 @@
   import { generateJsonLd } from '$lib/JsonLD';
 
   let { data }: PageProps = $props();
-  // svelte-ignore state_referenced_locally
-  const jsonLd: Graph | WithContext<Thing> | null = generateJsonLd(data, ['WebPage']);
+  let jsonLd: Graph | WithContext<Thing> | null = $derived(generateJsonLd(data, ['WebPage']));
 
   let more: Promise<Butterfly.ApiResponse<Butterfly.Post[]>>[] = $state([]);
   let loading = $state(false);

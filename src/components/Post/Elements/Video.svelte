@@ -8,8 +8,9 @@
   type Props = { element: Butterfly.PostBody.Video; resources: Butterfly.Resource[] };
   const { element, resources }: Props = $props();
 
-  // svelte-ignore state_referenced_locally
-  const media = getRelated<Butterfly.Video>({ type: 'video', id: element.data.mediaId }, resources);
+  const media = $derived(
+    getRelated<Butterfly.Video>({ type: 'video', id: element.data.mediaId }, resources),
+  );
 </script>
 
 {#snippet content()}
