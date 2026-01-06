@@ -39,11 +39,13 @@
     try {
       await createScript();
 
-      if (test()) {
-        draw();
-      } else {
-        console.error(`[OEmbed] Script '${script}' loaded but test() failed.`);
-      }
+      setTimeout(() => {
+        if (test()) {
+          draw();
+        } else {
+          console.error(`[OEmbed] Script '${script}' loaded but test() failed.`);
+        }
+      });
     } catch (err) {
       console.error(err);
     }
