@@ -4,7 +4,7 @@ import type * as Butterfly from '@enodo/butterfly-ts';
 const API_URL = process.env.PUBLIC_API_URL;
 const API_KEY = process.env.PUBLIC_API_KEY;
 
-if (!API_URL || !API_KEY) {
+if (!API_URL) {
   throw new Error('PUBLIC_API_URL and PUBLIC_API_KEY must be defined in .env');
 }
 
