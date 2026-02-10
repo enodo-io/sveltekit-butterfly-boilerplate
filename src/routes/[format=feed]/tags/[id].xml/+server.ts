@@ -4,7 +4,7 @@ import { error } from '@sveltejs/kit';
 import { getMediaUrl } from '$lib/getMediaUrl';
 import api from '$lib/api';
 import httpErrors from '$lib/httpErrors';
-import { PUBLIC_BASE_URL } from '$env/static/public';
+import { PUBLIC_LANGUAGE, PUBLIC_BASE_URL } from '$env/static/public';
 
 import type { RequestHandler } from './$types';
 import type * as Butterfly from '@enodo/butterfly-ts';
@@ -47,9 +47,9 @@ export const GET: RequestHandler = async ({ fetch, params }) => {
       description:
         tag.data.attributes.description ||
         `All news about "${tag.data.attributes.name}" on ${settings.data.attributes.title}`,
-      id: PUBLIC_BASE_URL,
-      link: PUBLIC_BASE_URL,
-      language: 'en',
+      id: `${PUBLIC_BASE_URL}/tags/${tag.data.id}`,
+      link: `${PUBLIC_BASE_URL}/tags/${tag.data.id}`,
+      language: PUBLIC_LANGUAGE,
       image: `${PUBLIC_BASE_URL}/logo-88x31.jpg`,
       favicon: `${PUBLIC_BASE_URL}/favicon.ico`,
       copyright: `All rights reserved ${lastBuildDate.getFullYear()}, ${settings.data.attributes.title}`,
@@ -84,7 +84,14 @@ export const GET: RequestHandler = async ({ fetch, params }) => {
               width: 640,
             })
           : undefined,
-        author: [],
+        author: post.relationships.authors.data.map((author: Butterfly.Related) => {
+          const a = getRelated(author, posts.included) as Butterfly.Author;
+          return {
+            name: a.attributes.name,
+            email: a.attributes.email || undefined,
+            link: `${PUBLIC_BASE_URL}/auteurs/${a.id}`,
+          };
+        }),
       });
     });
 

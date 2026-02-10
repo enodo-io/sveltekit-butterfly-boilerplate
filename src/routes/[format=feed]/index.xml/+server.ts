@@ -2,7 +2,7 @@ import { Feed } from 'feed';
 import { getRelated } from '@enodo/butterfly-ts';
 import { getMediaUrl } from '$lib/getMediaUrl';
 import api from '$lib/api';
-import { PUBLIC_BASE_URL } from '$env/static/public';
+import { PUBLIC_LANGUAGE, PUBLIC_BASE_URL } from '$env/static/public';
 
 import type { RequestHandler } from './$types';
 import type * as Butterfly from '@enodo/butterfly-ts';
@@ -30,9 +30,9 @@ export const GET: RequestHandler = async ({ fetch, params }) => {
   const feed = new Feed({
     title: settings.data.attributes.title,
     description: settings.data.attributes.description,
-    id: PUBLIC_BASE_URL,
-    link: PUBLIC_BASE_URL,
-    language: 'en',
+    id: `${PUBLIC_BASE_URL}/`,
+    link: `${PUBLIC_BASE_URL}/`,
+    language: PUBLIC_LANGUAGE,
     image: `${PUBLIC_BASE_URL}/logo-88x31.jpg`,
     favicon: `${PUBLIC_BASE_URL}/favicon.ico`,
     copyright: `All rights reserved ${lastBuildDate.getFullYear()}, ${settings.data.attributes.title}`,
@@ -64,7 +64,14 @@ export const GET: RequestHandler = async ({ fetch, params }) => {
             width: 640,
           })
         : undefined,
-      author: [],
+      author: post.relationships.authors.data.map((author: Butterfly.Related) => {
+        const a = getRelated(author, posts.included) as Butterfly.Author;
+        return {
+          name: a.attributes.name,
+          email: a.attributes.email || undefined,
+          link: `${PUBLIC_BASE_URL}/auteurs/${a.id}`,
+        };
+      }),
     });
   });
 
