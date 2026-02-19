@@ -105,11 +105,11 @@
   {/if}
 </svelte:head>
 
-<section class="d-flex fd-column g4 md:d-grid md:grid__3 md:ai-start">
-  <article id="scope" class="post grid--col2 d-flex fd-column g7">
-    <header class="d-flex fd-column g4">
+<section class="flex flex-col gap-4 md:grid md:grid-cols-3 md:items-start">
+  <article id="scope" class="post col-span-2 flex flex-col gap-7">
+    <header class="flex flex-col gap-4">
       {#if tags.length}
-        <ul class="d-flex fw-wrap g2">
+        <ul class="flex flex-wrap gap-2">
           {#each tags as tag (tag.id)}
             <li class="tag">
               <a href={resolve(`/tags/${tag.id}`)}>{tag.attributes.name}</a>
@@ -117,13 +117,13 @@
           {/each}
         </ul>
       {/if}
-      <h1 class="fs-foolscap fw-700 fc-light-700">{data.meta.title}</h1>
-      <p class="fs-double-pica fw-500">{data.meta.description}</p>
+      <h1 class="fs-foolscap font-bold text-light-700">{data.meta.title}</h1>
+      <p class="fs-double-pica font-medium">{data.meta.description}</p>
       {#snippet date(d: string, action: string)}
         {@const relativeDate = formatRelativeDate(new Date(d))}
         <time class="fs-brevier" datetime={d}>
-          <span class="pr2 sm:pr4">{relativeDate.date}</span>
-          <span class="ws-nowrap">{action} {relativeDate.time}</span>
+          <span class="pr-2 sm:pr-4">{relativeDate.date}</span>
+          <span class="whitespace-nowrap">{action} {relativeDate.time}</span>
         </time>
       {/snippet}
 
@@ -133,7 +133,7 @@
         {@render date(post.attributes.publishedAt, 'Updated')}
       {/if}
 
-      <div class="d-flex g4 fw-wrap ai-center">
+      <div class="flex flex-wrap items-center gap-4">
         {#if authors.length}
           <Authorship authors={authors} resources={data.scope.included} />
         {/if}
@@ -158,13 +158,13 @@
       resources={data.scope.included}
     />
   </article>
-  <aside class="ps-sticky t12 d-flex fd-column g7">
-    <div class="d-flex fd-column g4">
+  <aside class="sticky top-12 flex flex-col gap-7">
+    <div class="flex flex-col gap-4">
       {#await data.feeds.related}
         {@const width = (Math.random() * (80 - 30) + 30).toFixed(2)}
-        <span class="fs-paragon shimmer" style:width="{width}%">&nbsp;</span>
+        <span class="shimmer fs-paragon" style:width="{width}%">&nbsp;</span>
       {:then}
-        <span class="fw-700 fc-light-700 fs-paragon">Related</span>
+        <span class="fs-paragon font-bold text-light-700">Related</span>
       {/await}
       <Feed feed={data.feeds.related} length={3} resume={false} thumbnail={true} />
     </div>

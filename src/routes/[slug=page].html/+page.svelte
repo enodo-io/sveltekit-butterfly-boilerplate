@@ -20,10 +20,10 @@
   {/if}
 </svelte:head>
 
-<article id="scope" class="post d-flex fd-column g7">
-  <header class="d-flex fd-column g4">
-    <h1 class="fs-foolscap fw-700 fc-light-700">{data.meta.title}</h1>
-    <p class="fs-double-pica fw-500">{data.meta.description}</p>
+<article id="scope" class="post flex flex-col gap-7">
+  <header class="flex flex-col gap-4">
+    <h1 class="fs-foolscap font-bold text-light-700">{data.meta.title}</h1>
+    <p class="fs-double-pica font-medium">{data.meta.description}</p>
   </header>
 
   <PostBody

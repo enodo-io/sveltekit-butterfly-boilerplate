@@ -56,13 +56,13 @@
   {@const category = data.categories.data.find(
     (c: Butterfly.Category) => c.id === parseInt(id, 10),
   ) as Butterfly.Category}
-  <section class="d-flex fd-column g4">
+  <section class="flex flex-col gap-4">
     <header>
-      <h2 class="fs-trafalgar fw-700 fc-light-700">
+      <h2 class="fs-trafalgar font-bold text-light-700">
         <a href={resolve(category.attributes.path)}>{category.attributes.name}</a>
       </h2>
     </header>
-    <div class="d-grid g4 sm:grid__2 md:grid__3">
+    <div class="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
       <!-- prettier-ignore -->
       <Feed feed={feed as Promise<Butterfly.ApiResponse<Butterfly.Post[]>>} length={4} lazyloadAfter={i > 0 ? 0 : 3} />
     </div>
@@ -70,9 +70,6 @@
 {/each}
 
 <style lang="scss">
-  @use 'sass:map';
-  @use '@enodo/foundation-css/variables/breakpoints' as *;
-
   section > header > h2 > a {
     display: flex;
     justify-content: space-between;
@@ -85,15 +82,15 @@
   }
 
   :global(#featured .card--thumb) {
-    border-radius: var(--br-lg);
+    border-radius: var(--radius-lg);
   }
   :global(#featured .card--content:before) {
     content: 'FEATURED';
-    border-radius: var(--br-sm);
-    background: var(--flash-050);
-    border: 2px solid var(--flash);
-    color: var(--flash-900);
-    padding: var(--su1) var(--su3);
+    border-radius: var(--radius-sm);
+    background: var(--color-flash-050);
+    border: 2px solid var(--color-flash);
+    color: var(--color-flash-700);
+    padding: 0.25rem 0.75rem;
     font-size: 0.825rem;
     font-weight: 700;
     margin-right: auto;
@@ -107,7 +104,7 @@
     animation: shimmer 1.5s infinite;
   }
 
-  @media (min-width: map.get($breakpoints, 'sm')) {
+  @media (min-width: 600px) {
     :global(#featured .card) {
       padding: 0;
 
@@ -117,8 +114,8 @@
       align-items: center;
     }
     :global(#featured .card--content) {
-      padding: var(--su4) 0;
-      padding-right: var(--su4);
+      padding: 1rem 0;
+      padding-right: 1rem;
     }
   }
 </style>

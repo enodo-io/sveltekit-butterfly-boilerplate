@@ -75,15 +75,15 @@
   {/if}
 </svelte:head>
 
-<section class="d-flex fd-column g7">
-  <header class="d-flex fd-column g4">
-    <h1 class="fs-foolscap fw-700 fc-light-700">{data.meta.title}</h1>
-    <p class="fs-pica fw-500">{data.meta.description}</p>
+<section class="flex flex-col gap-7">
+  <header class="flex flex-col gap-4">
+    <h1 class="fs-foolscap font-bold text-light-700">{data.meta.title}</h1>
+    <p class="fs-pica font-medium">{data.meta.description}</p>
     {#if data.layer['page.index'] > 1}
-      <span class="fs-minion fc-light-500">Page {data.layer['page.index']}</span>
+      <span class="fs-minion text-light-500">Page {data.layer['page.index']}</span>
     {/if}
 
-    <form action="/search/" method="GET" role="search" class="d-flex fd-column sm:fd-row g2">
+    <form action="/search/" method="GET" role="search" class="flex flex-col gap-2 sm:flex-row">
       <input
         autocomplete="off"
         name="query"
@@ -91,15 +91,15 @@
         aria-label="Search news, topics and more"
         placeholder="Search news, topics and more"
         value={data.layer['page.query'] || ''}
-        class="fl1"
+        class="flex-auto"
       />
-      <input type="submit" value="Search" class="btn wmn2" />
+      <input type="submit" value="Search" class="btn min-w-[10.5rem]" />
     </form>
   </header>
 
   {#if data.feeds.tags}
     {#await data.feeds.tags}
-      <ul class="d-flex fw-wrap g2">
+      <ul class="flex flex-wrap gap-2">
         <!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
         {#each Array.from({ length: 3 }) as _, i (i)}
           {@const w = (Math.random() * (110 - 60) + 60).toFixed(2)}
@@ -108,7 +108,7 @@
       </ul>
     {:then tags}
       {#if tags.data.length}
-        <ul class="d-flex fw-wrap g2">
+        <ul class="flex flex-wrap gap-2">
           {#each tags.data as tag (tag.id)}
             <li class="tag"><a href={resolve(`/tags/${tag.id}`)}>{tag.attributes.name}</a></li>
           {/each}
@@ -118,7 +118,7 @@
   {/if}
 
   {#if data.feeds.posts}
-    <div id="posts" class="d-grid g4 sm:grid__2 md:grid__3">
+    <div id="posts" class="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
       <Feed feed={data.feeds.posts} length={18} lazyloadAfter={3} />
       {#each more as posts, i (i)}
         <Feed feed={posts} length={18} />
@@ -128,7 +128,7 @@
     {#await data.feeds.posts then posts}
       {#if posts.data.length <= 0}
         <p>
-          We couldn’t find any results for your search. Try adjusting your keywords or explore other
+          We couldn't find any results for your search. Try adjusting your keywords or explore other
           articles on our website.
         </p>
       {/if}

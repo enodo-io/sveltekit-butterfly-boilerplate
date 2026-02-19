@@ -54,10 +54,10 @@
 {#if max > 1}
   <nav
     aria-label="Navigate the pages"
-    class="d-flex fd-column md:fd-row g4 ai-center"
-    class:jc-center={!onload}
-    class:jc-space-between={onload && next && current !== max}
-    class:jc-end={onload && (!next || current === max)}
+    class="flex flex-col items-center gap-4 md:flex-row"
+    class:justify-center={!onload}
+    class:justify-between={onload && next && current !== max}
+    class:justify-end={onload && (!next || current === max)}
     {...others}
   >
     {#if onload && next && current !== max}
@@ -72,7 +72,7 @@
       </button>
     {/if}
 
-    <ul class:d-none={hide}>
+    <ul class:hidden={hide}>
       {#if current > 1}
         <li class="prev">
           <a aria-label="Go to previous page" href={resolve(url(current - 1))}>Previous page</a>
@@ -80,9 +80,9 @@
       {/if}
       {#each pages as page, i (i)}
         <li
-          class="sm:d-flex"
-          class:d-none={page !== current && page !== 1 && page !== max}
-          class:d-flex={page === current || page !== 1 || page !== max}
+          class="sm:flex"
+          class:hidden={page !== current && page !== 1 && page !== max}
+          class:flex={page === current || page !== 1 || page !== max}
           class:sep={typeof page !== 'number'}
         >
           {#if typeof page !== 'number'}
@@ -106,9 +106,6 @@
 {/if}
 
 <style lang="scss">
-  @use 'sass:map';
-  @use '@enodo/foundation-css/variables/spacing-units' as *;
-
   ul li {
     transition:
       color 150ms ease-in,
@@ -116,17 +113,17 @@
   }
 
   ul {
-    background: var(--light-100);
+    background: var(--color-light-100);
     box-shadow: 0 20px 30px #30336b0f;
-    border-radius: var(--br-sm);
+    border-radius: var(--radius-sm);
     gap: 1px;
     font-size: 0.875rem;
 
     .prev,
     .next {
-      background: var(--light-100);
+      background: var(--color-light-100);
       &:hover {
-        background: var(--light-075);
+        background: var(--color-light-075);
       }
       a {
         text-indent: -9999px;
@@ -162,36 +159,36 @@
       text-decoration: none;
     }
     li {
-      background: var(--light);
+      background: var(--color-light);
       position: relative;
       overflow: hidden;
       &:hover {
-        background: var(--light-050);
+        background: var(--color-light-050);
       }
       &.sep:hover {
-        background: var(--light);
+        background: var(--color-light);
       }
       &:first-child {
-        border-top-left-radius: var(--br-sm);
-        border-bottom-left-radius: var(--br-sm);
+        border-top-left-radius: var(--radius-sm);
+        border-bottom-left-radius: var(--radius-sm);
       }
       &:last-child {
-        border-top-right-radius: var(--br-sm);
-        border-bottom-right-radius: var(--br-sm);
+        border-top-right-radius: var(--radius-sm);
+        border-bottom-right-radius: var(--radius-sm);
       }
       a,
       span {
         aspect-ratio: 1;
-        width: var(--su8);
+        width: 2.5rem;
         text-overflow: clip;
         overflow: hidden;
       }
       span {
-        color: var(--light-400);
+        color: var(--color-light-400);
       }
       a {
         &:focus-visible {
-          background: var(--light-050);
+          background: var(--color-light-050);
         }
         &:before {
           position: absolute;
@@ -205,8 +202,8 @@
           pointer-events: none;
           cursor: default;
           text-decoration: none;
-          background-color: var(--light-700);
-          color: var(--light);
+          background-color: var(--color-light-700);
+          color: var(--color-light);
           font-weight: 600;
         }
       }

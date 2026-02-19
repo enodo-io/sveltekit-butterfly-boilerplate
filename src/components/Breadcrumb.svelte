@@ -11,7 +11,7 @@
 </script>
 
 {#if breadcrumb?.length > 1}
-  <nav class="fs-minion mbn4" aria-label="Breadcrumb">
+  <nav class="-mb-4 fs-minion" aria-label="Breadcrumb">
     <ul role="list">
       {#each breadcrumb as element, i (element.position)}
         {#if i === 0}

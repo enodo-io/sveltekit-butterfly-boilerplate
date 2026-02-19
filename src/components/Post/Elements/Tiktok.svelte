@@ -22,24 +22,24 @@
       position: relative;
       display: inline-block;
       font-family: 'Helvetica Neue', Roboto, 'Segoe UI', Calibri, sans-serif;
-      border: 1px solid var(--light-100);
-      border-radius: var(--br-sm);
+      border: 1px solid var(--color-light-100);
+      border-radius: var(--radius-sm);
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-      padding: var(--su4);
+      padding: 1rem;
       max-width: 605px;
       min-width: 325px;
       overflow: hidden;
     }
 
     :global(blockquote.tiktok-embed:hover) {
-      background-color: var(--light-025);
+      background-color: var(--color-light-025);
     }
 
     :global(blockquote.tiktok-embed:before) {
       content: 'TikTok';
       position: absolute;
-      top: var(--su4);
-      right: var(--su4);
+      top: 1rem;
+      right: 1rem;
       font-size: 1rem;
       font-weight: 500;
     }
@@ -61,7 +61,7 @@
     :global(blockquote.tiktok-embed p) {
       font-weight: normal;
       line-height: 1.4;
-      margin-bottom: var(--su4);
+      margin-bottom: 1rem;
     }
 
     :global(blockquote.tiktok-embed a) {
@@ -95,7 +95,7 @@
 
     :global(blockquote.tiktok-embed[style*='display: none']:after) {
       display: block;
-      padding: var(--su4);
+      padding: 1rem;
     }
   }
 </style>

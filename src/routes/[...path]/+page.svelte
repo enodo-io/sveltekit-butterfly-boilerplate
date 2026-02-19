@@ -84,13 +84,13 @@
   {/if}
 </svelte:head>
 
-<section class="d-flex fd-column g7">
-  <header class="d-flex fd-column g4" id="scope">
-    <div class="ps-relative bar-lg overflow-hidden">
+<section class="flex flex-col gap-7">
+  <header class="flex flex-col gap-4" id="scope">
+    <div class="relative overflow-hidden rounded-lg">
       {#if thumb}
         <picture>
           <Image
-            class="w100"
+            class="w-full"
             lazyload={false}
             media={thumb}
             alt={thumb?.attributes.description || category.data.attributes.description || undefined}
@@ -100,23 +100,23 @@
       {/if}
 
       <h1
-        class="fs-foolscap fw-700 d-flex ai-center {thumb
-          ? 'jc-center ps-absolute t0 r0 b0 l0 fc-light'
-          : 'fc-light-700'}"
+        class="flex items-center fs-foolscap font-bold {thumb
+          ? 'absolute top-0 right-0 bottom-0 left-0 justify-center text-light'
+          : 'text-light-700'}"
       >
         {category.data.attributes.name}
       </h1>
     </div>
 
     {#if category.data.attributes.description}
-      <p class="fs-pica fw-500">{category.data.attributes.description}</p>
+      <p class="fs-pica font-medium">{category.data.attributes.description}</p>
     {/if}
     {#if data.layer['page.index'] > 1}
-      <span class="fs-minion fc-light-500">Page {data.layer['page.index']}</span>
+      <span class="fs-minion text-light-500">Page {data.layer['page.index']}</span>
     {/if}
   </header>
 
-  <div id="posts" class="d-grid g4 sm:grid__2 md:grid__3">
+  <div id="posts" class="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
     <Feed feed={data.feeds.posts} length={18} lazyloadAfter={3} />
     {#each more as posts, i (i)}
       <Feed feed={posts} length={18} />
@@ -136,7 +136,7 @@
 </section>
 
 <style lang="scss">
-  h1.ps-absolute {
+  h1.absolute {
     background: rgba(48, 51, 107, 0.75);
   }
 </style>

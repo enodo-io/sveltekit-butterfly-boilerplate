@@ -117,7 +117,7 @@
           onclick={() => toggleChild(category)}
           aria-controls="subnav-{category.id}"
           aria-expanded={openChild.includes(category.id)}
-          class="d-flex ai-center jc-space-between g3 w100"
+          class="flex w-full items-center justify-between gap-3"
         >
           {category.attributes.name}
           {#if openChild.includes(category.id)}

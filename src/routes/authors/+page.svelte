@@ -21,33 +21,35 @@
   {/if}
 </svelte:head>
 
-<section class="d-flex fd-column g7">
-  <header class="d-flex fd-column g4">
-    <h1 class="fs-foolscap fw-700 d-flex ai-center jc-center fc-light-700">{data.meta.title}</h1>
+<section class="flex flex-col gap-7">
+  <header class="flex flex-col gap-4">
+    <h1 class="flex items-center justify-center fs-foolscap font-bold text-light-700">
+      {data.meta.title}
+    </h1>
   </header>
 
-  <div id="authors" class="d-grid sm:grid__2 g4">
+  <div id="authors" class="grid gap-4 sm:grid-cols-2">
     {#await data.feeds.authors}
       <!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
       {#each Array.from({ length: 8 }) as _, i (i)}
         {@const width = (Math.random() * (80 - 30) + 30).toFixed(2)}
-        <div class="d-flex fd-row-reverse g4 ai-center jc-end">
-          <span class="fs-trafalgar shimmer" style:width="{width}%">&nbsp;</span>
-          <div class="bar-circle shimmer" style:width="64px" style:height="64px"></div>
+        <div class="flex flex-row-reverse items-center justify-end gap-4">
+          <span class="shimmer fs-trafalgar" style:width="{width}%">&nbsp;</span>
+          <div class="shimmer rounded-full" style:width="64px" style:height="64px"></div>
         </div>
       {/each}
     {:then authors}
       {#each authors.data as author, i (author.id)}
         {@const thumb: Butterfly.Media | undefined = getRelated(author.relationships.thumbnail.data, authors.included)}
-        <div class="ps-relative d-flex fd-row-reverse g4 ai-center jc-end">
-          <h2 class="fs-trafalgar fw-700 fc-light-700">
+        <div class="relative flex flex-row-reverse items-center justify-end gap-4">
+          <h2 class="fs-trafalgar font-bold text-light-700">
             <a class="link--overlay" href={resolve(`/authors/${author.id}`)}
               >{author.attributes.name}</a
             >
           </h2>
           {#if thumb}
             <picture
-              class="fl-shrink0 bar-circle overflow-hidden bg-light ba bc-light-075 fc-light-600"
+              class="shrink-0 overflow-hidden rounded-full border border-light-075 bg-light text-light-600"
             >
               <Image
                 lazyload={i > 3}
@@ -61,7 +63,7 @@
               />
             </picture>
           {:else}
-            <div class="fl-shrink0 bar-circle p3 bg-light ba bc-light-075 fc-light-600">
+            <div class="shrink-0 rounded-full border border-light-075 bg-light p-3 text-light-600">
               <Avatar size={40} />
             </div>
           {/if}

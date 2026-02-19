@@ -52,24 +52,24 @@
 
 <header
   class:visible={show}
-  class="t t__slow ff-brand ps-fixed md:ps-sticky z-nav-fixed b0 r0 l0 md:t0 ws-nowrap bg-light fc-light-800"
+  class="t__slow fixed right-0 bottom-0 left-0 z-nav-fixed bg-light font-brand whitespace-nowrap text-light-800 transition duration-250 md:sticky md:top-0"
 >
-  <div class="d-flex ai-center jc-space-between p2">
-    <nav aria-label="Home" class="d-flex ai-center ff-brand ps-relative sm:g2">
+  <div class="flex items-center justify-between p-2">
+    <nav aria-label="Home" class="relative flex items-center font-brand sm:gap-2">
       <img src="/favicon.svg" width="48" height="48" alt="" />
       <a
         href={resolve('/')}
-        class="logo fs-trafalgar fw-600 link--overlay"
+        class="logo link--overlay fs-trafalgar font-semibold"
         aria-current={currentPage === resolve('/') ? 'page' : undefined}
         ><span>{page.data.settings.title}</span></a
       >
     </nav>
 
-    <nav class="d-flex ai-center">
+    <nav class="flex items-center">
       <button
         id="burger"
         bind:this={menuBtn}
-        class="p2 md:d-none"
+        class="p-2 md:hidden"
         onclick={() => (menu = !menu)}
         aria-label={menu ? 'Close navigation' : 'Open navigation'}
         aria-controls="menu"
@@ -84,25 +84,25 @@
 
       <div
         id="menu"
-        class="backdrop t md:d-flex md:g4
-               md:ps-unset
-               fs-pica fw-400
+        class="backdrop fs-pica font-normal transition duration-100
+               md:relative
+               md:flex md:gap-4
                "
         class:visible={menu}
       >
         <Categories
           aria-modal="true"
           aria-label="Main navigation"
-          class="t d-flex fd-column md:fd-row md:g4 w100 mt-auto"
+          class="dureation-100 mt-auto flex w-full flex-col transition md:flex-row md:gap-4"
           categories={page.data.categories.data}
           clickoutsideIgnore="#burger"
           outsideClickHandler={() => (menu = false)}
         >
           {#snippet after()}
-            <li class="ps-relative d-flex g3 md:g0" aria-label="Search">
+            <li class="relative flex gap-3 md:gap-0" aria-label="Search">
               <Search />
               <a class="search" href={resolve('/search')}>
-                <span class="md:d-none">Search</span>
+                <span class="md:hidden">Search</span>
               </a>
             </li>
           {/snippet}
@@ -113,9 +113,6 @@
 </header>
 
 <style lang="scss">
-  @use 'sass:map';
-  @use '@enodo/foundation-css/variables/breakpoints' as *;
-
   @mixin dropdown-transition($visible: false, $desktop: false) {
     @if $visible {
       max-height: 100dvh;
@@ -139,7 +136,7 @@
       @if $desktop {
         transform: translateY(-20%) scale(0);
       } @else {
-        transform: translateY(-var(--su2));
+        transform: translateY(-0.5rem);
       }
       visibility: hidden;
       pointer-events: none;
@@ -152,19 +149,19 @@
   }
 
   header {
-    outline: 1px solid var(--light-075);
-    transform: translateY(var(--su12));
+    outline: 1px solid var(--color-light-075);
+    transform: translateY(4.5rem);
     view-transition-name: header;
     &.visible {
       transform: translateY(0);
     }
   }
   .backdrop {
-    height: calc(100dvh - var(--su11) - 1px);
+    height: calc(100dvh - 4rem - 1px);
     background: var(--bg-modal);
     display: flex;
     position: fixed;
-    bottom: calc(var(--su11) + 1px);
+    bottom: calc(4rem + 1px);
     right: 0;
     left: 0;
     overflow-y: auto;
@@ -177,11 +174,11 @@
     }
 
     :global(> ul) {
-      border-top-left-radius: var(--br-md);
-      border-top-right-radius: var(--br-md);
-      background: var(--light);
-      padding: var(--su2);
-      border-top: 1px solid var(--light-600);
+      border-top-left-radius: var(--radius-md);
+      border-top-right-radius: var(--radius-md);
+      background: var(--color-light);
+      padding: 0.5rem;
+      border-top: 1px solid var(--color-light-600);
       transform-origin: bottom right;
       transform: translateY(40%) scale(0);
       opacity: 0;
@@ -196,7 +193,7 @@
     }
 
     :global(> ul ul) {
-      padding-left: var(--su4);
+      padding-left: 1rem;
       @include dropdown-transition;
     }
 
@@ -206,7 +203,7 @@
 
     :global(li) {
       position: relative;
-      padding: var(--su2) 0;
+      padding: 0.5rem 0;
     }
 
     :global(li a:after),
@@ -228,7 +225,7 @@
     }
   }
 
-  @media (max-width: map.get($breakpoints, 'sm')) {
+  @media (max-width: 600px) {
     .logo span {
       border: 0 !important;
       clip: rect(1px, 1px, 1px, 1px) !important;
@@ -242,7 +239,7 @@
       white-space: nowrap !important;
     }
   }
-  @media (min-width: map.get($breakpoints, 'md')) {
+  @media (min-width: 1008px) {
     header {
       transform: none;
     }
@@ -267,24 +264,24 @@
       // depth 1
       :global(> ul > li) {
         position: relative;
-        padding: var(--su3);
+        padding: 0.75rem;
       }
 
       // depth 2
       :global(> ul > li > ul) {
         position: fixed;
-        top: var(--su9);
+        top: 3rem;
         left: auto;
         right: auto;
-        min-width: calc(var(--su-step) * 3);
-        max-width: calc(100vw - var(--su4));
-        background: var(--light);
-        border-radius: var(--br-md);
-        border: 1px solid var(--light-200);
-        box-shadow: var(--bs-xl);
-        padding: var(--su2);
-        margin-top: var(--su1);
-        margin-left: calc(var(--su4) * -1);
+        min-width: calc(5.25rem * 3);
+        max-width: calc(100vw - 1rem);
+        background: var(--color-light);
+        border-radius: var(--radius-md);
+        border: 1px solid var(--color-light-200);
+        box-shadow: var(--shadow-xl);
+        padding: 0.5rem;
+        margin-top: 0.25rem;
+        margin-left: calc(1rem * -1);
         transform-origin: top left;
         @include dropdown-transition($desktop: true);
       }
@@ -292,12 +289,12 @@
       // last-child is align to right
       :global(> ul > li:nth-last-child(-n + 2) > ul) {
         left: auto;
-        right: var(--su2);
+        right: 0.5rem;
         transform-origin: top right;
       }
 
       :global(> ul > li > ul li) {
-        padding: var(--su2) 0;
+        padding: 0.5rem 0;
       }
 
       :global(> ul > li:hover > ul),
@@ -312,7 +309,7 @@
         position: static;
         border: 0;
         box-shadow: none;
-        padding-left: var(--su4);
+        padding-left: 1rem;
         @include dropdown-transition;
       }
 

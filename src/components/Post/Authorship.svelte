@@ -15,16 +15,16 @@
 </script>
 
 {#if authors.length}
-  <div class="fl1 d-flex ai-center fw-wrap sm:fw-nowrap g2 fs-long-primer">
-    <div class="d-flex">
+  <div class="flex flex-auto flex-wrap items-center gap-2 fs-long-primer sm:flex-nowrap">
+    <div class="flex">
       {#each authors as author, i (author.id)}
         {@const media = author.relationships.thumbnail.data
           ? (getRelated(author.relationships.thumbnail.data, resources) as Butterfly.Media)
           : null}
         {#if !media}
           <div
-            class="fl-shrink0 bar-circle bg-light p2 ba bc-light-075 fc-light-600"
-            class:mln4={i > 0}
+            class="shrink-0 rounded-full border border-light-075 bg-light p-2 text-light-600"
+            class:-ml-4={i > 0}
           >
             <Avatar size={32} />
           </div>
@@ -36,7 +36,9 @@
             width={48}
             widths={[48]}
             sizes="48px"
-            class="fl-shrink0 bar-circle bg-light-100 ba bc-light-075{i > 0 ? ' mln4' : ''}"
+            class="shrink-0 rounded-full border bg-light-100 border-light-075{i > 0
+              ? ' -ml-4'
+              : ''}"
             alt={author.attributes.name}
           />
         {/if}

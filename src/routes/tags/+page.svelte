@@ -17,12 +17,12 @@
   {/if}
 </svelte:head>
 
-<section class="d-flex fd-column g7">
+<section class="flex flex-col gap-7">
   <header>
-    <h1 class="fs-foolscap fw-700 fc-light-700">{data.meta.title}</h1>
+    <h1 class="fs-foolscap font-bold text-light-700">{data.meta.title}</h1>
   </header>
 
-  <ul class="d-grid grid__1 sm:grid__2 md:grid__4 g2">
+  <ul class="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-4">
     {#await data.feeds.tags then tags}
       {#each tags.data as tag (tag.id)}
         <li>
@@ -35,6 +35,6 @@
 
 <style lang="scss">
   a {
-    padding: var(--su1) 0;
+    padding: 0.25rem 0;
   }
 </style>

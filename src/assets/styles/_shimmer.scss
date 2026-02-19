@@ -1,12 +1,3 @@
-:root {
-  --shimmer: linear-gradient(
-    90deg,
-    var(--light-075) 25%,
-    var(--light-100) 50%,
-    var(--light-075) 75%
-  );
-}
-
 @keyframes shimmer {
   0% {
     background-position: 200% 0;
@@ -24,7 +15,8 @@ picture:has(img[loading='lazy']:not(.loaded)) {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .shimmer {
+  .shimmer,
+  picture:has(img[loading='lazy']:not(.loaded)) {
     animation: none !important;
   }
 }

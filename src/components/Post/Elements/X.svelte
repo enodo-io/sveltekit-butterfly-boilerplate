@@ -22,25 +22,25 @@
       display: inline-block;
       font-family: 'Helvetica Neue', Roboto, 'Segoe UI', Calibri, sans-serif;
       font-weight: 700;
-      border: 1px solid var(--light-100);
-      border-radius: var(--br-sm);
+      border: 1px solid var(--color-light-100);
+      border-radius: var(--radius-sm);
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-      padding: var(--su4);
+      padding: 1rem;
       max-width: 468px;
     }
     :global(blockquote.twitter-tweet:hover) {
-      background-color: var(--light-025);
+      background-color: var(--color-light-025);
     }
     :global(blockquote.twitter-tweet:before) {
       content: '𝕏';
       font-size: 1.75rem;
       position: absolute;
-      top: var(--su4);
-      right: var(--su4);
+      top: 1rem;
+      right: 1rem;
     }
     :global(blockquote.twitter-tweet p) {
       font-weight: normal;
-      padding-bottom: var(--su4);
+      padding-bottom: 1rem;
     }
     :global(blockquote.twitter-tweet a) {
       font-weight: normal;

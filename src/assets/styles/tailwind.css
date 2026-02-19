@@ -1,0 +1,100 @@
+@import 'tailwindcss';
+@import '@enodo/tailwindcss-foundation';
+@import './defaults.css';
+@import './base.css';
+@import './post.css';
+
+@theme {
+  /* ===== Colors ===== */
+  --color-light: #fff;
+  --color-light-025: #f9f9f9;
+  --color-light-050: #f1f2f7;
+  --color-light-075: #eaecf2;
+  --color-light-100: #e1e3e8;
+  --color-light-200: #c8c8d5;
+  --color-light-300: #a9a9bf;
+  --color-light-400: #8b8da8;
+  --color-light-500: #6b6e94;
+  --color-light-600: #4f517d;
+  --color-light-700: #30336b;
+  --color-light-800: #27294f;
+  --color-light-900: #181a34;
+  --color-light-yolo: #181a34;
+
+  --color-flash: #4bdc9f;
+  --color-flash-050: #e8f8f2;
+  --color-flash-100: #b3ebdb;
+  --color-flash-600: #2ca87a;
+  --color-flash-700: #1a8f5f;
+
+  --color-error: #dc2626;
+  --color-error-050: #fee2e2;
+  --color-error-100: #fca5a5;
+  --color-error-600: #991b1b;
+  --color-error-700: #7f1d1d;
+
+  --color-slate: #64748b;
+  --color-slate-050: #f1f5f9;
+  --color-slate-100: #cbd5e1;
+  --color-slate-600: #1e293b;
+  --color-slate-700: #0f172a;
+
+  /* ===== Fonts ===== */
+  --font-brand: 'Poppins', sans-serif;
+  --font-sans:
+    'Open Sans Variable', Arial, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+    Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  --font-mono: 'Fira Mono', monospace;
+
+  /* ===== Border radius ===== */
+  --radius-xs: 0.1875rem; /* 3px  */
+  --radius-sm: 0.3125rem; /* 5px  */
+  --radius-md: 0.5rem; /* 8px  */
+  --radius-lg: 1rem; /* 16px */
+  --radius-xl: 1.5rem; /* 24px */
+
+  /* ===== Box shadows ===== */
+  --shadow-sm:
+    0 1px 2px hsla(0deg, 0%, 0%, 0.05), 0 1px 4px hsla(0deg, 0%, 0%, 0.05),
+    0 2px 8px hsla(0deg, 0%, 0%, 0.05);
+  --shadow-md:
+    0 1px 3px hsla(0deg, 0%, 0%, 0.06), 0 2px 6px hsla(0deg, 0%, 0%, 0.06),
+    0 3px 8px hsla(0deg, 0%, 0%, 0.09);
+  --shadow-lg:
+    0 1px 4px hsla(0deg, 0%, 0%, 0.09), 0 3px 8px hsla(0deg, 0%, 0%, 0.09),
+    0 4px 13px hsla(0deg, 0%, 0%, 0.13);
+  --shadow-xl:
+    0 10px 24px hsla(0deg, 0%, 0%, 0.05), 0 20px 48px hsla(0deg, 0%, 0%, 0.05),
+    0 1px 4px hsla(0deg, 0%, 0%, 0.1);
+
+  --bg-modal: rgba(48, 51, 107, 0.7);
+  --focus-ring: 0.25rem solid rgba(100, 116, 139, 0.5);
+  --shimmer: linear-gradient(
+    90deg,
+    var(--color-light-075) 25%,
+    var(--color-light-100) 50%,
+    var(--color-light-075) 75%
+  );
+}
+
+@utility link--overlay {
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+  }
+}
+
+@utility link--wrapper {
+  position: relative;
+  & a:not(.link--overlay),
+  & button {
+    position: relative;
+    z-index: 2;
+  }
+}
+
+*:focus-visible {
+  outline: var(--focus-ring);
+}

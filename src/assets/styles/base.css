@@ -1,0 +1,102 @@
+@layer base {
+  body {
+    background: var(--color-light);
+    color: var(--color-light-900);
+    font-family: var(--font-sans);
+    @apply fs-body-copy;
+  }
+
+  main a {
+    text-decoration-line: underline;
+    text-decoration-color: var(--color-flash);
+    text-decoration-thickness: 2px;
+    &:hover {
+      color: var(--color-flash);
+    }
+  }
+
+  input {
+    @apply fs-body-copy;
+    border: 1px solid var(--color-light-700);
+    padding: 0.75rem 1.25rem;
+    background: var(--color-light);
+    color: var(--color-light-900);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .btn {
+    @apply fs-body-copy;
+    white-space: nowrap;
+    transition:
+      color 150ms ease-in,
+      background 150ms ease-in;
+    background: var(--color-light-700);
+    cursor: pointer;
+    color: var(--color-light);
+    border-radius: var(--radius-sm);
+    padding: 0.75rem 1.25rem;
+    font-weight: 600;
+    box-shadow: var(--shadow-sm);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    & svg,
+    & img {
+      flex-shrink: 0;
+    }
+    &:hover {
+      background: var(--color-light);
+      color: var(--color-light-900);
+    }
+  }
+
+  .btn__sm {
+    padding: 0.25rem 0.75rem;
+    gap: 0.5rem;
+  }
+
+  .tag {
+    @apply fs-minion;
+    white-space: nowrap;
+    background: var(--color-light-100);
+    padding: 0.25rem 0.75rem;
+    position: relative;
+    border-radius: var(--radius-sm);
+    transition:
+      color 150ms ease-in,
+      background 150ms ease-in;
+    & a {
+      text-decoration: none;
+      &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+      }
+    }
+    &:hover {
+      background: var(--color-light-050);
+      & a {
+        color: var(--color-light-700);
+      }
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .tag {
+      transition: none !important;
+    }
+  }
+
+  .error {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--color-error-050);
+    color: var(--color-error-700);
+    border: 1px solid var(--color-error);
+    border-radius: var(--radius-md);
+    padding: 1.5rem 2rem;
+  }
+}

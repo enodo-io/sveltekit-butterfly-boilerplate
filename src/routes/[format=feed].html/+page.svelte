@@ -17,9 +17,9 @@
   {/if}
 </svelte:head>
 
-<section class="d-flex fd-column g4">
+<section class="flex flex-col gap-4">
   <header>
-    <h1 class="fs-foolscap fw-700 fc-light-700">{data.meta.title}</h1>
+    <h1 class="fs-foolscap font-bold text-light-700">{data.meta.title}</h1>
   </header>
 
   <h2 class="fs-paragon">
@@ -27,12 +27,12 @@
   </h2>
 </section>
 
-<section class="d-flex fd-column g4">
+<section class="flex flex-col gap-4">
   <header>
-    <h3 class="fs-trafalgar fw-700 fc-light-700">Sections</h3>
+    <h3 class="fs-trafalgar font-bold text-light-700">Sections</h3>
   </header>
 
-  <ul class="d-grid grid__1 sm:grid__2 md:grid__4 g2">
+  <ul class="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-4">
     {#each data.categories.data as category (category.id)}
       <li>
         <a href={resolve(`/${data.layer['content.type']}/sections${category.attributes.path}.xml`)}
@@ -43,17 +43,17 @@
   </ul>
 </section>
 
-<section class="d-flex fd-column g4">
+<section class="flex flex-col gap-4">
   <header>
-    <h3 class="fs-trafalgar fw-700 fc-light-700">Authors</h3>
+    <h3 class="fs-trafalgar font-bold text-light-700">Authors</h3>
   </header>
 
-  <ul class="d-grid grid__1 sm:grid__2 md:grid__4 g2">
+  <ul class="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-4">
     {#await data.feeds.authors}
       <!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
       {#each Array.from({ length: 8 }) as _, i (i)}
         {@const width = (Math.random() * (80 - 30) + 30).toFixed(2)}
-        <li><span class="d-inline-block shimmer" style:width="{width}%">&nbsp;</span></li>
+        <li><span class="shimmer inline-block" style:width="{width}%">&nbsp;</span></li>
       {/each}
     {:then authors}
       {#each authors.data as author (author.id)}
@@ -67,17 +67,17 @@
   </ul>
 </section>
 
-<section class="d-flex fd-column g4">
+<section class="flex flex-col gap-4">
   <header>
-    <h3 class="fs-trafalgar fw-700 fc-light-700">Tags</h3>
+    <h3 class="fs-trafalgar font-bold text-light-700">Tags</h3>
   </header>
 
-  <ul class="d-grid grid__1 sm:grid__2 md:grid__4 g2">
+  <ul class="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-4">
     {#await data.feeds.tags}
       <!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
       {#each Array.from({ length: 8 }) as _, i (i)}
         {@const width = (Math.random() * (80 - 30) + 30).toFixed(2)}
-        <li><span class="d-inline-block shimmer" style:width="{width}%">&nbsp;</span></li>
+        <li><span class="shimmer inline-block" style:width="{width}%">&nbsp;</span></li>
       {/each}
     {:then tags}
       {#each tags.data as tag (tag.id)}
@@ -93,6 +93,6 @@
 
 <style lang="scss">
   a {
-    padding: var(--su1) 0;
+    padding: 0.25rem 0;
   }
 </style>

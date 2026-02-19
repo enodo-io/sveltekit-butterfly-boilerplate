@@ -6,15 +6,14 @@
 </script>
 
 <footer
-  class="w100 fc-light bg-light-700 p6 sm:p6 md:p8 d-flex fd-column-reverse sm:fd-row g7 jc-space-between"
+  class="flex w-full flex-col-reverse justify-between gap-7 bg-light-700 p-6 text-light sm:flex-row sm:p-6 md:p-8"
 >
-  <div class="d-flex fd-column jc-space-between ai-center g4">
+  <div class="flex flex-col items-center justify-between gap-4">
     <p class="fs-minion">
-      Powered by <a class="px0" href="https://butterfly.enodo.io/">Enodo Butterfly</a>
+      Powered by <a href="https://butterfly.enodo.io/">Enodo Butterfly</a>
     </p>
     <p class="fs-minion">
       Copyright © <a
-        class="px0"
         href={resolve('/')}
         aria-current={currentPage === resolve('/') ? 'page' : undefined}
         >{page.data.settings.title}</a
@@ -22,7 +21,7 @@
     </p>
   </div>
   <nav aria-label="Main pages">
-    <ul class="d-grid g-af-column grid__r4 g2 fs-minion ta-center">
+    <ul class="grid grid-flow-col grid-rows-4 gap-2 text-center fs-minion">
       <li>
         <a
           href={resolve('/articles')}
@@ -70,22 +69,22 @@
 </footer>
 
 <style lang="scss">
-  @use 'sass:map';
-  @use '@enodo/foundation-css/variables/breakpoints' as *;
-
   footer {
     view-transition-name: footer;
   }
   a {
-    padding: var(--su1) var(--su4);
+    padding: 0.25rem 1rem;
     &:hover {
-      color: var(--flash);
+      color: var(--color-flash);
     }
   }
-  :global(header.visible + main + footer) {
-    margin-bottom: var(--su11);
+  p a {
+    padding: 0.25rem 0;
   }
-  @media (min-width: map.get($breakpoints, 'md')) {
+  :global(header.visible + main + footer) {
+    margin-bottom: 4rem;
+  }
+  @media (min-width: 1008px) {
     :global(header.visible + main + footer) {
       margin-bottom: 0;
     }

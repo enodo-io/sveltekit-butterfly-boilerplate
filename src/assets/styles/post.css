@@ -1,0 +1,89 @@
+@layer base {
+  .post {
+    @apply fs-body-copy;
+  }
+
+  .post--list {
+    padding-left: 1.5rem;
+  }
+
+  .post--media,
+  .post--x,
+  .post--facebook,
+  .post--instagram,
+  .post--tiktok {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .post--video video {
+    width: 100%;
+  }
+
+  .post--media--caption p {
+    @apply fs-brevier;
+    display: inline;
+    color: var(--color-light-600);
+  }
+
+  .post--media--credits::before {
+    content: 'Credits: ';
+  }
+
+  .post--media--caption p + .post--media--credits::before {
+    content: ' — Credits: ';
+  }
+
+  .post--youtube iframe,
+  .post--vimeo iframe,
+  .post--dailymotion iframe {
+    min-width: 100%;
+    max-width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+  }
+
+  .post--iframe {
+    text-align: center;
+  }
+
+  .post--iframe iframe {
+    max-width: 100%;
+  }
+
+  ul.post--list {
+    list-style-type: disc;
+  }
+
+  ol.post--list {
+    list-style-type: decimal;
+  }
+
+  .post--quote blockquote {
+    margin: 0;
+  }
+
+  .post--quote blockquote p {
+    @apply fs-great-primer;
+    &::before {
+      content: '❝';
+      font-size: 4rem;
+      color: var(--color-flash);
+      margin-right: 1rem;
+    }
+  }
+
+  .post--quote--credits {
+    @apply fs-long-primer;
+    padding-top: 1rem;
+    text-align: right;
+  }
+
+  @media (min-width: 600px) {
+    .post--video video {
+      max-height: 70vh;
+    }
+  }
+}

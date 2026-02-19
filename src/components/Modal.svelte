@@ -58,7 +58,7 @@
 
 {#if isVisible}
   <div
-    class="backdrop t show z-modal-bg"
+    class="backdrop show z-modal-bg transition-all duration-100"
     role="button"
     tabindex="0"
     aria-label="Close modal"
@@ -66,8 +66,10 @@
     onkeydown={(e) => (e.key === 'Enter' || e.key === ' ') && close()}
     transition:fade={{ duration: prefersReducedMotion ? 0 : 210 }}
   >
-    <button aria-label="Close modal" onclick={close} class="ps-fixed t2 r2 p4 fc-light z-modal"
-      ><X size={24} /></button
+    <button
+      aria-label="Close modal"
+      onclick={close}
+      class="fixed top-2 right-2 z-modal p-4 text-light"><X size={24} /></button
     >
     <div
       class="modal"

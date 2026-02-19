@@ -78,16 +78,16 @@
   {/if}
 </svelte:head>
 
-<section class="d-flex fd-column g7">
-  <header class="d-flex fd-column g4" id="scope">
-    <h1 class="fs-foolscap fw-700 fc-light-700">{data.meta.title}</h1>
-    <p class="fs-pica fw-500">{data.meta.description}</p>
+<section class="flex flex-col gap-7">
+  <header class="flex flex-col gap-4" id="scope">
+    <h1 class="fs-foolscap font-bold text-light-700">{data.meta.title}</h1>
+    <p class="fs-pica font-medium">{data.meta.description}</p>
     {#if data.layer['page.index'] > 1}
-      <span class="fs-minion fc-light-500">Page {data.layer['page.index']}</span>
+      <span class="fs-minion text-light-500">Page {data.layer['page.index']}</span>
     {/if}
   </header>
 
-  <div id="posts" class="d-grid g4 sm:grid__2 md:grid__3">
+  <div id="posts" class="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
     <Feed feed={data.feeds.posts} length={18} lazyloadAfter={3} />
     {#each more as posts, i (i)}
       <Feed feed={posts} length={18} />
