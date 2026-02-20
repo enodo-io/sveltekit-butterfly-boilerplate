@@ -5,7 +5,7 @@
   import { breakpoints } from '$lib/breakpoints';
   import Image from '$components/Image.svelte';
   import Video from '$components/Video.svelte';
-  import Modal from '$components/Modal.svelte';
+  import Dialog from '$components/Dialog.svelte';
 
   type Props = { element: Butterfly.PostBody.Gallery; resources: Butterfly.Resource[] };
   const { element, resources }: Props = $props();
@@ -86,7 +86,7 @@
   {/if}
 {/snippet}
 
-<Modal
+<Dialog
   content={modalcontent}
   open={!!current}
   onClose={() => {

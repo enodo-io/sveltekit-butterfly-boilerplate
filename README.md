@@ -548,9 +548,9 @@ Site footer with links and metadata.
 
 Displays the category hierarchy.
 
-#### `Modal.svelte`
+#### `Dialog.svelte`
 
-Accessible modal with clickable backdrop (closes on direct backdrop click) and Escape key support.
+Native `<dialog>`-based overlay with clickable backdrop (closes on direct backdrop click) and Escape key support.
 
 Props:
 
