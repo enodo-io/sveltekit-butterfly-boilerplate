@@ -94,9 +94,10 @@ The design is **intentionally neutral** to give you full creative freedom, while
 ### Built with
 
 - **[@enodo/butterfly-ts](https://github.com/enodo-io/butterfly-ts)**: Wrapped in `lib/api.ts` for easy configuration
-- **[@enodo/foundation-css](https://github.com/enodo-io/foundation-css)**: Utility-first CSS framework as UI base
-- **SvelteKit**: Latest Svelte 5 with Runes
-- **TypeScript**: Full type safety
+- **[@enodo/tailwindcss-foundation](https://github.com/enodo-io/tailwindcss-foundation)**: Internal design token package — BBC GEL typography scale, breakpoints, spacing, z-index layers
+- **[Tailwind CSS v4](https://tailwindcss.com)**: Utility-first CSS framework with JIT compilation
+- **[SvelteKit](https://kit.svelte.dev)**: Latest Svelte 5 with Runes
+- **[TypeScript](https://www.typescriptlang.org)**: Full type safety
 
 ## Installation
 
@@ -175,66 +176,66 @@ Customize static page URLs via the `PUBLIC_STATIC_PAGES` environment variable.
 
 ### Color Palette
 
-Adapt your site's color palette in `src/assets/styles/main.scss`:
+Colors are defined as CSS custom properties in `src/assets/styles/tailwind.css` inside the `@theme` block:
 
-```scss
-@use '@enodo/foundation-css' with (
-  $colors: (
-    light: (
-      'main': #ffffff,
-      '025': #fafafa,
-      // ... more shades
-      '900': #0a0a0a,
-    ),
-    primary: (
-      'main': #3b82f6,
-      // Your primary color
-    ),
-    secondary: (
-      'main': #f59e0b,
-      // Your secondary color
-    ),
-  )
-);
+```css
+/* src/assets/styles/tailwind.css */
+@theme {
+  --color-light: #fff;        /* background */
+  --color-light-900: #181a34; /* text */
+
+  --color-flash: #4bdc9f;     /* primary accent */
+  --color-flash-600: #2ca87a;
+  --color-flash-700: #1a8f5f;
+
+  --color-error: #dc2626;
+  /* ... */
+}
 ```
 
-You're not limited to `primary` and `secondary`. You can define colors by name (`blue`, `green`, `red`) or by usage (`brand`, `success`, `error`, `warning`).
+All tokens become Tailwind utilities automatically: `bg-flash`, `text-light-900`, `border-error`, `text-flash-600`, etc.
+
+The boilerplate uses two color families by default:
+- **`light`**: neutral palette (background, text, borders) — scales from `025` (near-white) to `900` (near-black)
+- **`flash`**: primary accent color — scales from `050` to `700`
+
+You can rename these families or add as many as you need (`brand`, `secondary`, `success`, `warning`…).
 
 ### Typography
 
-Change fonts in the same file:
+Two things to configure:
+
+**1. Import the font package** in `src/assets/styles/main.scss`:
 
 ```scss
-@use '@fontsource/poppins';
-@use '@fontsource-variable/open-sans';
-@use '@fontsource/fira-mono';
-
-@use '@enodo/foundation-css' with (
-  $font-families: (
-    brand: (
-      'Poppins',
-      sans-serif,
-    ),
-    // Brand heading font
-    sans: (
-        'Open Sans',
-        sans-serif,
-      ),
-    // Body font
-    mono: (
-        'Fira Code',
-        monospace,
-      ),
-    // Code font
-  )
-);
+/* src/assets/styles/main.scss */
+@use '@fontsource/inter'; /* replace or add */
 ```
 
 Install fonts via:
 
 ```bash
 npm install -D @fontsource/{font-name}
+# or for variable fonts:
+npm install -D @fontsource-variable/{font-name}
 ```
+
+**2. Update the font token** in `src/assets/styles/tailwind.css`:
+
+```css
+/* src/assets/styles/tailwind.css */
+@theme {
+  --font-sans: 'Inter', sans-serif;
+}
+```
+
+The boilerplate defines three font roles:
+
+| Token          | Tailwind class | Default            | Usage              |
+|----------------|----------------|--------------------|--------------------|
+| `--font-brand` | `font-brand`   | Poppins            | Headings, branding |
+| `--font-sans`  | `font-sans`    | Open Sans Variable | Body copy          |
+| `--font-mono`  | `font-mono`    | Fira Mono          | Code, monospace    |
 
 ### Language Configuration
 
@@ -593,7 +594,7 @@ Post card component for displaying articles.
 
 Renders a Butterfly post body (headings, paragraphs, lists, media, embeds, etc.).
 
-- Recommended customization via `:global(.post--[element])` in `src/assets/styles/main.scss` (e.g., `.post--list`, `.post--quote`, `.post--youtube`).
+- Recommended customization via `.post--[element]` selectors in `src/assets/styles/post.css` (e.g., `.post--list`, `.post--quote`, `.post--youtube`).
 - You can also edit individual element components, but global customization is preferred.
 
 #### `Feed.svelte`
@@ -790,43 +791,46 @@ window.dataLayer.push({
 ```bash
 # Install the font
 npm install -D @fontsource/inter
+```
 
-# Update main.scss
+```scss
+/* src/assets/styles/main.scss — add the @use */
 @use '@fontsource/inter';
+```
 
-@use '@enodo/foundation-css' with (
-  $font-families: (
-    sans: ('Inter', sans-serif)
-  )
-);
+```css
+/* src/assets/styles/tailwind.css — update the token */
+@theme {
+  --font-sans: 'Inter', sans-serif;
+}
 ```
 
 ### Changing Colors
 
-Edit `src/assets/styles/main.scss`:
+Edit the `@theme` block in `src/assets/styles/tailwind.css`:
 
-```scss
-$colors: (
-  light: (
-    /* neutral palette */
-  ),
-  primary: (
-    'main': #3b82f6,
-  ),
-  // Your brand color
-  accent: (
-      'main': #f59e0b,
-    ),
-  // Accent color
-  success: (
-      'main': #10b981,
-    ),
-  // Success states
-  error: (
-      'main': #ef4444,
-    ), // Error states
-);
+```css
+@theme {
+  --color-flash: #3b82f6;      /* your primary accent */
+  --color-flash-050: #eff6ff;
+  --color-flash-100: #dbeafe;
+  --color-flash-600: #2563eb;
+  --color-flash-700: #1d4ed8;
+}
 ```
+
+Or add entirely new color families:
+
+```css
+@theme {
+  --color-brand: #7c3aed;
+  --color-brand-600: #6d28d9;
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+}
+```
+
+These become Tailwind utilities instantly: `bg-brand`, `text-success`, `border-warning`, etc.
 
 ### Project-Type Color Suggestions
 
