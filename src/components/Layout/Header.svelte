@@ -3,6 +3,7 @@
   import { resolve } from '$app/paths';
   import { page, navigating } from '$app/state';
   import Categories from './Categories.svelte';
+  import { onMount } from 'svelte';
 
   const currentPage = $derived(page.url.pathname);
 
@@ -10,12 +11,13 @@
   let lastY = $state(0);
   let show = $state(true);
   let menu = $state(false);
-  let menuBtn: HTMLButtonElement;
+  let menuPopover: HTMLElement;
 
   // Close menu on navigation
   $effect(() => {
     if (navigating.to) {
       menu = false;
+      menuPopover.hidePopover();
     }
   });
 
@@ -38,17 +40,14 @@
     lastY = scrollY;
   });
 
-  // Handle escape for a11y
-  const handleEscape = (e: KeyboardEvent) => {
-    if (menu && e.key === 'Escape') {
-      e.preventDefault();
-      menuBtn.focus();
-      menu = false;
-    }
-  };
+  onMount(() => {
+    menuPopover.addEventListener('toggle', (e) => {
+      menu = e.newState === 'open';
+    });
+  });
 </script>
 
-<svelte:window bind:scrollY={scrollY} on:keydown={handleEscape} />
+<svelte:window bind:scrollY={scrollY} />
 
 <header
   class:visible={show}
@@ -68,12 +67,9 @@
     <nav class="flex items-center">
       <button
         id="burger"
-        bind:this={menuBtn}
+        popovertarget="menu"
         class="p-2 md:hidden"
-        onclick={() => (menu = !menu)}
         aria-label={menu ? 'Close navigation' : 'Open navigation'}
-        aria-controls="menu"
-        aria-expanded={menu}
       >
         {#if !menu}
           <Menu />
@@ -84,11 +80,12 @@
 
       <div
         id="menu"
-        class="backdrop fs-pica font-normal transition duration-100
+        bind:this={menuPopover}
+        popover
+        class="fs-pica font-normal transition duration-100
                md:relative
                md:flex md:gap-4
                "
-        class:visible={menu}
       >
         <Categories
           aria-modal="true"
@@ -156,21 +153,40 @@
       transform: translateY(0);
     }
   }
-  .backdrop {
-    height: calc(100dvh - 4rem - 1px);
-    background: var(--bg-modal);
+  #menu {
+    background: transparent;
     display: flex;
     position: fixed;
     bottom: calc(4rem + 1px);
     right: 0;
     left: 0;
+    margin-top: auto;
     overflow-y: auto;
     width: 100%;
     opacity: 0;
     visibility: hidden;
-    &.visible {
-      opacity: 1;
-      visibility: visible;
+    @apply transition;
+    @apply duration-100;
+
+    &,
+    &::backdrop {
+      @apply transition;
+      @apply duration-100;
+      background: var(--bg-modal);
+      height: calc(100dvh - 4rem - 1px);
+    }
+
+    &:popover-open {
+      &,
+      &::backdrop {
+        opacity: 1;
+        visibility: visible;
+
+        @starting-style {
+          opacity: 0;
+          visibility: hidden;
+        }
+      }
     }
 
     :global(> ul) {
@@ -187,7 +203,7 @@
         opacity 250ms ease;
     }
 
-    &.visible :global(> ul) {
+    &:popover-open :global(> ul) {
       transform: translateY(0) scale(1);
       opacity: 1;
     }
@@ -243,7 +259,7 @@
     header {
       transform: none;
     }
-    .backdrop {
+    #menu {
       height: auto;
       background: transparent;
       opacity: 1;
@@ -320,9 +336,9 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .backdrop,
-    .backdrop :global(ul),
-    .backdrop :global(ul ul) {
+    #menu,
+    #menu :global(ul),
+    #menu :global(ul ul) {
       transition: none !important;
       transition-delay: 0s !important;
     }
