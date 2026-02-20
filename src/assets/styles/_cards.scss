@@ -36,6 +36,7 @@
     }
     img {
       object-fit: cover;
+      will-change: transform;
       transition:
         transform 250ms,
         opacity 600ms ease-in-out;
