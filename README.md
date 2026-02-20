@@ -181,10 +181,10 @@ Colors are defined as CSS custom properties in `src/assets/styles/tailwind.css` 
 ```css
 /* src/assets/styles/tailwind.css */
 @theme {
-  --color-light: #fff;        /* background */
+  --color-light: #fff; /* background */
   --color-light-900: #181a34; /* text */
 
-  --color-flash: #4bdc9f;     /* primary accent */
+  --color-flash: #4bdc9f; /* primary accent */
   --color-flash-600: #2ca87a;
   --color-flash-700: #1a8f5f;
 
@@ -196,6 +196,7 @@ Colors are defined as CSS custom properties in `src/assets/styles/tailwind.css` 
 All tokens become Tailwind utilities automatically: `bg-flash`, `text-light-900`, `border-error`, `text-flash-600`, etc.
 
 The boilerplate uses two color families by default:
+
 - **`light`**: neutral palette (background, text, borders) — scales from `025` (near-white) to `900` (near-black)
 - **`flash`**: primary accent color — scales from `050` to `700`
 
@@ -232,7 +233,7 @@ npm install -D @fontsource-variable/{font-name}
 The boilerplate defines three font roles:
 
 | Token          | Tailwind class | Default            | Usage              |
-|----------------|----------------|--------------------|--------------------|
+| -------------- | -------------- | ------------------ | ------------------ |
 | `--font-brand` | `font-brand`   | Poppins            | Headings, branding |
 | `--font-sans`  | `font-sans`    | Open Sans Variable | Body copy          |
 | `--font-mono`  | `font-mono`    | Fira Mono          | Code, monospace    |
@@ -811,7 +812,7 @@ Edit the `@theme` block in `src/assets/styles/tailwind.css`:
 
 ```css
 @theme {
-  --color-flash: #3b82f6;      /* your primary accent */
+  --color-flash: #3b82f6; /* your primary accent */
   --color-flash-050: #eff6ff;
   --color-flash-100: #dbeafe;
   --color-flash-600: #2563eb;
