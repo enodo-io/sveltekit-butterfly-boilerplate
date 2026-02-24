@@ -32,4 +32,4 @@ vite.config.ts.timestamp-*
 .sentryclirc
 
 # Claude Code
-.claude
+.claude/settings.local.json

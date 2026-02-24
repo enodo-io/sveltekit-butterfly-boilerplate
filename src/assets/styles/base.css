@@ -83,6 +83,10 @@
     }
   }
 
+  picture:has(img[loading='lazy']:not(.loaded)) {
+    @apply shimmer;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .tag {
       transition: none !important;

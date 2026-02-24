@@ -53,7 +53,7 @@
       <!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
       {#each Array.from({ length: 8 }) as _, i (i)}
         {@const width = (Math.random() * (80 - 30) + 30).toFixed(2)}
-        <li><span class="shimmer inline-block" style:width="{width}%">&nbsp;</span></li>
+        <li><span class="inline-block shimmer" style:width="{width}%">&nbsp;</span></li>
       {/each}
     {:then authors}
       {#each authors.data as author (author.id)}
@@ -77,7 +77,7 @@
       <!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
       {#each Array.from({ length: 8 }) as _, i (i)}
         {@const width = (Math.random() * (80 - 30) + 30).toFixed(2)}
-        <li><span class="shimmer inline-block" style:width="{width}%">&nbsp;</span></li>
+        <li><span class="inline-block shimmer" style:width="{width}%">&nbsp;</span></li>
       {/each}
     {:then tags}
       {#each tags.data as tag (tag.id)}
