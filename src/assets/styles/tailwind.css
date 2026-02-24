@@ -81,12 +81,6 @@
 
   --bg-modal: rgba(48, 51, 107, 0.7);
   --focus-ring: 0.25rem solid rgba(100, 116, 139, 0.5);
-  --shimmer: linear-gradient(
-    90deg,
-    var(--color-light-075) 25%,
-    var(--color-light-100) 50%,
-    var(--color-light-075) 75%
-  );
 }
 
 @utility link--overlay {

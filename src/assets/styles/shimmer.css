@@ -1,18 +1,33 @@
 @keyframes shimmer {
-  0% {
-    background-position: 200% 0;
+  from {
+    transform: translateX(-100%);
   }
-  100% {
-    background-position: -200% 0;
+  to {
+    transform: translateX(100%);
   }
 }
 
 @utility shimmer {
-  background-image: var(--shimmer);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
+  position: relative;
+  overflow: hidden;
+  background-color: var(--color-light-075);
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      var(--color-light-100) 50%,
+      transparent 100%
+    );
+    animation: shimmer 1.5s infinite;
+  }
 
   @media (prefers-reduced-motion: reduce) {
-    animation: none;
+    &::after {
+      animation: none;
+    }
   }
 }
