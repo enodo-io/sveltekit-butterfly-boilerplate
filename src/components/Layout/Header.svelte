@@ -163,7 +163,7 @@
           {@render categoriesMenu(page.data.categories.data, null)}
           <li class="relative flex items-center justify-between gap-3 py-2" aria-label="Search">
             <a class="search" href={resolve('/search')}> Search </a>
-            <Search />
+            <Search size={20} />
           </li>
         </ul>
       </div>
