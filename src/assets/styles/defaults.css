@@ -1,4 +1,12 @@
 @layer base {
+  :root {
+    interpolate-size: allow-keywords;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
     display: flex;
     min-height: 100dvh;

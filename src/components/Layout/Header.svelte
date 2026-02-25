@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { Menu, X, Search } from '@lucide/svelte';
+  import { Menu, X, Search, ChevronDown } from '@lucide/svelte';
   import { resolve } from '$app/paths';
   import { page, navigating } from '$app/state';
-  import Categories from './Categories.svelte';
-  import { onMount } from 'svelte';
+
+  import type * as Butterfly from '@enodo/butterfly-ts';
 
   const currentPage = $derived(page.url.pathname);
 
@@ -18,14 +18,35 @@
     if (navigating.to) {
       menu = false;
       menuPopover.hidePopover();
+      menuPopover.querySelectorAll<HTMLDetailsElement>('details[open]').forEach((d) => {
+        d.open = false;
+      });
     }
   });
 
-  // Lock body scroll when menu is open
-  $effect(() => {
-    if (typeof document !== 'undefined') {
-      document.body.style.overflow = menu ? 'hidden' : '';
+  function handleDetailsToggle(e: Event) {
+    if ((e as ToggleEvent).newState !== 'open') return;
+    const opened = e.currentTarget as HTMLDetailsElement;
+
+    const ancestors: Element[] = [];
+    let el: Element | null = opened.parentElement;
+    while (el && el !== menuPopover) {
+      if (el.tagName === 'DETAILS') ancestors.push(el);
+      el = el.parentElement;
     }
+
+    // Close every open <details> that is not the opened one or one of its ancestors
+    menuPopover.querySelectorAll<HTMLDetailsElement>('details[open]').forEach((d) => {
+      if (d !== opened && !ancestors.includes(d)) d.open = false;
+    });
+  }
+
+  // Lock body scroll + trap focus when menu is open
+  $effect(() => {
+    document.body.style.overflow = menu ? 'hidden' : '';
+    document.getElementById('page')?.toggleAttribute('inert', menu);
+    document.querySelector('#page + footer')?.toggleAttribute('inert', menu);
+    document.querySelector('.skip-link')?.toggleAttribute('inert', menu);
   });
 
   // Auto-hide header on scroll
@@ -40,10 +61,12 @@
     lastY = scrollY;
   });
 
-  onMount(() => {
-    menuPopover.addEventListener('toggle', (e) => {
+  $effect(() => {
+    const handler = (e: ToggleEvent) => {
       menu = e.newState === 'open';
-    });
+    };
+    menuPopover.addEventListener('toggle', handler);
+    return () => menuPopover.removeEventListener('toggle', handler);
   });
 </script>
 
@@ -51,7 +74,7 @@
 
 <header
   class:visible={show}
-  class="t__slow fixed right-0 bottom-0 left-0 z-nav-fixed bg-light font-brand whitespace-nowrap text-light-800 transition duration-250 md:sticky md:top-0"
+  class="fixed right-0 bottom-0 left-0 z-nav-fixed bg-light font-brand whitespace-nowrap text-light-800 md:sticky md:top-0"
 >
   <div class="flex items-center justify-between p-2">
     <nav aria-label="Home" class="relative flex items-center font-brand sm:gap-2">
@@ -60,7 +83,7 @@
         href={resolve('/')}
         class="logo link--overlay fs-trafalgar font-semibold"
         aria-current={currentPage === resolve('/') ? 'page' : undefined}
-        ><span>{page.data.settings.title}</span></a
+        ><span class="sr-only sm:not-sr-only">{page.data.settings.title}</span></a
       >
     </nav>
 
@@ -82,151 +105,140 @@
         id="menu"
         bind:this={menuPopover}
         popover
-        class="fs-pica font-normal transition duration-100
-               md:relative
-               md:flex md:gap-4
+        class="rounded-t-md
+               p-2 fs-pica font-normal
+               md:relative md:flex
+               md:gap-4
+               md:rounded-none md:p-0
                "
       >
-        <Categories
-          aria-modal="true"
-          aria-label="Main navigation"
-          class="dureation-100 mt-auto flex w-full flex-col transition md:flex-row md:gap-4"
-          categories={page.data.categories.data}
-          clickoutsideIgnore="#burger"
-          outsideClickHandler={() => (menu = false)}
-        >
-          {#snippet after()}
-            <li class="relative flex gap-3 md:gap-0" aria-label="Search">
-              <Search />
-              <a class="search" href={resolve('/search')}>
-                <span class="md:hidden">Search</span>
-              </a>
-            </li>
+        <ul class="mt-auto flex w-full flex-col transition duration-100 md:flex-row md:gap-4">
+          {#snippet categoriesMenu(
+            categories: Butterfly.Category[],
+            parent: Butterfly.Category | null = null,
+          )}
+            {@const childrens: Butterfly.Category[] = categories.filter((c: Butterfly.Category) =>
+              parent
+                ? c.relationships.parentCategory.data?.id === parent.id
+                : !c.relationships.parentCategory.data,
+            )}
+            {@const hasChild = (p: Butterfly.Category) =>
+              categories.filter(
+                (c: Butterfly.Category) => c.relationships.parentCategory.data?.id === p.id,
+              ).length > 0}
+            {#each childrens as category (category.id)}
+              <li class="py-2">
+                {#if hasChild(category)}
+                  <details ontoggle={handleDetailsToggle}>
+                    <summary class="flex w-full items-center justify-between gap-3">
+                      {category.attributes.name}
+                      <ChevronDown size={20} />
+                    </summary>
+                    <ul
+                      id="subnav-{category.id}"
+                      class="mt-auto flex-col pl-4 transition duration-100 md:flex-row md:gap-4"
+                    >
+                      <li class="py-2">
+                        <a
+                          href={resolve(category.attributes.path)}
+                          aria-current={currentPage === resolve(category.attributes.path)
+                            ? 'page'
+                            : undefined}>{category.attributes.name}</a
+                        >
+                      </li>
+                      {@render categoriesMenu(categories, category)}
+                    </ul>
+                  </details>
+                {:else}
+                  <a
+                    href={resolve(category.attributes.path)}
+                    aria-current={currentPage === resolve(category.attributes.path)
+                      ? 'page'
+                      : undefined}>{category.attributes.name}</a
+                  >
+                {/if}
+              </li>
+            {/each}
           {/snippet}
-        </Categories>
+          {@render categoriesMenu(page.data.categories.data, null)}
+          <li class="relative flex items-center justify-between gap-3 py-2" aria-label="Search">
+            <a class="search" href={resolve('/search')}> Search </a>
+            <Search />
+          </li>
+        </ul>
       </div>
     </nav>
   </div>
 </header>
 
 <style lang="scss">
-  @mixin dropdown-transition($visible: false, $desktop: false) {
-    @if $visible {
-      max-height: 100dvh;
-      opacity: 1;
-      @if $desktop {
-        transform: translateY(0) scale(1);
-      } @else {
-        transform: translateY(0);
-      }
-      visibility: visible;
-      pointer-events: auto;
-      transition:
-        max-height 350ms cubic-bezier(0.22, 1, 0.36, 1),
-        opacity 250ms ease,
-        transform 400ms cubic-bezier(0.22, 1, 0.36, 1),
-        visibility 0s 0s;
-    } @else {
-      max-height: 0;
-      overflow: hidden;
-      opacity: 0;
-      @if $desktop {
-        transform: translateY(-20%) scale(0);
-      } @else {
-        transform: translateY(-0.5rem);
-      }
-      visibility: hidden;
-      pointer-events: none;
-      transition:
-        max-height 350ms cubic-bezier(0.22, 1, 0.36, 1),
-        opacity 200ms ease,
-        transform 300ms cubic-bezier(0.22, 1, 0.36, 1),
-        visibility 0s 300ms;
-    }
-  }
-
   header {
     outline: 1px solid var(--color-light-075);
-    transform: translateY(4.5rem);
     view-transition-name: header;
+    transform: translateY(4.5rem);
+    opacity: 0;
+    transition:
+      transform 250ms var(--tw-ease, ease),
+      opacity 250ms var(--tw-ease, ease);
     &.visible {
       transform: translateY(0);
+      opacity: 1;
     }
   }
   #menu {
-    background: transparent;
-    display: flex;
+    background: var(--color-light);
     position: fixed;
+    top: auto;
     bottom: calc(4rem + 1px);
     right: 0;
     left: 0;
     margin-top: auto;
     overflow-y: auto;
     width: 100%;
+    height: auto;
     opacity: 0;
-    visibility: hidden;
-    @apply transition;
-    @apply duration-100;
+    transition: opacity 300ms var(--tw-ease, ease);
 
-    &,
     &::backdrop {
-      @apply transition;
-      @apply duration-100;
+      transition: opacity 300ms var(--tw-ease, ease);
       background: var(--bg-modal);
       height: calc(100dvh - 4rem - 1px);
     }
 
     &:popover-open {
+      display: flex;
       &,
       &::backdrop {
         opacity: 1;
-        visibility: visible;
-
         @starting-style {
           opacity: 0;
-          visibility: hidden;
         }
       }
     }
 
-    :global(> ul) {
-      border-top-left-radius: var(--radius-md);
-      border-top-right-radius: var(--radius-md);
-      background: var(--color-light);
-      padding: 0.5rem;
-      border-top: 1px solid var(--color-light-600);
-      transform-origin: bottom right;
-      transform: translateY(40%) scale(0);
-      opacity: 0;
-      transition:
-        transform 420ms cubic-bezier(0.22, 1, 0.36, 1),
-        opacity 250ms ease;
-    }
-
-    &:popover-open :global(> ul) {
-      transform: translateY(0) scale(1);
-      opacity: 1;
-    }
-
-    :global(> ul ul) {
-      padding-left: 1rem;
-      @include dropdown-transition;
-    }
-
-    :global(> ul ul.visible) {
-      @include dropdown-transition($visible: true);
-    }
-
-    :global(li) {
-      position: relative;
-      padding: 0.5rem 0;
-    }
-
-    :global(li a:after),
-    :global(li button:after) {
-      content: '';
-      position: absolute;
-      inset: 0;
+    details {
+      &::details-content {
+        transition:
+          height 350ms var(--tw-ease, ease),
+          opacity 250ms var(--tw-ease, ease),
+          content-visibility 0.5s var(--tw-ease, ease) allow-discrete;
+        height: 0;
+        opacity: 0;
+        overflow: clip;
+      }
+      & > summary :global(svg) {
+        transition: transform 400ms var(--tw-ease, ease);
+        transform: rotate3d(1, 0, 0, 0deg);
+      }
+      &:open {
+        &::details-content {
+          height: auto;
+          opacity: 1;
+        }
+        & > summary :global(svg) {
+          transform: rotate3d(1, 0, 0, 180deg);
+        }
+      }
     }
   }
 
@@ -241,23 +253,10 @@
     }
   }
 
-  @media (max-width: 600px) {
-    .logo span {
-      border: 0 !important;
-      clip: rect(1px, 1px, 1px, 1px) !important;
-      -webkit-clip-path: inset(50%) !important;
-      clip-path: inset(50%) !important;
-      height: 1px !important;
-      overflow: hidden !important;
-      padding: 0 !important;
-      position: absolute !important;
-      width: 1px !important;
-      white-space: nowrap !important;
-    }
-  }
   @media (min-width: 1008px) {
     header {
       transform: none;
+      opacity: 1;
     }
     #menu {
       height: auto;
@@ -267,78 +266,70 @@
       position: static;
       overflow: visible;
 
-      :global(> ul) {
-        border: 0;
-        background: transparent;
-        opacity: 1;
-        transform: none;
-        padding: 0;
+      & > ul > li {
+        position: relative;
+        padding: calc(var(--spacing) * 3);
+        & > details {
+          & > ul {
+            background: var(--color-light);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--color-light-200);
+            min-width: 15.75rem;
+            max-width: calc(100vw - 1rem);
+            max-height: calc(100dvh - 5rem);
+            box-shadow: var(--shadow-xl);
+            transform-origin: 0 0;
+            padding: calc(var(--spacing) * 2);
+            margin-left: -1rem;
+            position: absolute;
+            top: 3rem;
+            left: auto;
+            right: auto;
+            overflow: auto;
+            transform: translateY(-20%) scale(0);
+            transition: transform 400ms var(--tw-ease, ease);
+          }
+          &:open > summary:before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            top: 4rem;
+            width: 100dvw;
+            height: calc(100dvh - 4rem);
+            cursor: default;
+          }
+          &:open > ul {
+            transform: translateY(0) scale(1);
+            @starting-style {
+              transform: translateY(-20%) scale(0);
+            }
+          }
+        }
+        &:nth-last-child(-n + 2) > details > ul {
+          right: 0.5rem;
+          left: auto;
+          transform-origin: 100% 0;
+        }
       }
     }
+  }
 
-    #menu {
-      // depth 1
-      :global(> ul > li) {
-        position: relative;
-        padding: 0.75rem;
-      }
-
-      // depth 2
-      :global(> ul > li > ul) {
-        position: fixed;
-        top: 3rem;
-        left: auto;
-        right: auto;
-        min-width: calc(5.25rem * 3);
-        max-width: calc(100vw - 1rem);
-        background: var(--color-light);
-        border-radius: var(--radius-md);
-        border: 1px solid var(--color-light-200);
-        box-shadow: var(--shadow-xl);
-        padding: 0.5rem;
-        margin-top: 0.25rem;
-        margin-left: calc(1rem * -1);
-        transform-origin: top left;
-        @include dropdown-transition($desktop: true);
-      }
-
-      // last-child is align to right
-      :global(> ul > li:nth-last-child(-n + 2) > ul) {
-        left: auto;
-        right: 0.5rem;
-        transform-origin: top right;
-      }
-
-      :global(> ul > li > ul li) {
-        padding: 0.5rem 0;
-      }
-
-      :global(> ul > li:hover > ul),
-      :global(> ul > li > ul.visible) {
-        max-height: 80vh;
-        overflow-y: auto;
-        @include dropdown-transition($visible: true, $desktop: true);
-      }
-
-      // depth 3
-      :global(> ul > li > ul ul) {
-        position: static;
-        border: 0;
-        box-shadow: none;
-        padding-left: 1rem;
-        @include dropdown-transition;
-      }
-
-      :global(> ul > li > ul ul.visible) {
-        @include dropdown-transition($visible: true);
+  li {
+    position: relative;
+    summary,
+    a {
+      cursor: pointer;
+      &:after {
+        content: '';
+        position: absolute;
+        inset: 0;
       }
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
     #menu,
-    #menu :global(ul),
-    #menu :global(ul ul) {
+    #menu ul {
       transition: none !important;
       transition-delay: 0s !important;
     }
