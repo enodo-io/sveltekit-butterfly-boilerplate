@@ -22,6 +22,8 @@
   import markdown from './Elements/Markdown.svelte';
   import code from './Elements/Code.svelte';
   import embed from './Elements/Embed.svelte';
+  import table from './Elements/Table.svelte';
+  import related from './Elements/Related.svelte';
 
   type Props = {
     body: Butterfly.PostBody.BodyData[];
@@ -58,6 +60,8 @@
     markdown,
     code,
     embed,
+    table,
+    related,
   };
 </script>
 
