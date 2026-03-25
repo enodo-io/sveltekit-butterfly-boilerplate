@@ -1,0 +1,47 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path // .tool_response.filePath // empty' | { read -r f; case \"$f\" in *.svelte|*.css) echo '{\"hookSpecificOutput\":{\"hookEventName\":\"PostToolUse\",\"additionalContext\":\"VERIFY this file against project rules: 1) fs-* classes must NEVER be inside @apply — always as Tailwind classes in HTML. 2) Typography: only fs-* classes for font sizes, never text-sm/text-lg/text-2xl etc. 3) Spacing: only BBC GEL units (1-16), never arbitrary values like p-[20px] or m-[2rem]. 4) Z-index: only z-* from @enodo/tailwindcss-foundation, never z-10/z-20/z-50 or raw z-index. 5) SEO links (.svelte): <a> must have descriptive text, never wrap block elements in <a>. 6) HTML-first (.svelte): use native HTML (<details>, <dialog>, popover) before JS. 7) CSS vs Tailwind: custom CSS classes only for elements repeated many times in the final DOM — one-off elements use Tailwind directly. Report ONLY actual violations found in the file you just edited.\"}}'; ;; *) ;; esac; }",
+            "timeout": 5,
+            "statusMessage": "Checking skill rules..."
+          },
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path // .tool_response.filePath // empty' | { read -r f; [ -n \"$f\" ] && npx prettier --write \"$f\" 2>/dev/null || true; }",
+            "timeout": 15,
+            "statusMessage": "Formatting..."
+          },
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path // .tool_response.filePath // empty' | { read -r f; case \"$f\" in *.svelte|*.ts|*.js) npx eslint \"$f\" 2>&1 || true; ;; *) ;; esac; }",
+            "timeout": 30,
+            "statusMessage": "Linting..."
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx svelte-kit sync && npx svelte-check --tsconfig ./tsconfig.json 2>&1 || true",
+            "timeout": 60,
+            "statusMessage": "Running svelte-check..."
+          },
+          {
+            "type": "command",
+            "command": "npx vitest run 2>&1 || true",
+            "timeout": 60,
+            "statusMessage": "Running unit tests..."
+          }
+        ]
+      }
+    ]
+  }
+}
