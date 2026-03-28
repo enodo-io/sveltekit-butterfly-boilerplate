@@ -2,11 +2,11 @@ import fs from 'fs';
 import path from 'path';
 
 // Path to the output file
-const outputFile = path.resolve('src/lib/breakpoints.js');
+const outputFile = path.resolve('src/lib/breakpoints.ts');
 
 // Check if the file already exists
 if (fs.existsSync(outputFile)) {
-  console.log('ℹ️  src/lib/breakpoints.js already exists, skipping generation');
+  console.log('ℹ️  src/lib/breakpoints.ts already exists, skipping generation');
   process.exit(0);
 }
 
@@ -17,10 +17,10 @@ const breakpoints = {
   lg: 1280,
 };
 
-// Write JS file
+// Write TS file
 const fileContent = `// Auto-generated file by scripts/setup-breakpoints.js
-export const breakpoints = ${JSON.stringify(breakpoints, null, 2).replace(/"([^"]+)":/g, '$1:')};
+export const breakpoints = ${JSON.stringify(breakpoints, null, 2).replace(/"([^"]+)":/g, '$1:')} as const;
 `;
 
 fs.writeFileSync(outputFile, fileContent, 'utf8');
-console.log('✅ Breakpoints generated in src/lib/breakpoints.js');
+console.log('✅ Breakpoints generated in src/lib/breakpoints.ts');
