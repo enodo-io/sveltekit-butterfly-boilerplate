@@ -271,7 +271,7 @@ Example translations needed:
 
 Replace default assets:
 
-- **Favicons**: All `favicon-*.png` files and `favicon.ico` in the `static/` folder
+- **Favicons**: Run `npm run generate:favicons` to regenerate all `favicon-*.png` and `favicon.ico` from `static/favicon.svg`
 - **Logo**: All `logo-*.jpg` and `logo-*.png` files in the `static/` folder
 - **thumb.jpg**: Default Open Graph image in `src/assets/images/` (recommended size: 1366x768px)
 
@@ -861,6 +861,9 @@ npm run preview         # Preview production build
 npm run test           # Run all tests
 npm run test:unit      # Unit tests
 npm run test:e2e       # E2E tests with Playwright
+
+# Assets
+npm run generate:favicons  # Regenerate all favicons from favicon.svg
 
 # Code Quality
 npm run lint           # Lint code
