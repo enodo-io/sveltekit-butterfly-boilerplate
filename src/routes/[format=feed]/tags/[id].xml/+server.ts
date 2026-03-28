@@ -5,6 +5,7 @@ import { getMediaUrl } from '$lib/getMediaUrl';
 import api from '$lib/api';
 import httpErrors from '$lib/httpErrors';
 import { PUBLIC_LANGUAGE, PUBLIC_BASE_URL } from '$env/static/public';
+import { CACHE_CONTROL } from '$lib/cacheControl';
 
 import type { RequestHandler } from './$types';
 import type * as Butterfly from '@enodo/butterfly-ts';
@@ -89,7 +90,7 @@ export const GET: RequestHandler = async ({ fetch, params }) => {
           return {
             name: a.attributes.name,
             email: a.attributes.email || undefined,
-            link: `${PUBLIC_BASE_URL}/auteurs/${a.id}`,
+            link: `${PUBLIC_BASE_URL}/authors/${a.id}`,
           };
         }),
       });
@@ -98,7 +99,7 @@ export const GET: RequestHandler = async ({ fetch, params }) => {
     const responses = { atom: feed.atom1, rss: feed.rss2, json: feed.json1 };
     const res = new Response(responses[format]());
     res.headers.set('Expires', new Date(Date.now() + 120).toUTCString());
-    res.headers.set('Cache-Control', 'max-age=120');
+    res.headers.set('Cache-Control', CACHE_CONTROL.short);
     res.headers.set('Content-Type', 'text/xml');
     return res;
   } catch (err: unknown) {
