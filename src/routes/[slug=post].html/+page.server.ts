@@ -2,6 +2,7 @@ import { error, redirect } from '@sveltejs/kit';
 import httpErrors from '$lib/httpErrors';
 import api from '$lib/api';
 import { PUBLIC_BASE_URL } from '$env/static/public';
+import { CACHE_CONTROL } from '$lib/cacheControl';
 import { ApiError, RedirectError } from '@enodo/butterfly-ts';
 
 import type { PageServerLoad } from './$types';
@@ -72,7 +73,7 @@ export const load: PageServerLoad = async ({ fetch, params, isDataRequest, setHe
       },
     });
 
-    setHeaders({ 'cache-control': 'public, max-age=120' });
+    setHeaders({ 'cache-control': CACHE_CONTROL.short });
     return {
       layer: {
         'content.type': 'post',

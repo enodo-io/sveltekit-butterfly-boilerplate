@@ -3,6 +3,7 @@ import type { RequestHandler } from '@sveltejs/kit';
 import { SitemapIndexStream, streamToPromise } from 'sitemap';
 import { Readable } from 'stream';
 import { PUBLIC_BASE_URL } from '$env/static/public';
+import { CACHE_CONTROL } from '$lib/cacheControl';
 
 export const GET: RequestHandler = async () => {
   const lastmod = new Date();
@@ -23,7 +24,7 @@ export const GET: RequestHandler = async () => {
   return new Response(xml, {
     headers: {
       'Content-Type': 'application/xml',
-      'Cache-Control': 'max-age=86400',
+      'Cache-Control': CACHE_CONTROL.day,
     },
   });
 };

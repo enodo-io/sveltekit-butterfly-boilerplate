@@ -4,6 +4,7 @@ import type * as Butterfly from '@enodo/butterfly-ts';
 import { SitemapStream, streamToPromise } from 'sitemap';
 import { Readable } from 'stream';
 import { PUBLIC_BASE_URL } from '$env/static/public';
+import { CACHE_CONTROL } from '$lib/cacheControl';
 import api from '$lib/api';
 
 export const GET: RequestHandler = async ({ fetch }) => {
@@ -79,7 +80,7 @@ export const GET: RequestHandler = async ({ fetch }) => {
   return new Response(xml, {
     headers: {
       'Content-Type': 'application/xml',
-      'Cache-Control': 'max-age=86400',
+      'Cache-Control': CACHE_CONTROL.day,
     },
   });
 };

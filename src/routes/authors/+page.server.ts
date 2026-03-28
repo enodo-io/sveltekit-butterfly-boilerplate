@@ -1,4 +1,5 @@
 import { PUBLIC_BASE_URL } from '$env/static/public';
+import { CACHE_CONTROL } from '$lib/cacheControl';
 import api from '$lib/api';
 
 import type { PageServerLoad } from './$types';
@@ -15,7 +16,7 @@ export const load: PageServerLoad = async ({ fetch, isDataRequest, setHeaders })
     },
   });
 
-  setHeaders({ 'cache-control': 'public, max-age=900' });
+  setHeaders({ 'cache-control': CACHE_CONTROL.long });
   return {
     layer: {
       'content.type': 'authors',

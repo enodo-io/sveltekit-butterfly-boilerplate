@@ -1,4 +1,5 @@
 import { PUBLIC_BASE_URL } from '$env/static/public';
+import { CACHE_CONTROL } from '$lib/cacheControl';
 import { error, redirect } from '@sveltejs/kit';
 import httpErrors from '$lib/httpErrors';
 import api from '$lib/api';
@@ -56,7 +57,7 @@ export const load: PageServerLoad = async ({ url, params, fetch, isDataRequest, 
     return p;
   })();
 
-  setHeaders({ 'cache-control': 'public, max-age=300' });
+  setHeaders({ 'cache-control': CACHE_CONTROL.medium });
   return {
     layer: {
       'page.index': page,
