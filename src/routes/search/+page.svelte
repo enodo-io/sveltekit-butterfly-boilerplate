@@ -33,7 +33,8 @@
     const p = await posts;
     loading = false;
 
-    (window as Window).dataLayer.push({
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({
       event: 'pageview',
       ...data.layer,
       'page.index': ++pageIndex,
@@ -141,7 +142,7 @@
         next={!!posts.links?.next}
         max={Math.ceil((posts.meta?.total || 1) / (posts.meta?.size || 1))}
         url={(p) =>
-          (`/search?query=${encodeURI(data.layer['page.query'] || '')}` +
+          (`/search?query=${encodeURIComponent(data.layer['page.query'] || '')}` +
             (p > 1 ? `&page=${p}` : '')) as `/${string}`}
       />
     {/await}

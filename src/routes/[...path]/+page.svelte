@@ -38,7 +38,8 @@
     const p = await posts;
     loading = false;
 
-    (window as Window).dataLayer.push({
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({
       event: 'pageview',
       ...data.layer,
       'page.index': ++pageIndex,
