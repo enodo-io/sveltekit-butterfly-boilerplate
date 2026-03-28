@@ -374,6 +374,40 @@ async function main() {
     console.log('');
 
     // ============================================================
+    // PUBLIC_TIMEZONE (optional)
+    // ============================================================
+    print('  ┌─────────────────────────────────────────────────┐', 'yellow');
+    print('  │  🕐  Timezone (optional)                        │', 'yellow');
+    print('  └─────────────────────────────────────────────────┘', 'yellow');
+    console.log('');
+    print('      IANA timezone for date formatting.', 'gray');
+    print(
+      '      Examples: ' +
+        colors.cyan +
+        'America/New_York' +
+        colors.reset +
+        ', ' +
+        colors.cyan +
+        'Europe/Paris' +
+        colors.reset +
+        ', ' +
+        colors.cyan +
+        'Asia/Tokyo' +
+        colors.reset,
+      'gray',
+    );
+    console.log('');
+    print('      Press Enter to use browser/server default.', 'dim');
+    console.log('');
+    const timezone = await question(
+      colors.brightYellow + '  ▶ ' + colors.white + 'Timezone: ' + colors.reset,
+    );
+    if (timezone.trim()) {
+      envVars.PUBLIC_TIMEZONE = timezone.trim();
+    }
+    console.log('');
+
+    // ============================================================
     // PUBLIC_GTM_CONTAINER_ID
     // ============================================================
     print('  ┌─────────────────────────────────────────────────┐', 'yellow');
@@ -419,6 +453,11 @@ async function main() {
     envContent += '\n# Language & Locale\n';
     envContent += `PUBLIC_LOCALE=${envVars.PUBLIC_LOCALE}\n`;
     envContent += `PUBLIC_LANGUAGE=${envVars.PUBLIC_LANGUAGE}\n`;
+  }
+
+  if (envVars.PUBLIC_TIMEZONE) {
+    envContent += '\n# Timezone\n';
+    envContent += `PUBLIC_TIMEZONE=${envVars.PUBLIC_TIMEZONE}\n`;
   }
 
   if (envVars.PUBLIC_GTM_ID) {
