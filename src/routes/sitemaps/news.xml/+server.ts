@@ -25,7 +25,6 @@ export const GET: RequestHandler = async ({ fetch }) => {
             page: {
               size: 100,
             },
-            sort: '-publishedAt',
           },
         };
 
@@ -34,11 +33,10 @@ export const GET: RequestHandler = async ({ fetch }) => {
     const twoDaysAgo = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000);
     if (
       !p?.links?.next ||
-      p.data.findIndex((pp: Butterfly.Post) => new Date(pp.attributes.publishedAt) < twoDaysAgo) >=
-        0
+      p.data.findIndex((pp: Butterfly.Post) => new Date(pp.attributes.updatedAt) < twoDaysAgo) >= 0
     ) {
       p.data = p.data.filter(
-        (pp: Butterfly.Post) => new Date(pp.attributes.publishedAt) > twoDaysAgo,
+        (pp: Butterfly.Post) => new Date(pp.attributes.updatedAt) > twoDaysAgo,
       );
       return p;
     }
