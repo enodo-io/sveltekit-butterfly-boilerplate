@@ -5,7 +5,7 @@ import { SitemapStream, streamToPromise } from 'sitemap';
 import { getRelated } from '@enodo/butterfly-ts';
 import { getMediaUrl } from '$lib/getMediaUrl';
 import api from '$lib/api';
-import { PUBLIC_BASE_URL } from '$env/static/public';
+import { PUBLIC_BASE_URL, PUBLIC_LANGUAGE } from '$env/static/public';
 import { CACHE_CONTROL } from '$lib/cacheControl';
 
 export const GET: RequestHandler = async ({ fetch }) => {
@@ -49,7 +49,10 @@ export const GET: RequestHandler = async ({ fetch }) => {
     } as Butterfly.ApiResponse<Butterfly.Post[]>;
   };
 
-  const posts = await getPosts();
+  const [posts, settings] = await Promise.all([
+    getPosts(),
+    api.get<Butterfly.Property>({ fetch, path: '/v1/' }),
+  ]);
 
   const stream = new SitemapStream({
     hostname: PUBLIC_BASE_URL,
@@ -84,8 +87,8 @@ export const GET: RequestHandler = async ({ fetch }) => {
       lastmod: post.attributes.updatedAt,
       news: {
         publication: {
-          name: 'Enodo Blog',
-          language: 'en',
+          name: settings.data.attributes.title,
+          language: PUBLIC_LANGUAGE,
         },
         publication_date: post.attributes.publishedAt,
         title: post.attributes.title,
