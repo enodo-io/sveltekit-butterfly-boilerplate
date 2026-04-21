@@ -2,35 +2,24 @@
   import { PUBLIC_GTM_ID } from '$env/static/public';
   import { version, dev } from '$app/environment';
   import { page } from '$app/state';
+  import { push, track } from '$lib/dataLayer';
 
   let isInit = false;
   $effect(() => {
-    const w: Window = window;
-    if (!w) return;
-
     if (!isInit) {
-      const n: Navigator = w.navigator;
-      w.dataLayer = w.dataLayer || [];
-      w.dataLayer.push({
+      const n: Navigator = window.navigator;
+      push({
         'app.version': version,
         'app.env': dev ? 'development' : 'production',
         'app.platform':
-          n.standalone === true || w.matchMedia('(display-mode: standalone)').matches
+          n.standalone === true || window.matchMedia('(display-mode: standalone)').matches
             ? 'pwa'
             : 'web',
       });
       isInit = true;
     }
 
-    w.dataLayer = w.dataLayer || [];
-    const layer = {
-      event: 'pageview',
-      ...page.data.layer,
-    };
-    if (layer['content.id'] && typeof layer['content.id'] !== 'string') {
-      layer['content.id'] = layer['content.id'].toString();
-    }
-    w.dataLayer.push(layer);
+    track('pageview', page.data.layer);
   });
 </script>
 

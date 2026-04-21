@@ -5,6 +5,7 @@
 
   import { PUBLIC_BASE_URL } from '$env/static/public';
   import api from '$lib/api';
+  import { track } from '$lib/dataLayer';
   import { generateJsonLd } from '$lib/JsonLD';
   import { getRelated } from '@enodo/butterfly-ts';
   import Feed from '$components/Feed.svelte';
@@ -43,12 +44,7 @@
     const p = await posts;
     loading = false;
 
-    window.dataLayer = window.dataLayer || [];
-    window.dataLayer.push({
-      event: 'pageview',
-      ...data.layer,
-      'page.index': ++pageIndex,
-    });
+    track('pageview', { ...data.layer, 'page.index': ++pageIndex });
 
     return !!p.links.next;
   };

@@ -9,6 +9,7 @@
   import Image from '$components/Image.svelte';
   import Pagination from '$components/Pagination.svelte';
   import api from '$lib/api';
+  import { track } from '$lib/dataLayer';
   import { generateJsonLd } from '$lib/JsonLD';
 
   let { data }: PageProps = $props();
@@ -38,12 +39,7 @@
     const p = await posts;
     loading = false;
 
-    window.dataLayer = window.dataLayer || [];
-    window.dataLayer.push({
-      event: 'pageview',
-      ...data.layer,
-      'page.index': ++pageIndex,
-    });
+    track('pageview', { ...data.layer, 'page.index': ++pageIndex });
 
     return !!p.links.next;
   };

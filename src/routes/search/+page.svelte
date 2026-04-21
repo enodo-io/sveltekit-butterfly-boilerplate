@@ -6,6 +6,7 @@
   import { PUBLIC_BASE_URL } from '$env/static/public';
   import { resolve } from '$app/paths';
   import api from '$lib/api';
+  import { track } from '$lib/dataLayer';
   import { generateJsonLd } from '$lib/JsonLD';
   import Feed from '$components/Feed.svelte';
   import Pagination from '$components/Pagination.svelte';
@@ -33,12 +34,7 @@
     const p = await posts;
     loading = false;
 
-    window.dataLayer = window.dataLayer || [];
-    window.dataLayer.push({
-      event: 'pageview',
-      ...data.layer,
-      'page.index': ++pageIndex,
-    });
+    track('pageview', { ...data.layer, 'page.index': ++pageIndex });
 
     return !!p.links.next;
   };
