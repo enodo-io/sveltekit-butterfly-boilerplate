@@ -158,6 +158,7 @@ async function main() {
     envVars.PUBLIC_BASE_URL = 'https://demo.enodo.dev';
     envVars.PUBLIC_API_URL = 'https://42.pubbtf.eno.do';
     envVars.PUBLIC_API_KEY = 'abcdef0123456789';
+    envVars.PRIVATE_API_KEY = 'fedcba9876543210';
     envVars.PUBLIC_MEDIA_URL = 'https://42.staticbtf.eno.do';
     envVars.PUBLIC_STATIC_PAGES = '{"about":1}';
     envVars.PUBLIC_INDEXABLE = 'true';
@@ -204,36 +205,47 @@ async function main() {
     print('      You will find the following values:', 'gray');
     console.log('');
 
-    print('      ' + colors.yellow + '①' + colors.reset + '  API Domain', 'white');
+    print('      ' + colors.yellow + '①' + colors.reset + '  API URL', 'white');
     print('         Example: ' + colors.cyan + 'https://42.pubbtf.eno.do' + colors.reset, 'gray');
     console.log('');
     envVars.PUBLIC_API_URL = await question(
-      colors.brightYellow + '  ▶ ' + colors.white + 'API Domain: ' + colors.reset,
+      colors.brightYellow + '  ▶ ' + colors.white + 'API URL: ' + colors.reset,
     );
     console.log('');
 
     // ============================================================
     // PUBLIC_API_KEY
     // ============================================================
-    print('      ' + colors.yellow + '②' + colors.reset + '  API Key', 'white');
+    print('      ' + colors.yellow + '②' + colors.reset + '  Public Key', 'white');
     print('         A long unique string for your property', 'gray');
     console.log('');
     envVars.PUBLIC_API_KEY = await question(
-      colors.brightYellow + '  ▶ ' + colors.white + 'API Key: ' + colors.reset,
+      colors.brightYellow + '  ▶ ' + colors.white + 'Public Key: ' + colors.reset,
+    );
+    console.log('');
+
+    // ============================================================
+    // PRIVATE_API_KEY
+    // ============================================================
+    print('      ' + colors.yellow + '③' + colors.reset + '  Private Key', 'white');
+    print('         A long unique secret string for your property', 'gray');
+    console.log('');
+    envVars.PRIVATE_API_KEY = await question(
+      colors.brightYellow + '  ▶ ' + colors.white + 'Private Key: ' + colors.reset,
     );
     console.log('');
 
     // ============================================================
     // PUBLIC_MEDIA_URL
     // ============================================================
-    print('      ' + colors.yellow + '③' + colors.reset + '  Media Domain', 'white');
+    print('      ' + colors.yellow + '④' + colors.reset + '  Media URL', 'white');
     print(
       '         Example: ' + colors.cyan + 'https://42.staticbtf.eno.do' + colors.reset,
       'gray',
     );
     console.log('');
     envVars.PUBLIC_MEDIA_URL = await question(
-      colors.brightYellow + '  ▶ ' + colors.white + 'Media Domain: ' + colors.reset,
+      colors.brightYellow + '  ▶ ' + colors.white + 'Media URL: ' + colors.reset,
     );
     console.log('');
 
@@ -438,8 +450,9 @@ async function main() {
   envContent += `PUBLIC_BASE_URL=${envVars.PUBLIC_BASE_URL}\n\n`;
   envContent += '# Butterfly API Configuration\n';
   envContent += `PUBLIC_API_URL=${envVars.PUBLIC_API_URL}\n`;
-  envContent += `PUBLIC_API_KEY=${envVars.PUBLIC_API_KEY}\n\n`;
-  envContent += '# Media domain\n';
+  envContent += `PUBLIC_API_KEY=${envVars.PUBLIC_API_KEY}\n`;
+  envContent += `PRIVATE_API_KEY=${envVars.PRIVATE_API_KEY}\n\n`;
+  envContent += '# Media URL\n';
   envContent += `PUBLIC_MEDIA_URL=${envVars.PUBLIC_MEDIA_URL}\n\n`;
   envContent += '# Search engine indexing\n';
   envContent += `PUBLIC_INDEXABLE=${envVars.PUBLIC_INDEXABLE}\n`;
