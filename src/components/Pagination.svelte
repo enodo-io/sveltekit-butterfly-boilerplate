@@ -2,6 +2,8 @@
   import { deepPagination } from 'deep-pagination';
   import { inview } from 'svelte-inview';
   import { resolve } from '$app/paths';
+  import { page } from '$app/state';
+  import { track } from '$lib/dataLayer';
 
   type Props = {
     current: number;
@@ -30,22 +32,33 @@
 
   let loading = false;
   let hide = $state(false);
+  let loadedCount = $state(0);
   let pages = $derived(deepPagination({ current, max, pad }).pages);
 
   const loadMore = async (e: CustomEvent | MouseEvent, force: boolean = false) => {
     if (loading || !next || current === max || !onload) {
       return;
     }
+    let event: 'load_more_click' | 'infinite_scroll' | null = null;
     if (force) {
       infiniteScroll = true;
       loading = true;
+      event = 'load_more_click';
     } else if (infiniteScroll) {
       loading = e.detail.inView;
+      if (loading) event = 'infinite_scroll';
     }
 
     if (loading) {
       hide = true;
+      if (event) {
+        // Fire at intent (before onload) with the index of the page about to load.
+        // The route's pageview then fires at completion with the same index — the
+        // pair lets analytics distinguish engagement from successful content loads.
+        track(event, { ...page.data.layer, 'page.index': current + loadedCount + 1 });
+      }
       next = await onload();
+      loadedCount += 1;
       loading = false;
     }
   };
