@@ -1,14 +1,31 @@
 {
   "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '{\"hookSpecificOutput\":{\"hookEventName\":\"SessionStart\",\"additionalContext\":\"Butterfly SvelteKit boilerplate session. Architectural invariants live in CLAUDE.md + .claude/skills/*. Use the right skill BEFORE editing — do not guess. Scaffolding + audits available as slash commands (/new-route, /new-taxonomy, /new-jsonld, /new-feed, /translate-to, /change-palette, /audit-seo, /check-butterfly-env, /add-static-page). Specialist subagents under .claude/agents/ (butterfly-explorer, seo-auditor, a11y-auditor, perf-reviewer).\"}}'",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
     "PostToolUse": [
       {
         "matcher": "Edit|Write",
         "hooks": [
           {
             "type": "command",
-            "command": "jq -r '.tool_input.file_path // .tool_response.filePath // empty' | { read -r f; case \"$f\" in *.svelte|*.css) echo '{\"hookSpecificOutput\":{\"hookEventName\":\"PostToolUse\",\"additionalContext\":\"VERIFY this file against project rules: 1) fs-* classes must NEVER be inside @apply — always as Tailwind classes in HTML. 2) Typography: only fs-* classes for font sizes, never text-sm/text-lg/text-2xl etc. 3) Spacing: only BBC GEL units (1-16), never arbitrary values like p-[20px] or m-[2rem]. 4) Z-index: only z-* from @enodo/tailwindcss-foundation, never z-10/z-20/z-50 or raw z-index. 5) SEO links (.svelte): <a> must have descriptive text, never wrap block elements in <a>. 6) HTML-first (.svelte): use native HTML (<details>, <dialog>, popover) before JS. 7) CSS vs Tailwind: custom CSS classes only for elements repeated many times in the final DOM — one-off elements use Tailwind directly. Report ONLY actual violations found in the file you just edited.\"}}'; ;; *) ;; esac; }",
-            "timeout": 5,
-            "statusMessage": "Checking skill rules..."
+            "command": "jq -r '.tool_input.file_path // .tool_response.filePath // empty' | { read -r f; case \"$f\" in *.svelte|*.css) echo '{\"hookSpecificOutput\":{\"hookEventName\":\"PostToolUse\",\"additionalContext\":\"VERIFY this file against project rules: 1) fs-* classes must NEVER be inside @apply — always as Tailwind classes in HTML. 2) Typography: only fs-* classes for font sizes, never text-sm/text-lg/text-2xl etc. 3) Spacing: only BBC GEL units (1-16), never arbitrary values like p-[20px] or m-[2rem]. 4) Z-index: only z-* from @enodo/tailwindcss-foundation, never z-10/z-20/z-50 or raw z-index. 5) SEO links (.svelte): <a> must have descriptive text, never wrap block elements in <a>. 6) HTML-first (.svelte): use native HTML (<details>, <dialog>, popover) before JS. 7) CSS vs Tailwind: custom CSS classes only for elements repeated many times in the final DOM — one-off elements use Tailwind directly. 8) Svelte 5 Runes only (.svelte) — no `export let`, no `$:`, no `on:click`, no `<slot />`. Report ONLY actual violations found in the file you just edited.\"}}'; ;; *) ;; esac; }",
+            "timeout": 10,
+            "statusMessage": "Checking design-system rules..."
+          },
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path // .tool_response.filePath // empty' | { read -r f; case \"$f\" in *+page.server.ts|*+layout.server.ts|*+server.ts) echo '{\"hookSpecificOutput\":{\"hookEventName\":\"PostToolUse\",\"additionalContext\":\"VERIFY this server file against project rules: 1) +page.server.ts must return { layer: { content.type, ... }, meta: { url, title, description, robots? }, scope?, feeds? } per App.PageData. 2) Feeds must follow isDataRequest ? promise : await promise — never await all feeds unconditionally (breaks streaming). 3) Always pass SvelteKit fetch to api.get, never the global fetch. 4) Always setHeaders({ cache-control: CACHE_CONTROL.xxx }) using a preset from $lib/cacheControl — never inline a raw string. 5) Wrap API calls in try/catch; on ApiError throw error(err.status, httpErrors[err.status]); else error(500, httpErrors[500]). 6) If creating a new static route, confirm it is added to src/routes/sitemaps/pages.xml/+server.ts. Report ONLY actual violations found in the file you just edited.\"}}'; ;; *) ;; esac; }",
+            "timeout": 10,
+            "statusMessage": "Checking server-file rules..."
           },
           {
             "type": "command",
