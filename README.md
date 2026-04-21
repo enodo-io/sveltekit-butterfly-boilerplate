@@ -42,6 +42,7 @@ A high-performance, SEO-optimized SvelteKit boilerplate for the [Enodo Butterfly
   - [Changing Colors](#changing-colors)
   - [Project-Type Color Suggestions](#project-type-color-suggestions)
 - [Development Scripts](#development-scripts)
+- [AI-assisted Development](#ai-assisted-development)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -870,12 +871,28 @@ npm run lint           # Lint code
 npm run format         # Format code
 ```
 
+## AI-assisted Development
+
+This boilerplate ships first-class [Claude Code](https://claude.com/claude-code) tooling so an LLM can contribute without re-learning the conventions each session.
+
+- **[`CLAUDE.md`](./CLAUDE.md)** at the repo root — the entry point. Stack, architectural invariants (PageData contract, streaming pattern, sitemap registration rule, single-language design), design-system rules, file layout, and per-task skill pointers.
+- **[`.claude/skills/`](./.claude/skills)** — 24 focused skills covering every recurring task: Butterfly API patterns, JSON-LD schemas, image/picture usage, feed streaming, Svelte 5 Runes, layout/server rules, HTTP errors, cache control, typography/spacing/z-index/fonts tokens, SEO links, cards, HTML-first UI, CSS-vs-Tailwind decision rules, taxonomies, translation, testing, post body customisation, GTM events, and more.
+- **[`.claude/commands/`](./.claude/commands)** — 10 slash commands for scaffolding and audits: `/new-route`, `/new-taxonomy`, `/new-jsonld`, `/new-feed`, `/translate-to`, `/change-palette`, `/audit-seo`, `/check-butterfly-env`, `/add-static-page`, `/svelte4-to-5`.
+- **[`.claude/agents/`](./.claude/agents)** — 4 read-only specialist subagents: `butterfly-explorer` (API types), `seo-auditor`, `a11y-auditor`, `perf-reviewer`.
+- **[`.claude/settings.json`](./.claude/settings.json)** hooks — auto-runs Prettier + ESLint on every edited file, surfaces skill-rule reminders for `.svelte`/`.css`/`+page.server.ts` edits, and runs `svelte-check` + Vitest at the end of each response.
+
+Every skill and command is **scoped and short** — the LLM is expected to read the relevant one before acting, not to rely on training recall. If you fork this boilerplate and change a convention, update the corresponding skill; the hooks and commands reference them by name.
+
+For non-AI contributors, the same skills double as a **concise style guide** for the codebase.
+
 ## Contributing
 
 This is the official Enodo boilerplate. For issues or questions:
 
 - [Open an issue](https://github.com/enodo-io/sveltekit-butterfly-boilerplate/issues)
 - [Butterfly Documentation](https://butterfly.enodo.app/docs)
+
+See [`CONTRIBUTING.md`](./CONTRIBUTING.md) for contribution guidelines.
 
 ## License
 
