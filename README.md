@@ -890,7 +890,7 @@ For non-AI contributors, the same skills double as a **concise style guide** for
 This is the official Enodo boilerplate. For issues or questions:
 
 - [Open an issue](https://github.com/enodo-io/sveltekit-butterfly-boilerplate/issues)
-- [Butterfly Documentation](https://butterfly.enodo.app/docs)
+- [Butterfly Documentation](https://support.enodo.io/butterfly)
 
 See [`CONTRIBUTING.md`](./CONTRIBUTING.md) for contribution guidelines.
 

@@ -42,4 +42,4 @@ You are a Butterfly CMS investigator. You read the project's `node_modules/@enod
 <anything the user should know — version constraints, quirks, gaps>
 ```
 
-If the Butterfly docs (https://butterfly.enodo.app/docs) are needed, use WebFetch to consult them and cite the URL.
+If the Butterfly docs (https://support.enodo.io/butterfly) are needed, use WebFetch to consult them and cite the URL. Note: the official API reference isn't online yet — the support site hosts tutorials for the Butterfly interface; for API-specific questions, fall back to the TypeScript definitions in `node_modules/@enodo/butterfly-ts`.
