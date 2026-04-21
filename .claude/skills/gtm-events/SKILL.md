@@ -5,7 +5,9 @@ description: Push custom events to the GTM `dataLayer` and understand the standa
 
 # GTM events — `dataLayer` usage
 
-GTM loads via `src/components/GTM.svelte` only when `PUBLIC_GTM_ID` is set. The standard data layer is driven by `data.layer` from each route's `+page.server.ts`. Custom events push directly to `window.dataLayer`.
+GTM loads via `src/components/GTM.svelte` only when `PUBLIC_GTM_ID` is set. The standard data layer is driven by `data.layer` from each route's `+page.server.ts`. All pushes go through the helper in `$lib/dataLayer` — never touch `window.dataLayer` directly.
+
+A ready-to-import GTM container template lives in `scripts/GTM.json` (tags, triggers, variables, GA4 forwarding). Import it into any GTM account — account/container IDs are placeholders and get reassigned.
 
 ## Standard data-layer fields (auto-populated)
 
@@ -34,43 +36,45 @@ These are populated by each route via its `layer` object (see `route-server` ski
 
 ---
 
-## Pushing a custom event
+## Pushing via `$lib/dataLayer`
+
+Two helpers, both SSR-safe (no-op when `window` is undefined) and auto-initialising `window.dataLayer`:
 
 ```ts
-window.dataLayer.push({
-  event: 'click_cta',
-  cta_id: 'hero_primary',
-  cta_label: 'Subscribe',
-});
+import { push, track } from '$lib/dataLayer';
+
+// Named event with a payload
+track('click_cta', { cta_id: 'hero_primary', cta_label: 'Subscribe' });
+
+// Arbitrary payload without an `event` field (app-init metadata, etc.)
+push({ 'app.version': '1.2.3', 'app.platform': 'web' });
 ```
+
+The helper also **normalises `content.id` to a string** — GTM matches variables by string, so numeric IDs from the API would otherwise silently miss lookups.
 
 Rules:
 
-- `event` is the only reserved key — name it in `snake_case`.
+- **Never write `window.dataLayer.push(...)` directly.** Use `track` or `push`.
+- `event` is the reserved key (always in `snake_case`).
 - All other keys are free-form, but **stay consistent** across the app. Define a small taxonomy (e.g. `cta_id`, `cta_label`, `form_name`) and reuse it.
 - Keep payloads small. GTM truncates oversized events silently on some accounts.
 
 ---
 
-## Where to push — SSR-safe
+## Where to push — `$lib/dataLayer` handles SSR
 
-`window.dataLayer` only exists client-side. Wrap pushes:
-
-```ts
-if (typeof window !== 'undefined') {
-  window.dataLayer?.push({ event: '...' });
-}
-```
-
-Inside a Svelte component with Runes, `$effect` already runs client-side only:
+The helper short-circuits on the server, so you can call `track` / `push` from any context without guards:
 
 ```svelte
 <script>
+  import { track } from '$lib/dataLayer';
   $effect(() => {
-    window.dataLayer?.push({ event: 'article_view', article_id: data.scope.data.id });
+    track('article_view', { article_id: data.scope.data.id });
   });
 </script>
 ```
+
+`$effect` itself also runs client-only after hydration, so the combination is doubly safe.
 
 ---
 
@@ -78,14 +82,15 @@ Inside a Svelte component with Runes, `$effect` already runs client-side only:
 
 - **On mount / page view** → `$effect` at component level.
 - **On user action** (click, submit) → inline handler in the event listener.
-- **Before navigation** (outgoing click) → use the SvelteKit `beforeNavigate` helper; push synchronously so the event fires before the page unloads.
+- **Before navigation** (outgoing click) → use the SvelteKit `beforeNavigate` helper; the push runs synchronously before the page unloads.
 
 ```svelte
 <script>
   import { beforeNavigate } from '$app/navigation';
+  import { track } from '$lib/dataLayer';
 
   beforeNavigate(({ to }) => {
-    window.dataLayer?.push({ event: 'link_click', to: to?.url.pathname });
+    track('link_click', { to: to?.url.pathname });
   });
 </script>
 ```
@@ -94,18 +99,30 @@ Inside a Svelte component with Runes, `$effect` already runs client-side only:
 
 ## Naming conventions
 
-| Event type       | Recommended `event` value                 |
-| ---------------- | ----------------------------------------- |
-| Page view        | Auto via `layer` — no custom event needed |
-| CTA / link click | `click_cta`, `click_link`                 |
-| Form interaction | `form_submit`, `form_start`, `form_error` |
-| Search           | `search_submit`, `search_result_click`    |
-| Scroll depth     | `scroll_depth`                            |
-| Media playback   | `video_play`, `video_complete`            |
-| Outbound link    | `outbound_click`                          |
-| File download    | `file_download`                           |
+| Event type           | Recommended `event` value                 | Where it fires                                               |
+| -------------------- | ----------------------------------------- | ------------------------------------------------------------ |
+| Page view            | `pageview`                                | `GTM.svelte` on every nav, routes after infinite-scroll load |
+| Infinite scroll load | `infinite_scroll`                         | `Pagination.svelte` (auto-load via inview)                   |
+| "Load more" click    | `load_more_click`                         | `Pagination.svelte` (manual click)                           |
+| CTA / link click     | `click_cta`, `click_link`                 | component-level                                              |
+| Form interaction     | `form_submit`, `form_start`, `form_error` | form components                                              |
+| Search               | `search_submit`, `search_result_click`    | `/search` route                                              |
+| Scroll depth         | `scroll_depth`                            | global listener                                              |
+| Media playback       | `video_play`, `video_complete`            | `Post/Elements/Video.svelte`                                 |
+| Outbound link        | `outbound_click`                          | global `beforeNavigate` guard                                |
+| File download        | `file_download`                           | link click handler                                           |
 
 Stick to this list unless you have a reason to diverge. Custom event names spread fast and become impossible to clean up later.
+
+### Event-pair pattern (intent + completion)
+
+`load_more_click` / `infinite_scroll` fire **at intent** (before the async load starts), carrying the `page.index` of the page about to be loaded. The subsequent `pageview` fires **at completion** (after the load resolves) with the same `page.index`. Analysts can:
+
+- Count engagements via intent events
+- Count successful content loads via pageviews
+- Derive load-failure rate as `intent − pageview` for the same index
+
+Don't merge the two events into one "page loaded" signal — the pairing is the insight.
 
 ---
 
