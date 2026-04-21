@@ -1,0 +1,128 @@
+---
+name: post-body
+description: Customise article body rendering produced by `Post/Body.svelte`. Use when adjusting how paragraphs, headings, lists, quotes, embeds (YouTube, Twitter, Instagram…), galleries, or inline nodes look inside an article. Prefer global CSS via `.post--*` selectors over editing the per-element Svelte components.
+---
+
+# `Post/Body.svelte` — customisation strategy
+
+`src/components/Post/Body.svelte` renders a Butterfly post body (an array of typed nodes: paragraphs, headings, lists, media, embeds, inline formatting). It delegates to two directories:
+
+- `src/components/Post/Elements/` — block-level (Paragraph, List, Quote, Image, Video, Youtube, Table, Gallery, FAQ, Related, Pagebreak, Title, Code, Embed, Iframe, Facebook, Instagram, Tiktok, Vimeo, Dailymotion, X, Markdown, OEmbed, Audio, Media)
+- `src/components/Post/InlineNodes/` — inline (Text, Emphasis, Strong, Code, Link, Underline, Strikethrough, Subscript, Superscript, Quote, Abbreviation, Break)
+
+Every element gets a `.post--{name}` class so CSS can style them globally.
+
+---
+
+## Decision rule — CSS first, component second
+
+| Change                                             | Do                                    |
+| -------------------------------------------------- | ------------------------------------- |
+| Visual tweak (spacing, colour, typography, layout) | Edit `src/assets/styles/post.css`     |
+| Structural change (add an element, alter HTML)     | Edit the component in `Post/Elements` |
+| Adding a new Butterfly node type                   | Extend both `Body.svelte` + element   |
+
+**Always start with CSS.** Editing components is appropriate only when CSS can't express the change.
+
+---
+
+## CSS — `src/assets/styles/post.css`
+
+Each block type has a dedicated `.post--*` class. Examples:
+
+```css
+.post--paragraph { ... }
+.post--list { ... }
+.post--list.ordered { ... }
+.post--quote { ... }
+.post--youtube,
+.post--vimeo,
+.post--dailymotion { ... }
+.post--table { ... }
+.post--gallery { ... }
+.post--image { ... }
+.post--code { ... }
+.post--faq details { ... }
+.post--related { ... }
+.post--pagebreak { ... }
+```
+
+Follow the design-system rules — spacing `p-4/7/9`, typography `fs-body-copy` for prose, `fs-long-primer` for captions, etc.
+
+---
+
+## Route-scoped overrides
+
+Use `:global(.post--*)` in a page's `<style>` block to override body styles only on that route:
+
+```svelte
+<style>
+  :global(.post--quote) {
+    @apply border-l-4 pl-6 italic;
+  }
+</style>
+```
+
+Scope aggressively — don't widen a global rule for a one-off layout.
+
+---
+
+## Inline node customisation
+
+Inline nodes (`InlineNodes/*.svelte`) are small, focused pieces. They're typically fine out of the box:
+
+- `Emphasis` → `<em>`
+- `Strong` → `<strong>`
+- `Code` → `<code>`
+- `Link` → `<a>` — follows `seo-links` rules (but also **opens CMS-external links** in a new tab; read the component before editing)
+- `Underline`, `Strikethrough`, `Subscript`, `Superscript`, `Abbreviation`, `Quote`, `Break`
+
+If you need, e.g., external-link icons: edit `InlineNodes/Link.svelte`. Keep changes minimal — inline nodes render hundreds of times per article.
+
+---
+
+## Adding a new element type
+
+If Butterfly introduces a new block type (e.g. `callout`):
+
+1. **Create** `src/components/Post/Elements/Callout.svelte` — accept the node as props, render the HTML.
+2. **Register** the mapping inside `Post/Body.svelte` (type-name → component).
+3. **Add** `.post--callout` styles in `src/assets/styles/post.css`.
+4. **Keep a fallback** — unknown types should render nothing silently, not crash.
+
+---
+
+## Embeds — sandboxing caveats
+
+Social embeds (YouTube, Instagram, TikTok, Twitter/X, Facebook, Vimeo, Dailymotion) use their native embed scripts or iframes. Don't lazy-load them via IntersectionObserver unless the platform supports it natively — some iframes break when hidden at mount.
+
+For YouTube/Vimeo specifically: use the `lite-youtube` / `lite-vimeo` pattern if performance is critical. The current boilerplate uses standard `<iframe>` with `loading="lazy"` where safe.
+
+---
+
+## Related posts
+
+`Post/Elements/Related.svelte` renders the internal link mesh (same-tag articles). Customise via the `.post--related` class. Don't change the underlying link-selection logic here — it lives in the article page's server load.
+
+---
+
+## Gallery
+
+`Post/Elements/Gallery.svelte` shows multiple images as a carousel/grid. Uses `<Image>` from `$components` — the `image-picture` skill applies (widths, sizes, lazyload).
+
+---
+
+## Markdown / raw HTML
+
+Posts may embed raw markdown or HTML blocks. `Post/Elements/Markdown.svelte` handles the former; HTML blocks use `{@html …}` with scripts stripped by `$lib/stripScripts`. **Never** `{@html}` user-authored content without going through `stripScripts` — XSS risk.
+
+---
+
+## Checklist
+
+- [ ] Is this a visual change? → edit `post.css`, not the component
+- [ ] Is the rule route-specific? → use `:global(.post--*)` inside the route's `<style>`
+- [ ] Following spacing/typography/z-index skills?
+- [ ] Editing a component? — keep it minimal; consider if CSS is enough
+- [ ] Adding a new block type? — component + register in `Body.svelte` + `.post--{type}` CSS
+- [ ] Handling raw HTML? — `stripScripts` first, always
