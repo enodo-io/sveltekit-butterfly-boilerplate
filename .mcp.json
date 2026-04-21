@@ -1,7 +1,7 @@
 {
   "mcpServers": {
     "butterfly": {
-      "command": "butterfly-mcp"
+      "command": "./scripts/mcp-butterfly.sh"
     }
   }
 }
