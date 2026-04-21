@@ -35,8 +35,12 @@ A high-performance, SEO-optimized SvelteKit boilerplate for the [Enodo Butterfly
 - [JSON-LD Schema Support](#json-ld-schema-support)
   - [Adding Custom Schemas](#adding-custom-schemas)
 - [Google Tag Manager](#google-tag-manager)
+  - [Quick setup](#quick-setup)
+  - [What the container ships with](#what-the-container-ships-with)
   - [Data Layer](#data-layer)
+  - [Events](#events)
   - [Custom Events](#custom-events)
+  - [Google Analytics 4 configuration](#google-analytics-4-configuration)
 - [Customization Examples](#customization-examples)
   - [Installing Custom Fonts](#installing-custom-fonts)
   - [Changing Colors](#changing-colors)
@@ -750,41 +754,129 @@ The boilerplate includes typed JSON-LD schemas using `schema-dts`:
 
 ## Google Tag Manager
 
-GTM is integrated via the `GTM.svelte` component and automatically loads when `PUBLIC_GTM_ID` is configured.
+GTM is integrated via the `GTM.svelte` component and loads client-side when `PUBLIC_GTM_ID` is set. The project ships an importable GTM container template at [`scripts/GTM.json`](./scripts/GTM.json) that wires every standard event and data-layer variable to Google Analytics 4 — no manual tag creation required.
+
+### Quick setup
+
+1. **Create or pick a GTM container**
+   Go to [tagmanager.google.com](https://tagmanager.google.com/), create an account + container (Target platform: **Web**) if you don't already have one.
+
+2. **Import the template**
+   In your container go to **Admin → Import Container** and upload `scripts/GTM.json`. Settings:
+   - **Workspace**: Default Workspace (or a new one)
+   - **Import option**: **Merge** — keeps anything else you already have
+   - **Conflict resolution**: **Overwrite conflicting tags, triggers, and variables**
+
+   Click **Confirm**. The account/container IDs inside the file are placeholders (`"0"`, `GTM-XXXXXXX`); GTM reassigns them to your workspace automatically.
+
+3. **Set your GA4 Measurement ID**
+   In the container: **Variables → User-Defined Variables → GA Tracking ID**. Replace the `G-XXXXXXXXXX` placeholder with the Measurement ID from GA4 (**Admin → Data Streams → Web → Measurement ID**).
+
+4. **Publish the container**
+   Click **Submit**, give the version a name, **Publish**. Copy the container ID (`GTM-XXXXXXX`) from the top-right of the GTM UI.
+
+5. **Wire it into the app**
+   Add to `.env`:
+
+   ```ini
+   PUBLIC_GTM_ID=GTM-XXXXXXX
+   ```
+
+   Restart the dev server. GTM loads on every client navigation.
+
+### What the container ships with
+
+**Tags (4):**
+
+- `GA Tag` — base Google Analytics 4 configuration
+- `GA Page View` — forwards `pageview` events to GA4 as `page_view`
+- `GA Infinite Scroll` — forwards `infinite_scroll` events
+- `GA Load More Click` — forwards `load_more_click` events
+
+**Triggers (3):** custom-event triggers matching the three dataLayer event names emitted by the app.
+
+**Variables (10):** one Data Layer Variable per field in `App.PageData.layer` — each is forwarded to GA4 as a snake_case event parameter (`content_id`, `page_index`, `app_version`, …).
 
 ### Data Layer
 
-The following variables are automatically pushed to the data layer:
+Every navigation pushes a `pageview` event with these fields (defined in `App.PageData.layer`):
 
-**Page Data:**
+**Page scope:**
 
-- `page.index`: Current page index (for pagination)
-- `page.query`: Search query
+- `page.index`: current pagination page
+- `page.query`: search query (on `/search`)
 
-**Content Data:**
+**Content scope:**
 
-- `content.type`: Content type (home, post, category, author, etc.)
-- `content.id`: Content ID
-- `content.group`: Content group/category
-- `content.flags`: Content flags array
-- `content.tags`: Content tags array
+- `content.type`: `home | articles | post | page | author | category | tag | search`
+- `content.id`: the resource id (stringified for consistent GTM matching)
+- `content.group`: category / taxonomy group
+- `content.tags`: array of tag labels
+- `content.flags`: array of flag strings
 
-**App Data:**
+**App scope** (pushed once on init):
 
-- `app.version`: Package version + git commit
-- `app.platform`: Node.js platform
-- `app.env`: Environment name
+- `app.version`: package version + git commit
+- `app.platform`: `web` or `pwa`
+- `app.env`: `development` or `production`
+
+### Events
+
+Three standard events ship with the container:
+
+| Event             | Fires                                     | Payload                                               |
+| ----------------- | ----------------------------------------- | ----------------------------------------------------- |
+| `pageview`        | Every navigation + infinite-scroll load   | full `layer` object (all fields above)                |
+| `load_more_click` | User clicks "Load more" in `<Pagination>` | `layer` + `page.index` of the page about to be loaded |
+| `infinite_scroll` | Pagination button auto-loads via inview   | `layer` + `page.index` of the page about to be loaded |
+
+Intent events (`load_more_click` / `infinite_scroll`) fire **before** the API call; the paired `pageview` fires **after** the load succeeds. This lets analytics derive the load-failure rate as `intent − pageview` for the same `page.index`.
 
 ### Custom Events
 
-You can push custom events to the data layer:
+All pushes go through the `$lib/dataLayer` helper — never call `window.dataLayer.push` directly (the helper normalises `content.id` to a string and no-ops on SSR):
 
 ```typescript
-window.dataLayer.push({
-  event: 'custom_event',
-  // your custom properties
-});
+import { track, push } from '$lib/dataLayer';
+
+// Named event with payload
+track('click_cta', { cta_id: 'hero_primary', cta_label: 'Subscribe' });
+
+// Arbitrary payload (no `event` field)
+push({ 'app.version': '1.2.3' });
 ```
+
+### Google Analytics 4 configuration
+
+The imported container forwards 10 custom event parameters to GA4. To surface them in reports, **register each one as a custom dimension** in GA4:
+
+1. Go to **GA4 → Admin → Custom definitions → Custom dimensions → Create custom dimension**.
+2. For each parameter below create a dimension with **Event scope**:
+
+| Event parameter | Suggested dimension name |
+| --------------- | ------------------------ |
+| `page_index`    | Page Index               |
+| `page_query`    | Page Query               |
+| `content_id`    | Content ID               |
+| `content_type`  | Content Type             |
+| `content_group` | Content Group            |
+| `content_tags`  | Content Tags             |
+| `content_flags` | Content Flags            |
+| `app_version`   | App Version              |
+| `app_env`       | App Environment          |
+| `app_platform`  | App Platform             |
+
+**Notes:**
+
+- Custom dimensions take up to 24 hours to start collecting — existing events are **not** back-filled.
+- GA4 caps custom dimensions at 50 per property. The 10 above leave plenty of room for your own.
+- For event-specific reporting (e.g. "how many `infinite_scroll` events per `content_type`?"), use **Explore → Free form** with the `Event name` dimension + your custom dimensions.
+
+If you add new fields to `App.PageData.layer`, remember to:
+
+1. Add a matching Data Layer Variable in GTM (and re-export `scripts/GTM.json` to keep the template in sync).
+2. Forward it to GA4 in each of the event tags.
+3. Register it as a custom dimension in GA4.
 
 ## Customization Examples
 
