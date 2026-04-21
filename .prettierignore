@@ -10,3 +10,7 @@ bun.lockb
 
 # Generated
 src/lib/breakpoints.js
+
+# Claude Code skills / commands / agents — markdown with fenced code blocks that
+# Prettier tries to parse as real code and chokes on pseudo-code placeholders.
+.claude/

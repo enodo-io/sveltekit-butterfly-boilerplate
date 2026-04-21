@@ -5,9 +5,11 @@ description: Translate the Butterfly SvelteKit application to another language. 
 
 # Translating the Butterfly app
 
-The app targets a **single language at a time** — no i18n library. Translation means updating env vars + replacing hardcoded strings across the codebase.
+The boilerplate ships in **English** and the consuming site serves **one language at a time** — no i18n library. Translation here means updating env vars + replacing hardcoded strings across the codebase.
 
 Start by asking the user what target language/locale they want if not already specified.
+
+> **When to push back.** If the user actually wants **multi-language support** (multiple locales live in the same deployment), this skill is the wrong tool. That's a scoped boilerplate evolution — Paraglide is the recommended fit with SvelteKit. See the "One language at a time" section in the root `CLAUDE.md` and flag it explicitly rather than silently bolting i18n on.
 
 ---
 

@@ -107,7 +107,7 @@ Never declare a derived value with `let` + `$effect` — always use `$derived`.
 
   // Cleanup:
   $effect(() => {
-    const id = setInterval(() => ..., 1000);
+    const id = setInterval(() => poll(), 1000);
     return () => clearInterval(id);
   });
 </script>
