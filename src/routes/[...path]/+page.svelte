@@ -85,15 +85,19 @@
   <header class="flex flex-col gap-4" id="scope">
     <div class="relative overflow-hidden rounded-lg">
       {#if thumb}
-        <picture>
-          <Image
-            class="w-full"
-            lazyload={false}
-            media={thumb}
-            alt={thumb?.attributes.description || category.data.attributes.description || undefined}
-            format="cover"
-          />
-        </picture>
+        {#key thumb.id}
+          <picture>
+            <Image
+              class="w-full"
+              lazyload={false}
+              media={thumb}
+              alt={thumb?.attributes.description ||
+                category.data.attributes.description ||
+                undefined}
+              format="cover"
+            />
+          </picture>
+        {/key}
       {/if}
 
       <h1
