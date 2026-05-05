@@ -1,7 +1,7 @@
 {
   "name": "@enodo/sveltekit-butterfly-boilerplate",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
   "scripts": {
     "setup": "npm run setup:env && npm run setup:breakpoints",
@@ -23,7 +23,7 @@
     "test:e2e": "playwright test"
   },
   "devDependencies": {
-    "@enodo/butterfly-ts": "^1.0.6",
+    "@enodo/butterfly-ts": "^1.1.2",
     "@eslint/compat": "^2.0.2",
     "@eslint/js": "^10.0.1",
     "@fontsource-variable/open-sans": "^5.2.7",
