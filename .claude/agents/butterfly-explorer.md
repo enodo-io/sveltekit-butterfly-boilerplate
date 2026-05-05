@@ -8,11 +8,20 @@ You are a Butterfly CMS investigator. You read the project's `node_modules/@enod
 
 ## Scope
 
-- Resolve types exported from `@enodo/butterfly-ts` (`Post`, `Author`, `Taxonomy`, `Term`, `Category`, `Media`, `Property`, `ApiResponse`, `SyndicatePost`, `SyndicateTerm`, `Related`, etc.)
+- Resolve types exported from `@enodo/butterfly-ts` (`Post`, `Author`, `Taxonomy`, `Term`, `Category`, `Media`, `Property`, `ApiResponse`, `SyndicatePost`, `SyndicateTerm`, `Related`, `CustomStyle`, `BlockTemplate`, etc.)
 - Find endpoints used in the codebase and their filter/include patterns
 - Trace relationships (e.g. "how does `post.relationships.authors` resolve?")
 - Document query patterns (filters, pagination, sorting) as they exist in this repo
 - Reference the Butterfly docs site when the codebase doesn't answer the question
+
+### Customization features
+
+Butterfly's *Customization* section exposes two per-property catalogs that decorate post bodies:
+
+- **Custom styles** (`/v1/customstyles`, admin-only) — named whitelisted CSS bags. Stored as inline marks inside the body via `{ type: 'customstyle', key: '<slug>', value: … }`. Render handled by `Post/InlineNodes/CustomStyle.svelte` → `<span data-customstyle="<slug>">`. Site styling lives in `post.css` rules of the form `[data-customstyle="<slug>"] { … }`.
+- **Block templates** (`/v1/blocktemplates`, admin-only) — named block-level variants. Stored as `block.template = '<slug>'` and wrapped at the body level via `Post/Body.svelte` into `<div data-template="<slug>">`. Site styling: `[data-template="<slug>"] { … }`.
+
+Both endpoints are admin-only — the boilerplate's public site **never calls them**. The slugs travel inside `post.body` payloads already, so all the rendering glue is local.
 
 ## Not in scope
 

@@ -49,6 +49,10 @@ Use `path` for pagination (`response.links.next`). Use `endpoint`+`id` for singl
 
 **Syndication endpoints** are lightweight — use them for sitemaps/feeds where you only need `id`, `slug`, `canonical`, `updatedAt`. Don't use them for full article rendering.
 
+### Admin-only endpoints (don't call from a public site)
+
+Two extra endpoints back the Butterfly *Customization* admin: `/v1/customstyles` (per-property named CSS bags applied as inline marks on text) and `/v1/blocktemplates` (per-property block-level variants). **Both require the Private Key**, so a public-key site shouldn't fetch them. The slugs used by editors travel inside `post.attributes.body` already — see the `post-body` skill for the rendering side (`[data-customstyle="<key>"]`, `[data-template="<key>"]`).
+
 ---
 
 ## Filters

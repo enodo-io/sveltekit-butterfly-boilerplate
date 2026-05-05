@@ -602,6 +602,10 @@ Renders a Butterfly post body (headings, paragraphs, lists, media, embeds, etc.)
 
 - Recommended customization via `.post--[element]` selectors in `src/assets/styles/post.css` (e.g., `.post--list`, `.post--quote`, `.post--youtube`).
 - You can also edit individual element components, but global customization is preferred.
+- **Per-property variants from the Butterfly admin** (Customization section) are wired automatically — write CSS only:
+  - **Inline custom styles** appear as `<span data-customstyle="<slug>">…</span>` inside text. Style with `[data-customstyle="<slug>"] { … }`.
+  - **Block templates** wrap the matching block in `<div data-template="<slug>">`. Style with `[data-template="<slug>"] { … }` (or scope to a block: `[data-template="callout"] .post--paragraph { … }`).
+  - See the `post-body` skill for the full pattern; the slugs come from the editor side, no API call needed.
 
 #### `Feed.svelte`
 

@@ -13,6 +13,7 @@
   import superscript from './InlineNodes/Superscript.svelte';
   import breakElement from './InlineNodes/Break.svelte';
   import code from './InlineNodes/Code.svelte';
+  import customstyle from './InlineNodes/CustomStyle.svelte';
 
   type Props = { nodes: string | Butterfly.PostBody.BodyInlineNode[] };
   const { nodes }: Props = $props();
@@ -30,6 +31,7 @@
     superscript,
     break: breakElement,
     code,
+    customstyle,
   };
 </script>
 

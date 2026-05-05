@@ -68,7 +68,23 @@
 {#each body as element, i (i)}
   {#if element.type in registry}
     {@const Component = registry[element.type]}
-    <Component element={element as never} resources={resources as never} />
+    {#if (element as { template?: string }).template}
+      <!--
+        Block-level template tag (per-property, defined in the Butterfly
+        admin under Customization → Block templates). Style the variant
+        with CSS targeting the wrapper:
+            [data-template="<key>"] { ... }
+            [data-template="<key>"] .post--paragraph { ... }
+        Butterfly stores nothing about how the variant should look — it's
+        entirely up to this site's stylesheets to decide what each slug
+        renders as.
+      -->
+      <div data-template={(element as { template?: string }).template}>
+        <Component element={element as never} resources={resources as never} />
+      </div>
+    {:else}
+      <Component element={element as never} resources={resources as never} />
+    {/if}
   {:else}
     <p>[{element.type}]</p>
   {/if}
