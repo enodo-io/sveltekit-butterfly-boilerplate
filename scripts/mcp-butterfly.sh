@@ -28,4 +28,4 @@ set -a
 . ./.env
 set +a
 
-exec butterfly-mcp
+exec npx -y @enodo/butterfly-mcp@latest
