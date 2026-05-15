@@ -184,6 +184,7 @@ Scaffolding and audits live in `.claude/commands/`:
 - `/audit-seo` — sweep for SEO/a11y/design-system violations
 - `/check-butterfly-env` — validate `.env` + ping the API
 - `/add-static-page <slug>` — wire up a CMS-backed static page
+- `/svelte4-to-5` — migrate a legacy Svelte 4 component to Runes
 
 ## Agents
 
