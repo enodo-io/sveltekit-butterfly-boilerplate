@@ -17,9 +17,10 @@
   //
   // Local type since `Butterfly.PostBody.CustomStyleNode` is exposed only
   // from butterfly-ts ≥ 1.1.2; older installs still resolve `node.value`
-  // through the InlineNodes recursion above.
+  // through the InlineNodes recursion above. The `type` discriminator is
+  // consumed by the parent registry — omitted here so `svelte/no-unused-props`
+  // stays happy.
   type CustomStyleNode = {
-    type: 'customstyle';
     key: string;
     value: string | Butterfly.PostBody.BodyInlineNode[];
   };
