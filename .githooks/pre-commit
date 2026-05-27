@@ -1,0 +1,17 @@
+#!/bin/sh
+#
+# Pre-commit : bloque le commit si le lint ou le type-check échoue.
+# Bypass ponctuel possible avec `git commit --no-verify`.
+#
+# Activé via `git config core.hooksPath .githooks` (fait par le script
+# `prepare` de package.json, donc automatiquement après `npm install`).
+
+set -e
+
+echo "▶ npm run lint"
+npm run lint
+
+echo "▶ npm run check"
+npm run check
+
+echo "✓ lint + check OK"
