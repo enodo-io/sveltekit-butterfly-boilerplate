@@ -29,7 +29,7 @@
 <div class="post--facebook">
   <OEmbed
     element={cleanElement}
-    script={`https://connect.facebook.net/${PUBLIC_LOCALE || 'en_US'}/sdk.js#xfbml=1&amp;version=v24.0`}
+    script={`https://connect.facebook.net/${PUBLIC_LOCALE || 'en_US'}/sdk.js#xfbml=1&version=v26.0`}
     draw={() => window.FB.XFBML.parse()}
     test={() => !!window.FB}
     beforeCreate={beforeCreate}
