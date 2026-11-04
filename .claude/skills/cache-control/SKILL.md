@@ -1,21 +1,24 @@
 ---
 name: cache-control
-description: Choose the right cache header for a route or endpoint using the presets in `$lib/cacheControl`. Use whenever calling `setHeaders({ 'cache-control': ... })` in a `+page.server.ts` or `+server.ts`. Presets: short (2m), medium (5m), long (15m), longer (1h), day (24h).
+description: Choose the right cache header for a route or endpoint using the presets in `$lib/cacheControl`. Use whenever calling `setHeaders({ 'cache-control': ... })` in a `+page.server.ts` or `+server.ts`. Presets: minute (1m), short (2m), medium (5m), long (15m), longer (1h), day (24h), all with stale-while-revalidate.
 ---
 
 # Cache-Control — `CACHE_CONTROL` presets
 
-`src/lib/cacheControl.ts` exposes five presets. Always pick one — never inline a raw `public, max-age=...` string.
+`src/lib/cacheControl.ts` exposes six presets. Always pick one — never inline a raw `public, max-age=...` string.
 
 ```ts
 export const CACHE_CONTROL = {
-  short: 'public, max-age=120', // 2 minutes
-  medium: 'public, max-age=300', // 5 minutes
-  long: 'public, max-age=900', // 15 minutes
-  longer: 'public, max-age=3600', // 1 hour
-  day: 'public, max-age=86400', // 24 hours
+  minute: 'public, max-age=60, stale-while-revalidate=60', // 1 minute
+  short: 'public, max-age=120, stale-while-revalidate=120', // 2 minutes
+  medium: 'public, max-age=300, stale-while-revalidate=300', // 5 minutes
+  long: 'public, max-age=900, stale-while-revalidate=900', // 15 minutes
+  longer: 'public, max-age=3600, stale-while-revalidate=3600', // 1 hour
+  day: 'public, max-age=86400, stale-while-revalidate=3600', // 24 hours, stale for 1 hour
 };
 ```
+
+`max-age` is read by the browser and the shared caches alike (Varnish, a CDN edge). `stale-while-revalidate` lets a cache serve its copy at once past the TTL and refresh in the background, for as long again: a page is at most two TTLs old, and a CDN edge far from the origin never makes the visitor wait for it. Verified in production behind Varnish and Cloudflare.
 
 ---
 
@@ -37,6 +40,7 @@ res.headers.set('Cache-Control', CACHE_CONTROL.day);
 
 | Content                           | Preset           | Rationale                     |
 | --------------------------------- | ---------------- | ----------------------------- |
+| A live page, a countdown          | `minute`         | May change any minute         |
 | Search results                    | `short`          | User-dependent, changes often |
 | Home page, article listings       | `short`          | New posts appear frequently   |
 | Article detail, author, tag pages | `medium`         | Stable between publishes      |
@@ -64,18 +68,9 @@ Don't inline a raw string — it becomes a maintenance hazard when the team want
 
 ---
 
-## `s-maxage` and `stale-while-revalidate`
+## No `s-maxage`
 
-The current presets are plain `max-age` (shared by CDN and browser). If you need different TTLs for CDN vs browser, or want stale-while-revalidate semantics, extend the module:
-
-```ts
-export const CACHE_CONTROL = {
-  // existing...
-  swrShort: 'public, max-age=60, s-maxage=300, stale-while-revalidate=3600',
-};
-```
-
-Don't sprinkle `stale-while-revalidate` inline — document the intent in one place.
+Don't add `s-maxage` to split the CDN TTL from the browser TTL. Cloudflare reads it as `proxy-revalidate` and then never serves stale ("s-maxage disables stale-while-revalidate", its Origin Cache Control docs), which defeats the presets; Varnish reads `max-age` anyway. If a route needs a longer shared TTL, give it a longer preset.
 
 ---
 

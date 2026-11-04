@@ -109,7 +109,7 @@ src/
 ├── service-worker.ts
 ├── lib/
 │   ├── api.ts               ← Butterfly client (env-driven)
-│   ├── cacheControl.ts      ← short/medium/long/longer/day presets
+│   ├── cacheControl.ts      ← minute/short/medium/long/longer/day presets, max-age + stale-while-revalidate
 │   ├── getMediaUrl.ts       ← media URL builder
 │   ├── httpErrors.ts        ← user-facing messages for 4xx/5xx
 │   ├── formatRelativeDate.ts
