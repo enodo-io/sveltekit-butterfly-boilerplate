@@ -5,7 +5,7 @@ description: Push custom events to the GTM `dataLayer` and understand the standa
 
 # GTM events — `dataLayer` usage
 
-GTM loads via `src/components/GTM.svelte` only when `PUBLIC_GTM_ID` is set. The standard data layer is driven by `data.layer` from each route's `+page.server.ts`. All pushes go through the helper in `$lib/dataLayer` — never touch `window.dataLayer` directly.
+GTM loads via `src/components/GTM.svelte` only when `PUBLIC_GTM_ID` is set. The container script is appended once the consent layer is up (`whenCmpReady` in `$lib/consent`: a TCF v2 CMP, Google's CMP, or straight away without one), so a slow first visit paints the consent banner before the tags; `gtm.js` is pushed first and the events queue in the `dataLayer` meanwhile. `withConsent(fn)` in the same module runs `fn` only after the visitor consented to the TCF purposes (never on a refusal) — use it for anything that sets cookies outside GTM. The standard data layer is driven by `data.layer` from each route's `+page.server.ts`. All pushes go through the helper in `$lib/dataLayer` — never touch `window.dataLayer` directly.
 
 A ready-to-import GTM container template lives in `scripts/GTM.json` (tags, triggers, variables, GA4 forwarding). Import it into any GTM account — account/container IDs are placeholders and get reassigned.
 

@@ -3,10 +3,24 @@
   import { version, dev } from '$app/environment';
   import { page } from '$app/state';
   import { push, track } from '$lib/dataLayer';
+  import { whenCmpReady } from '$lib/consent';
 
   let isInit = false;
   $effect(() => {
     if (!isInit) {
+      // `gtm.js` first in the dataLayer as usual, but the container script only once
+      // the consent layer is up (straight away without CMP): its banner comes first
+      // on a slow connection, the events queue in the dataLayer meanwhile
+      if (PUBLIC_GTM_ID) {
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
+        whenCmpReady(() => {
+          const script = document.createElement('script');
+          script.async = true;
+          script.src = `https://www.googletagmanager.com/gtag/js?id=${PUBLIC_GTM_ID}`;
+          document.head.appendChild(script);
+        });
+      }
       const n: Navigator = window.navigator;
       push({
         'app.version': version,
@@ -22,18 +36,6 @@
     track('pageview', page.data.layer);
   });
 </script>
-
-<svelte:head>
-  {#if PUBLIC_GTM_ID}
-    <script async src="https://www.googletagmanager.com/gtag/js?id={PUBLIC_GTM_ID}"></script>
-    <!-- eslint-disable-next-line svelte/no-at-html-tags -->
-    {@html '<scr' +
-      'ipt>' +
-      `window.dataLayer=window.dataLayer||[];window.dataLayer.push({'gtm.start':new Date().getTime(),event:'gtm.js'});` +
-      '</scr' +
-      'ipt>'}
-  {/if}
-</svelte:head>
 
 {#if PUBLIC_GTM_ID}
   <noscript
