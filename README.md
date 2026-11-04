@@ -387,7 +387,7 @@ Posts tagged with a specific tag
 
 All sitemaps are generated automatically and available at `/sitemaps/`:
 
-- **Index**: `/sitemaps/index.xml` - Master sitemap
+- **Index**: `/sitemaps/index.xml` - Master sitemap (`/sitemap.xml` redirects to it, 301)
 - **News**: `/sitemaps/news.xml` - Posts published in the last 48 hours
 - **Sections**: `/sitemaps/sections.xml` - All category pages
 - **Tags**: `/sitemaps/tags.xml` - All tag pages
