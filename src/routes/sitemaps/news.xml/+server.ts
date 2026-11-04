@@ -20,8 +20,10 @@ export const GET: RequestHandler = async ({ fetch }) => {
           fetch,
           endpoint: 'posts',
           query: {
+            // sponsored posts (flag `sponso`) stay out, as Google News asks
             filter: {
               types: '-page',
+              flags: '-sponso',
             },
             page: {
               size: 100,

@@ -1,5 +1,6 @@
 <script lang="ts">
   import type * as Butterfly from '@enodo/butterfly-ts';
+  import { setContext } from 'svelte';
 
   import title from './Elements/Title.svelte';
   import paragraph from './Elements/Paragraph.svelte';
@@ -28,9 +29,14 @@
   type Props = {
     body: Butterfly.PostBody.BodyData[];
     resources: Butterfly.Resource[];
+    /** sponsored post (flag `sponso`): its external links carry `rel="sponsored"` */
+    sponsored?: boolean;
   };
 
-  const { body, resources }: Props = $props();
+  const { body, resources, sponsored = false }: Props = $props();
+
+  // read by InlineNodes/Link.svelte
+  setContext('postSponsored', () => sponsored);
 
   const registry = {
     title2: title,

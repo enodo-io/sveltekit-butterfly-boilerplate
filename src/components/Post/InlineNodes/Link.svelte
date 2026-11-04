@@ -1,6 +1,7 @@
 <script lang="ts">
   import type * as Butterfly from '@enodo/butterfly-ts';
 
+  import { getContext } from 'svelte';
   import { PUBLIC_BASE_URL } from '$env/static/public';
   import { resolve } from '$app/paths';
   import InlineNodes from '../InlineNodes.svelte';
@@ -9,16 +10,21 @@
     node: Butterfly.PostBody.LinkNode;
   };
   const { node }: Props = $props();
+
+  /** the post is sponsored (set by Post/Body.svelte) */
+  const postSponsored = getContext<(() => boolean) | undefined>('postSponsored');
+  const href = $derived(node.href ?? '');
+  const internal = $derived(href.startsWith(PUBLIC_BASE_URL));
+  /** paid link: marked on the node by the CMS, or any external link of a sponsored post */
+  const sponsored = $derived(!internal && (!!node.sponsored || !!postSponsored?.()));
 </script>
 
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 <a
-  href={node.href?.startsWith(PUBLIC_BASE_URL)
-    ? resolve(node.href.replace(PUBLIC_BASE_URL, '') as `/${string}`)
-    : node.href}
+  href={internal ? resolve(href.replace(PUBLIC_BASE_URL, '') as `/${string}`) : href}
   title={node.title}
-  target={node.href?.startsWith(PUBLIC_BASE_URL) ? undefined : '_blank'}
-  rel={node.href?.startsWith(PUBLIC_BASE_URL) ? undefined : 'noopener'}
+  target={internal ? undefined : '_blank'}
+  rel={internal ? undefined : sponsored ? 'sponsored noopener' : 'noopener'}
   ><InlineNodes nodes={node.value} /></a
 >
 <!-- eslint-enable svelte/no-navigation-without-resolve -->

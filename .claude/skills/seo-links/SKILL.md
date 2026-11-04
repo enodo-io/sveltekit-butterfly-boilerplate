@@ -122,3 +122,10 @@ Before validating any `<a>` tag:
 - [ ] Is the card/component NOT entirely wrapped in `<a>`?
 - [ ] If clickable card → using `::after` on the title link?
 - [ ] If image link → is `alt` descriptive?
+
+---
+
+## Paid links — `rel="sponsored"`
+
+A link that was paid for carries `rel="sponsored"` (Google's rule; `nofollow` alone is the old form). The post body does it on its own: `Post/InlineNodes/Link.svelte` marks a link the CMS flagged as sponsored (the `sponsored` attribute of the link node), and every external link of a post flagged `sponso` (partner content, see `Post/Body.svelte` and its `sponsored` prop). Internal links never carry it. A hand-written paid link elsewhere (a partner banner, a shop button) gets `rel="sponsored noopener"` explicitly.
+

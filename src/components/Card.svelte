@@ -5,7 +5,7 @@
   import { resolve } from '$app/paths';
   import { getRelated } from '@enodo/butterfly-ts';
   import { breakpoints } from '$lib/breakpoints';
-  import { postPath } from '$lib/posts';
+  import { hasFlag, postPath } from '$lib/posts';
   import Image from './Image.svelte';
 
   type Props = HTMLAttributes<HTMLElement> & {
@@ -47,6 +47,11 @@
     <svelte:element this={heading} class="card--title">
       <a href={resolve(url)}>{post.attributes.title}</a>
     </svelte:element>
+    {#if hasFlag(post, 'sponso')}
+      <span class="fs-brevier font-medium tracking-wide text-light-600 uppercase"
+        >Partner content</span
+      >
+    {/if}
     {#if resume}
       <p class="card--resume">{post.attributes.resume}</p>
     {/if}

@@ -8,6 +8,7 @@
   import { getMediaUrl } from '$lib/getMediaUrl';
   import { getRelated } from '@enodo/butterfly-ts';
   import { formatRelativeDate } from '$lib/formatRelativeDate';
+  import { customString, hasFlag } from '$lib/posts';
   import PostBody from '$components/Post/Body.svelte';
   import Authorship from '$components/Post/Authorship.svelte';
   import { Forward as Share } from '@lucide/svelte';
@@ -16,6 +17,9 @@
   let { data }: PageProps = $props();
 
   let post: Butterfly.Post = $derived(data.scope.data);
+  /** partner content (flag `sponso`): one line above the title, `rel="sponsored"` on its external links */
+  let sponsored = $derived(hasFlag(post, 'sponso'));
+  let sponsor = $derived(customString(post, 'sponsor'));
   let jsonLd: Graph | WithContext<Thing> | null = $derived(
     generateJsonLd(data, post.attributes.type === 'faq' ? ['FAQPage'] : ['Article']),
   );
@@ -117,6 +121,13 @@
           {/each}
         </ul>
       {/if}
+      {#if sponsored}
+        <p
+          class="self-start rounded-sm bg-light-100 px-2 py-1 fs-brevier font-medium tracking-wide text-light-600 uppercase"
+        >
+          {sponsor ? `Sponsored by ${sponsor}` : 'Partner content'}
+        </p>
+      {/if}
       <h1 class="fs-foolscap font-bold text-light-700">{data.meta.title}</h1>
       <p class="fs-double-pica font-medium">{data.meta.description}</p>
       {#snippet date(d: string, action: string)}
@@ -156,6 +167,7 @@
     <PostBody
       body={post.attributes.body as Butterfly.PostBody.BodyData[]}
       resources={data.scope.included}
+      sponsored={sponsored}
     />
   </article>
   <aside class="sticky top-12 flex flex-col gap-7">

@@ -188,3 +188,10 @@ Posts may embed raw markdown or HTML blocks. `Post/Elements/Markdown.svelte` han
 - [ ] Styling a per-property custom style? → add `[data-customstyle="<key>"] { … }` in `post.css`
 - [ ] Styling a per-property block template? → add `[data-template="<key>"] { … }` in `post.css`
 - [ ] Handling raw HTML? — `stripScripts` first, always
+
+---
+
+## Sponsored posts
+
+A post flagged `sponso` in Butterfly is partner content. The article page shows one line above the title (« Sponsored by {sponsor} », from the `sponsor` custom field, or « Partner content »), cards show the « Partner content » label, `<Body sponsored>` makes every external link of the body `rel="sponsored"`, the Google News sitemap leaves the post out, and the JSON-LD types it `AdvertiserContentArticle` with its sponsor. Nothing to do per post beyond the flag and the custom field.
+

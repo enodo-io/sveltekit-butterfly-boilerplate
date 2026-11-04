@@ -1,27 +1,44 @@
 /**
  * Article JSON-LD Schema Generator
  *
- * Generates structured data for Article or NewsArticle schema types.
- * Includes author information, publication dates, thumbnails, and publisher data.
+ * `AdvertiserContentArticle` (flag `sponso`, with its `sponsor` custom field),
+ * `NewsArticle` (flag `news`) or `Article`, with author information,
+ * publication dates, thumbnail and publisher data.
  *
  * @module Article
  * @param {App.PageData} data - Page data containing the post
- * @returns {Article|NewsArticle} - Structured article data
+ * @returns {ArticleLike} - Structured article data
  */
 
-import type { Article, NewsArticle, Organization, Person } from 'schema-dts';
+import type {
+  AdvertiserContentArticle,
+  Article,
+  NewsArticle,
+  Organization,
+  Person,
+} from 'schema-dts';
 import type * as Butterfly from '@enodo/butterfly-ts';
 
 import { getRelated } from '@enodo/butterfly-ts';
 import { getMediaUrl } from '$lib/getMediaUrl';
 import { PUBLIC_BASE_URL } from '$env/static/public';
+import { customString } from '$lib/posts';
 import generateWebPage from './WebPage';
 import generateOrganization from './Organization';
 
-export default function getArticle(data: App.PageData): Article | NewsArticle {
+type ArticleLike = Article | NewsArticle | AdvertiserContentArticle;
+
+const articleType = (post: Butterfly.Post): ArticleLike['@type'] => {
+  if (post.attributes.flags.includes('sponso')) return 'AdvertiserContentArticle';
+  if (post.attributes.flags.includes('news')) return 'NewsArticle';
+  return 'Article';
+};
+
+export default function getArticle(data: App.PageData): ArticleLike {
   const post = data.scope?.data as Butterfly.Post;
-  const scheme: Article | NewsArticle = {
-    '@type': post.attributes.flags.includes('news') ? 'NewsArticle' : 'Article',
+  const sponsor = post.attributes.flags.includes('sponso') ? customString(post, 'sponsor') : null;
+  const scheme: ArticleLike = {
+    '@type': articleType(post),
     '@id': `${data.meta.url}#scope`,
     headline: post.attributes.title,
     description: post.attributes.resume,
@@ -29,6 +46,7 @@ export default function getArticle(data: App.PageData): Article | NewsArticle {
     datePublished: post.attributes.publishedAt,
     url: data.meta.url,
     publisher: generateOrganization(data),
+    sponsor: sponsor ? { '@type': 'Organization', name: sponsor } : undefined,
   };
 
   if (post.attributes.publishedAt < post.attributes.updatedAt) {
