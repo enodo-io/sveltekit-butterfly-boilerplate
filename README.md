@@ -155,17 +155,18 @@ npm run preview
 
 The setup script creates a `.env` file with the following variables:
 
-| Variable              | Required | Description                                                                       |
-| --------------------- | -------- | --------------------------------------------------------------------------------- |
-| `PUBLIC_BASE_URL`     | Yes      | Your website's public URL (e.g., `https://mywebsite.com`)                         |
-| `PUBLIC_API_URL`      | Yes      | Butterfly API domain (from your Butterfly settings)                               |
-| `PUBLIC_API_KEY`      | Yes      | Butterfly API key (from your Butterfly settings)                                  |
-| `PUBLIC_MEDIA_URL`    | Yes      | Butterfly media domain (for static assets)                                        |
-| `PUBLIC_STATIC_PAGES` | No       | JSON object mapping page slugs to IDs (e.g., `{"about":1,"legal":2}`)             |
-| `PUBLIC_INDEXABLE`    | Yes      | Set to `false` for staging/dev to prevent indexing. Defaults to `true` if not set |
-| `PUBLIC_LOCALE`       | Yes      | Locale code for your site (e.g., `fr_FR`, `en_US`, `es_ES`)                       |
-| `PUBLIC_LANGUAGE`     | Yes      | Language code (e.g., `fr`, `en`, `es`) - auto-extracted from locale by default    |
-| `PUBLIC_GTM_ID`       | No       | Google Tag Manager container ID (e.g., `GTM-XXXXXXX`)                             |
+| Variable              | Required | Description                                                                               |
+| --------------------- | -------- | ----------------------------------------------------------------------------------------- |
+| `PUBLIC_BASE_URL`     | Yes      | Your website's public URL (e.g., `https://mywebsite.com`)                                 |
+| `PUBLIC_API_URL`      | Yes      | Butterfly API domain (from your Butterfly settings)                                       |
+| `PUBLIC_API_KEY`      | Yes      | Butterfly API key (from your Butterfly settings)                                          |
+| `PUBLIC_MEDIA_URL`    | Yes      | Butterfly media domain (for static assets)                                                |
+| `PUBLIC_STATIC_PAGES` | No       | JSON object mapping page slugs to IDs (e.g., `{"about":1,"legal":2}`)                     |
+| `PUBLIC_INDEXABLE`    | Yes      | Set to `false` for staging/dev to prevent indexing. Defaults to `true` if not set         |
+| `PUBLIC_LOCALE`       | Yes      | Locale code for your site (e.g., `fr_FR`, `en_US`, `es_ES`)                               |
+| `PUBLIC_LANGUAGE`     | Yes      | Language code (e.g., `fr`, `en`, `es`) - auto-extracted from locale by default            |
+| `PUBLIC_GTM_ID`       | No       | Google Tag Manager container ID (e.g., `GTM-XXXXXXX`)                                     |
+| `PUBLIC_SENTRY_DSN`   | No       | Sentry DSN: error monitoring of the server and the browser (errors only, replay on error) |
 
 ### Butterfly Requirements
 
@@ -174,6 +175,7 @@ This boilerplate expects the following structure in your Butterfly CMS:
 - **Taxonomy**: A custom taxonomy named `tags` must exist
 - **Post Type**: A post type named `page` for static pages (Legal, About, etc.)
 - **Custom Feed**: A custom feed named `featured` must exist
+- **Partner content (optional)**: a flag `sponso` and a custom field `sponsor` (text). A post flagged `sponso` shows « Sponsored by {sponsor} » above its title and « Partner content » on its cards, its external links carry `rel="sponsored"`, it stays out of the Google News sitemap and its JSON-LD is an `AdvertiserContentArticle`
 
 Customize static page URLs via the `PUBLIC_STATIC_PAGES` environment variable.
 

@@ -97,8 +97,9 @@ Optional:
 - `PUBLIC_STATIC_PAGES` — JSON map of slug → id for CMS-backed static pages
 - `PUBLIC_INDEXABLE` — set to `false` on staging/dev
 - `PUBLIC_GTM_ID`
+- `PUBLIC_SENTRY_DSN` — Sentry, server + browser, errors only (nothing without it, nothing in dev)
 
-Butterfly CMS prerequisites: taxonomy `tags`, post type `page`, custom feed `featured`. See README for details.
+Butterfly CMS prerequisites: taxonomy `tags`, post type `page`, custom feed `featured`. Optional: flag `sponso` and custom field `sponsor` for partner content (badge, `rel="sponsored"` links, out of the news sitemap, `AdvertiserContentArticle`). See README for details.
 
 ## File layout at a glance
 
