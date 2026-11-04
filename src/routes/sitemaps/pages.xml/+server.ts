@@ -6,6 +6,7 @@ import { Readable } from 'stream';
 import { PUBLIC_BASE_URL } from '$env/static/public';
 import { CACHE_CONTROL } from '$lib/cacheControl';
 import api from '$lib/api';
+import { postPath } from '$lib/posts';
 
 export const GET: RequestHandler = async ({ fetch }) => {
   const posts = await api.get<Butterfly.SyndicatePost[]>({
@@ -19,10 +20,7 @@ export const GET: RequestHandler = async ({ fetch }) => {
   });
 
   const routes = posts.data.map((post: Butterfly.SyndicatePost) => ({
-    url:
-      post.attributes.canonical && post.attributes.canonical.startsWith(PUBLIC_BASE_URL)
-        ? post.attributes.canonical.replace(PUBLIC_BASE_URL, '')
-        : `/${post.attributes.slug}-${post.id}.html`,
+    url: postPath(post),
     lastmod: new Date(post.attributes.updatedAt),
     changefreq: 'weekly',
     priority: 0.5,

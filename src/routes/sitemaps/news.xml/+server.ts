@@ -5,6 +5,7 @@ import { SitemapStream, streamToPromise } from 'sitemap';
 import { getRelated } from '@enodo/butterfly-ts';
 import { getMediaUrl } from '$lib/getMediaUrl';
 import api from '$lib/api';
+import { postPath } from '$lib/posts';
 import { PUBLIC_BASE_URL, PUBLIC_LANGUAGE } from '$env/static/public';
 import { CACHE_CONTROL } from '$lib/cacheControl';
 
@@ -80,10 +81,7 @@ export const GET: RequestHandler = async ({ fetch }) => {
         ]
       : [];
     stream.write({
-      url:
-        post.attributes.canonical && post.attributes.canonical.startsWith(PUBLIC_BASE_URL)
-          ? post.attributes.canonical.replace(PUBLIC_BASE_URL, '')
-          : `/${post.attributes.slug}-${post.id}.html`,
+      url: postPath(post),
       lastmod: post.attributes.updatedAt,
       news: {
         publication: {

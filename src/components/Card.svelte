@@ -2,10 +2,10 @@
   import type * as Butterfly from '@enodo/butterfly-ts';
   import type { HTMLAttributes } from 'svelte/elements';
 
-  import { PUBLIC_BASE_URL } from '$env/static/public';
   import { resolve } from '$app/paths';
   import { getRelated } from '@enodo/butterfly-ts';
   import { breakpoints } from '$lib/breakpoints';
+  import { postPath } from '$lib/posts';
   import Image from './Image.svelte';
 
   type Props = HTMLAttributes<HTMLElement> & {
@@ -36,9 +36,7 @@
       `(min-width: ${breakpoints.sm}px) and (max-width: ${breakpoints.md}px) 50vw, ` +
       `100vw`,
     widths = [320, 380, 480, 540],
-    url = post.attributes.canonical?.startsWith(PUBLIC_BASE_URL)
-      ? (post.attributes.canonical.replace(PUBLIC_BASE_URL, '') as `/${string}`)
-      : `/${post.attributes.slug}-${post.id}.html`,
+    url = postPath(post),
     thumb = getRelated<Butterfly.Media>(post.relationships.thumbnail.data, included),
     ...others
   }: Props = $props();

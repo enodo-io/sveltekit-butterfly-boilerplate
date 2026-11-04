@@ -3,6 +3,7 @@ import { getRelated, ApiError, RedirectError } from '@enodo/butterfly-ts';
 import { error } from '@sveltejs/kit';
 import { getMediaUrl } from '$lib/getMediaUrl';
 import api from '$lib/api';
+import { postHref } from '$lib/posts';
 import httpErrors from '$lib/httpErrors';
 import { PUBLIC_LANGUAGE, PUBLIC_BASE_URL } from '$env/static/public';
 import { CACHE_CONTROL } from '$lib/cacheControl';
@@ -68,10 +69,7 @@ export const GET: RequestHandler = async ({ fetch, params }) => {
       feed.addItem({
         title: post.attributes.title,
         id: post.id.toString(),
-        link:
-          post.attributes.canonical && post.attributes.canonical.startsWith(PUBLIC_BASE_URL)
-            ? post.attributes.canonical
-            : `${PUBLIC_BASE_URL}/${post.attributes.slug}-${post.id}.html`,
+        link: postHref(post),
         description: post.attributes.resume,
         date: new Date(post.attributes.publishedAt),
         image: post.relationships.thumbnail.data?.id
