@@ -84,13 +84,13 @@ Note the **string message**, not `httpErrors[500]` — this is a developer-facin
 
 ## `+error.svelte` — the fallback renderer
 
-`src/routes/+error.svelte` renders the error message. It reads from `page.error` (set by the thrown `error()`). Keep it minimal and on-brand.
+`src/routes/+error.svelte` renders a title and a text per status class: 404 (page not found), 410 (content removed) and 500 for every other status, plus a link to the home page. The status line reads `page.status`; the message of the thrown `error()` (`page.error.message`) is not shown, it is for the logs. The layout adds `<title>Error {status}</title>` and `noindex,follow`.
 
 Update it if:
 
 - The brand voice changes.
-- You want different layouts per status class (404 vs 500 vs 410).
-- You add a "go home" CTA, a search box, or a recently-read list.
+- You want another status class (403, 429) with its own texts.
+- You add a search box or a recently-read list.
 
 Don't add logic that can itself fail — an error inside the error page is a bad time.
 

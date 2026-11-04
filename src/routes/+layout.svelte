@@ -3,6 +3,9 @@
   import '$assets/styles/tailwind.css';
   import '$assets/styles/main.scss';
   import defaultThumb from '$assets/images/thumb.jpg';
+  // the fonts of the first paint (body text, header): preloaded, the rest follows the CSS
+  import openSans from '@fontsource-variable/open-sans/files/open-sans-latin-wght-normal.woff2?url';
+  import poppins600 from '@fontsource/poppins/files/poppins-latin-600-normal.woff2?url';
 
   import {
     PUBLIC_INDEXABLE,
@@ -44,6 +47,9 @@
   <link rel="apple-touch-icon" sizes="180x180" href="/favicon-180.png" />
 
   <link rel="preconnect" href={PUBLIC_MEDIA_URL} />
+  {#each [openSans, poppins600] as font (font)}
+    <link rel="preload" as="font" type="font/woff2" href={font} crossorigin="anonymous" />
+  {/each}
   <meta name="theme-color" content="#4bdc9f" />
 
   <meta property="og:locale" content={PUBLIC_LOCALE ?? 'en_US'} />

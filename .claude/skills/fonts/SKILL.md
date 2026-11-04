@@ -114,3 +114,10 @@ npm uninstall @fontsource/old-font-name
   --font-mono: 'Fira Mono', monospace;
 }
 ```
+
+---
+
+## Preload the fonts of the first paint
+
+`src/routes/+layout.svelte` preloads the woff2 files the first screen needs (the body text and the header font), imported from the Fontsource package with `?url` and emitted as `<link rel="preload" as="font" crossorigin>`. Without it the browser discovers a font only once the CSS is parsed and the text laid out. Preload two or three files at most: every preload competes with the HTML and the CSS. When a font changes, change the imports there too.
+
