@@ -33,7 +33,7 @@
     "@playwright/test": "^1.49.1",
     "@sentry/replay": "^11.10.0",
     "@sentry/sveltekit": "^11.10.0",
-    "@sveltejs/adapter-node": "^5.2.12",
+    "@sveltejs/adapter-node": "5.5.6",
     "@sveltejs/kit": "^2.22.0",
     "@sveltejs/vite-plugin-svelte": "^7.3.1",
     "@tailwindcss/vite": "^4.1.18",
