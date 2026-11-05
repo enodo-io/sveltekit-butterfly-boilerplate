@@ -68,14 +68,14 @@ import MyCard from './MyCard.svelte';
 
 describe('MyCard', () => {
   it('renders the title as an h3', async () => {
-    const screen = render(MyCard, { props: { title: 'Hello' } });
+    const screen = await render(MyCard, { props: { title: 'Hello' } });
     const heading = screen.getByRole('heading', { level: 3 });
     await expect.element(heading).toHaveTextContent('Hello');
   });
 });
 ```
 
-Browser mode runs real Chromium via Playwright. Prefer this over `@testing-library/svelte` — it catches real CSS / DOM issues.
+Browser mode runs real Chromium via Playwright: the provider is the `@vitest/browser-playwright` package (`provider: playwright()` in `vite.config.ts`), `render` is async (Vitest 5, vitest-browser-svelte 3) and the `page` locators come from `vitest/browser`. Prefer this over `@testing-library/svelte` — it catches real CSS / DOM issues. Locators match text exactly by default; pass `{ exact: false }` for a partial match.
 
 ---
 
