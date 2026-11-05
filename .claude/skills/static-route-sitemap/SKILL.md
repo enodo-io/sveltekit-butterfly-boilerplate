@@ -106,7 +106,7 @@ export const GET: RequestHandler = async ({ fetch, params }) => {
     });
   });
 
-  const responses = { atom: feed.atom1, rss: feed.rss2, json: feed.json1 };
+  const responses = { atom: () => feed.atom1(), rss: () => feed.rss2(), json: () => feed.json1() };
   const res = new Response(responses[format]());
   res.headers.set('Expires', new Date(Date.now() + 120).toUTCString());
   res.headers.set('Cache-Control', 'max-age=120');

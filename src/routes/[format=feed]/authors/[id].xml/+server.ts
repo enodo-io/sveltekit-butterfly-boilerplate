@@ -67,7 +67,7 @@ export const GET: RequestHandler = async ({ fetch, params }) => {
     posts.data.forEach((post: Butterfly.Post) => {
       feed.addItem({
         title: post.attributes.title,
-        id: post.id.toString(),
+        id: postHref(post),
         link: postHref(post),
         description: post.attributes.resume,
         date: new Date(post.attributes.publishedAt),
@@ -93,7 +93,11 @@ export const GET: RequestHandler = async ({ fetch, params }) => {
       });
     });
 
-    const responses = { atom: feed.atom1, rss: feed.rss2, json: feed.json1 };
+    const responses = {
+      atom: () => feed.atom1(),
+      rss: () => feed.rss2(),
+      json: () => feed.json1(),
+    };
     const res = new Response(responses[format]());
     res.headers.set('Expires', new Date(Date.now() + 120).toUTCString());
     res.headers.set('Cache-Control', CACHE_CONTROL.short);
