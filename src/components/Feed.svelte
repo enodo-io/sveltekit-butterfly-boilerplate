@@ -7,8 +7,7 @@
 
   type Props = HTMLAttributes<HTMLElement> & {
     feed:
-      | Promise<Butterfly.ApiResponse<Butterfly.Post[]>>
-      | Butterfly.ApiResponse<Butterfly.Post[]>;
+      Promise<Butterfly.ApiResponse<Butterfly.Post[]>> | Butterfly.ApiResponse<Butterfly.Post[]>;
     length: number;
     width?: number;
     format?: 'default' | 'source' | 'thumb' | 'square' | 'cover' | 'stories';
