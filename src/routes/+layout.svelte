@@ -69,13 +69,12 @@
 
     {#if page.url.pathname !== '/'}
       <title>{page.data.meta.title} | {data.settings.title}</title>
-
-      <meta property="og:title" content="{page.data.meta.title} | {data.settings.title}" />
     {:else}
       <title>{page.data.meta.title}</title>
-
-      <meta property="og:title" content={page.data.meta.title} />
     {/if}
+
+    <!-- No site suffix on og:title: the brand is already in og:site_name -->
+    <meta property="og:title" content={page.data.meta.title} />
 
     <meta name="description" content={page.data.meta.description} />
 
