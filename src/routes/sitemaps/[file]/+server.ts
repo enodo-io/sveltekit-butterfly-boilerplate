@@ -1,5 +1,6 @@
 import type { RequestHandler } from './$types';
 import { cacheFor, getApiFile } from '$lib/server/apiFiles';
+import { cacheTags } from '$lib/server/cacheTags';
 import { sitemapMaxAge } from '$lib/server/sitemapCache';
 
 /**
@@ -20,6 +21,8 @@ export const GET: RequestHandler = async ({ fetch, params }) => {
     headers: {
       'Content-Type': ok ? 'application/xml; charset=utf-8' : file.contentType || 'text/plain',
       'Cache-Control': ok ? cacheFor(sitemapMaxAge(params.file, file.maxAge)) : 'no-store',
+      // purged when the sitemap settings change
+      ...(ok ? cacheTags('sitemap') : {}),
     },
   });
 };

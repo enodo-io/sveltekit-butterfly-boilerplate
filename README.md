@@ -23,7 +23,8 @@ A high-performance, SEO-optimized SvelteKit boilerplate for the [Enodo Butterfly
   - [Typography](#typography)
   - [Language Configuration](#language-configuration)
   - [Assets](#assets)
-  - [Sitemap URLs](#sitemap-urls)
+  - [Sitemaps, robots.txt, ads.txt](#sitemaps-robotstxt-adstxt)
+  - [Cache and purges](#cache-and-purges)
 - [Pages](#pages)
 - [RSS Feeds](#rss-feeds)
 - [Sitemaps](#sitemaps)
@@ -155,18 +156,20 @@ npm run preview
 
 The setup script creates a `.env` file with the following variables:
 
-| Variable              | Required | Description                                                                               |
-| --------------------- | -------- | ----------------------------------------------------------------------------------------- |
-| `PUBLIC_BASE_URL`     | Yes      | Your website's public URL (e.g., `https://mywebsite.com`)                                 |
-| `PUBLIC_API_URL`      | Yes      | Butterfly API domain (from your Butterfly settings)                                       |
-| `PUBLIC_API_KEY`      | Yes      | Butterfly API key (from your Butterfly settings)                                          |
-| `PUBLIC_MEDIA_URL`    | Yes      | Butterfly media domain (for static assets)                                                |
-| `PUBLIC_STATIC_PAGES` | No       | JSON object mapping page slugs to IDs (e.g., `{"about":1,"legal":2}`)                     |
-| `PUBLIC_INDEXABLE`    | Yes      | Set to `false` for staging/dev to prevent indexing. Defaults to `true` if not set         |
-| `PUBLIC_LOCALE`       | Yes      | Locale code for your site (e.g., `fr_FR`, `en_US`, `es_ES`)                               |
-| `PUBLIC_LANGUAGE`     | Yes      | Language code (e.g., `fr`, `en`, `es`) - auto-extracted from locale by default            |
-| `PUBLIC_GTM_ID`       | No       | Google Tag Manager container ID (e.g., `GTM-XXXXXXX`)                                     |
-| `PUBLIC_SENTRY_DSN`   | No       | Sentry DSN: error monitoring of the server and the browser (errors only, replay on error) |
+| Variable                | Required | Description                                                                                                                                      |
+| ----------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `PUBLIC_BASE_URL`       | Yes      | Your website's public URL (e.g., `https://mywebsite.com`)                                                                                        |
+| `PUBLIC_API_URL`        | Yes      | Butterfly API domain (from your Butterfly settings)                                                                                              |
+| `PUBLIC_API_KEY`        | Yes      | Butterfly API key (from your Butterfly settings)                                                                                                 |
+| `PUBLIC_MEDIA_URL`      | Yes      | Butterfly media domain (for static assets)                                                                                                       |
+| `PUBLIC_STATIC_PAGES`   | No       | JSON object mapping page slugs to IDs (e.g., `{"about":1,"legal":2}`)                                                                            |
+| `PUBLIC_INDEXABLE`      | Yes      | Set to `false` for staging/dev to prevent indexing. Defaults to `true` if not set                                                                |
+| `PUBLIC_LOCALE`         | Yes      | Locale code for your site (e.g., `fr_FR`, `en_US`, `es_ES`)                                                                                      |
+| `PUBLIC_LANGUAGE`       | Yes      | Language code (e.g., `fr`, `en`, `es`) - auto-extracted from locale by default                                                                   |
+| `PUBLIC_GTM_ID`         | No       | Google Tag Manager container ID (e.g., `GTM-XXXXXXX`)                                                                                            |
+| `PUBLIC_SENTRY_DSN`     | No       | Sentry DSN: error monitoring of the server and the browser (errors only, replay on error)                                                        |
+| `BUTTERFLY_PROPERTY_ID` | No       | Property id (the number in the back-office URL): enables the cache tags                                                                          |
+| `CACHE_TAGS`            | No       | Cache in front of the website: `xkey` (default), `cloudflare`, `fastly`, `vercel`, `netlify`, `none` (see [Cache and purges](#cache-and-purges)) |
 
 ### Butterfly Requirements
 
@@ -315,6 +318,34 @@ The « Aperçu » shows the saved files. The files are served at `https://www.yo
 Until the plugins are configured: the sitemaps answer 404, `/robots.txt` serves `src/lib/server/robots.fallback.txt` (`{origin}` replaced by `PUBLIC_BASE_URL`), `/ads.txt` and `/app-ads.txt` answer 404. The fallback robots.txt is also served when the API is unreachable (3 s timeout), so that crawlers never get an error on it.
 
 Changes are live right away: the API purges its cache on every save and on every post change.
+
+### Cache and purges
+
+The pages of one post (articles, static pages) carry a **cache tag** (`42:post:123`) that Butterfly purges whenever the post changes. They can thus stay 6 hours in a shared cache (`s-maxage`) and still show an edit at once. The lists (home, categories, tags, authors) are not tagged and keep their short TTL: they change with every post anyway. The relayed sitemaps and text files are tagged too (purged when their plugin settings change).
+
+Set `BUTTERFLY_PROPERTY_ID` to enable the tags, and `CACHE_TAGS` to the cache in front of the website (`$lib/server/cacheTags`):
+
+| `CACHE_TAGS`     | Header              |
+| ---------------- | ------------------- |
+| `xkey` (default) | `xkey` (Varnish)    |
+| `cloudflare`     | `Cache-Tag`         |
+| `fastly`         | `Surrogate-Key`     |
+| `vercel`         | `Vercel-Cache-Tag`  |
+| `netlify`        | `Netlify-Cache-Tag` |
+| `none`           | no tag, no long TTL |
+
+**Hosted by Enodo**: keep `xkey`, Butterfly purges the Enodo Varnish. Nothing else to do.
+
+**Another CDN**: Butterfly calls its purge API through a webhook: back-office › Plugins › **Hooks** › « Ajouter un endpoint », events `post.*`, `sitemap.changed`, `txtfile.changed`, « Regroupement » on (purge APIs are rate limited). The `{cacheTags}` placeholder holds the keys to purge; in a JSON body, `"{cacheTags}"` alone stays a list. Store the API token in the plugin « Secrets » and use it as `{secret:name}`.
+
+| CDN        | `POST` URL                                                                          | Header                                      | Body                                                    |
+| ---------- | ----------------------------------------------------------------------------------- | ------------------------------------------- | ------------------------------------------------------- |
+| Cloudflare | `https://api.cloudflare.com/client/v4/zones/<ZONE_ID>/purge_cache`                  | `Authorization: Bearer {secret:cloudflare}` | `{"tags": "{cacheTags}"}`                               |
+| Fastly     | `https://api.fastly.com/service/<SERVICE_ID>/purge`                                 | `Fastly-Key: {secret:fastly}`               | `{"surrogate_keys": "{cacheTags}"}`                     |
+| Vercel     | `https://api.vercel.com/v1/edge-cache/invalidate-by-tags?projectIdOrName=<PROJECT>` | `Authorization: Bearer {secret:vercel}`     | `{"tags": "{cacheTags}"}`                               |
+| Netlify    | `https://api.netlify.com/api/v1/purge`                                              | `Authorization: Bearer {secret:netlify}`    | `{"site_id": "<SITE_ID>", "cache_tags": "{cacheTags}"}` |
+
+Cloudflare free plan: 5 purge calls a minute, set « Attente (ms) » to `30000`; and Cloudflare caches HTML only with a Cache Rule. Vercel: 16 tags per call at most. Check the endpoint with « Tester ».
 
 ## Pages
 

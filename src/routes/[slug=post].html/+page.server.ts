@@ -3,6 +3,7 @@ import httpErrors from '$lib/httpErrors';
 import api from '$lib/api';
 import { PUBLIC_BASE_URL } from '$env/static/public';
 import { CACHE_CONTROL } from '$lib/cacheControl';
+import { cacheTags, taggedCacheControl } from '$lib/server/cacheTags';
 import { ApiError, RedirectError } from '@enodo/butterfly-ts';
 
 import type { PageServerLoad } from './$types';
@@ -73,7 +74,11 @@ export const load: PageServerLoad = async ({ fetch, params, isDataRequest, setHe
       },
     });
 
-    setHeaders({ 'cache-control': CACHE_CONTROL.short });
+    // tagged: purged by Butterfly when the post changes, so long in the shared caches
+    setHeaders({
+      'cache-control': taggedCacheControl(CACHE_CONTROL.short),
+      ...cacheTags(`post:${post.data.id}`),
+    });
     return {
       layer: {
         'content.type': 'post',

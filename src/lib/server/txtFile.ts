@@ -1,5 +1,6 @@
 import { CACHE_CONTROL } from '$lib/cacheControl';
 import { getApiFile } from './apiFiles';
+import { cacheTags } from './cacheTags';
 
 const TEXT = 'text/plain; charset=utf-8';
 
@@ -16,7 +17,12 @@ export async function txtFileResponse(
 
   if (file.status === 200) {
     return new Response(file.body, {
-      headers: { 'Content-Type': TEXT, 'Cache-Control': CACHE_CONTROL.longer },
+      headers: {
+        'Content-Type': TEXT,
+        'Cache-Control': CACHE_CONTROL.longer,
+        // purged when the « Fichiers .txt » settings change
+        ...cacheTags(`txtfile:${name}`),
+      },
     });
   }
 
