@@ -3,8 +3,8 @@ Allow: /
 # Prevent bots forging bad links from the api
 Disallow: /v1/
 
-Sitemap: https://demo.enodo.dev/sitemaps/index.xml
-Sitemap: https://demo.enodo.dev/sitemaps/news.xml
+Sitemap: {origin}/sitemaps/index.xml
+Sitemap: {origin}/sitemaps/news.xml
 
 #  ____                                _   _
 # |  _ \ _____      _____ _ __ ___  __| | | |__  _   _

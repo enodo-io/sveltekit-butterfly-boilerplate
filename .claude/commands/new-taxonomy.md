@@ -18,11 +18,9 @@ Scaffold a new Butterfly taxonomy for slug `$1` with singular name `$2` (e.g. `/
 - [ ] `src/routes/$1/+page.svelte` — mirrors `src/routes/tags/+page.svelte`
 - [ ] `src/routes/$1/[id]/+page.server.ts` — one term + its posts, filter `terms<$1>: term.data.id`
 - [ ] `src/routes/$1/[id]/+page.svelte` — mirrors `src/routes/tags/[slug]/+page.svelte`
-- [ ] `src/routes/sitemaps/$1.xml/+server.ts` — mirror `sitemaps/tags.xml` with taxonomy filter `$1`
-- [ ] Add `${PUBLIC_BASE_URL}/sitemaps/$1.xml` to `src/routes/sitemaps/index.xml/+server.ts`
-- [ ] Append `Sitemap:` line for `$1.xml` to `static/robots.txt`
+- [ ] Tell the user to add a `terms` sitemap (taxonomy `$1`) and its term permalink to the Sitemap plugin of the back-office: the index and robots.txt follow on their own
 - [ ] Optionally add `/rss/$1/[id].xml` feed — mirror `[format=feed]/tags/[id].xml`
 
 Use `content.type: '$1'` for the index and `content.type: '$2'` for detail pages. Pass the taxonomy slug dynamically — never hardcode field names outside the `terms<$1>` interpolation.
 
-**After scaffolding**, report: files created, sitemap index updated (yes/no), robots.txt updated (yes/no), and what the user needs to do next (translate strings, add to menu, tune cache).
+**After scaffolding**, report: files created, the Sitemap plugin entry to add, and what the user needs to do next (translate strings, add to menu, tune cache).

@@ -34,7 +34,7 @@ Before auditing, read:
 
 ### Sitemaps
 
-- Static routes in `src/routes/*/+page.svelte` (non-dynamic, not CMS-backed) missing from `src/routes/sitemaps/pages.xml/+server.ts`
+- Static routes in `src/routes/*/+page.svelte` (non-dynamic, not CMS-backed) missing from the static sitemap of the back-office Sitemap plugin (ask the user for its URLs, or fetch `/sitemaps/pages.xml`)
 - Content-listing routes missing a corresponding feed under `src/routes/[format=feed]/`
 
 ### Streaming / SSR content

@@ -22,7 +22,7 @@ Register a CMS-backed static page (post type `page`) at `/$1.html`, served by `s
    - If it exists, merge the entry: read current JSON, add `"$1": 123`, write back
    - Validate the result parses as JSON
 2. **No route file to create** — `[slug=page].html` handles all entries in `PUBLIC_STATIC_PAGES` automatically.
-3. **Sitemap**: `src/routes/sitemaps/pages.xml/+server.ts` already fetches `syndication/posts` filtered on `types: 'page'` — the page appears automatically once published in Butterfly.
+3. **Sitemap**: the static sitemap of the back-office Sitemap plugin embeds the posts of type `page` (`include` filter) — the page appears automatically once published in Butterfly.
 4. **Add to menu/footer** if the user wants it visible — ask and update `src/components/Layout/Header.svelte` or `Footer.svelte` accordingly.
 
 **After wiring**, report: env var updated, Butterfly id used, and remind the user to:

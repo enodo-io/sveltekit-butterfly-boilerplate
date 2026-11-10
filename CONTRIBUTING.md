@@ -40,7 +40,7 @@ Open an issue first to align on scope before writing code. Changes that touch th
 - [ ] `npm run check` passes (svelte-check)
 - [ ] `npm run test:unit` passes
 - [ ] `npm run test:e2e` passes (when relevant)
-- [ ] New routes are added to `src/routes/sitemaps/pages.xml/+server.ts` (see the `static-route-sitemap` skill)
+- [ ] New static routes are added to the static sitemap of the back-office Sitemap plugin (see the `static-route-sitemap` skill)
 - [ ] `CLAUDE.md` and affected skills updated when conventions change
 - [ ] Follows the design-system rules (see the table in `CLAUDE.md` § "Design system rules")
 

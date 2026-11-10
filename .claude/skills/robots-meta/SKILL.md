@@ -96,7 +96,7 @@ If you change this logic, mirror the change in this skill.
 
 ## Also tell crawlers via `robots.txt`
 
-Some paths should be blocked at the robots.txt level too (admin URLs, API endpoints that serve HTML). `static/robots.txt` is the source of truth for crawl-level blocks. `meta.robots` is for index-level decisions after crawling. Use both when a URL is truly off-limits.
+Some paths should be blocked at the robots.txt level too (admin URLs, API endpoints that serve HTML). The robots.txt of the « Fichiers .txt » plugin (back-office; fallback `src/lib/server/robots.fallback.txt`) is the source of truth for crawl-level blocks. `meta.robots` is for index-level decisions after crawling. Use both when a URL is truly off-limits.
 
 ---
 

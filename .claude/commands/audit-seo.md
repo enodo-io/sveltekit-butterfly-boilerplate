@@ -12,7 +12,7 @@ Audit the repo against every skill's rules. **Report only — do not fix.** The 
 - [ ] "Click here" / "Read more" / "Learn more" anchor text (diluted signals)
 - [ ] `<img>` without `alt` — grep `<img[^>]*(?!alt=)`
 - [ ] Empty `alt=""` on non-decorative images — visual review of card-like components
-- [ ] Routes missing from `src/routes/sitemaps/pages.xml/+server.ts` — list all `src/routes/*/+page.svelte` for non-dynamic routes, cross-check sitemap entries
+- [ ] Routes missing from the static sitemap — list all `src/routes/*/+page.svelte` for non-dynamic routes, cross-check with `/sitemaps/pages.xml` (Sitemap plugin)
 - [ ] Missing `meta.robots` where appropriate (search = `noindex,follow`?)
 - [ ] Missing `meta` or `layer` in `+page.server.ts` — grep for return statements without those keys
 

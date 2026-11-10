@@ -46,12 +46,12 @@ res.headers.set('Cache-Control', CACHE_CONTROL.day);
 | Article detail, author, tag pages | `medium`         | Stable between publishes      |
 | Taxonomy index pages              | `long`           | New terms are rare            |
 | Static/CMS pages (about, legal)   | `longer`         | Change infrequently           |
-| Sitemaps, RSS/Atom feeds          | `short` or `day` | See breakdown below           |
-| Sitemap index, robots.txt         | `day`            | Mostly immutable              |
+| RSS/Atom feeds                    | `short`          | See breakdown below           |
+| robots.txt / ads.txt (API)        | `longer`         | Purged on save in the API     |
 
 ### Sitemaps / feeds
 
-The news sitemap (`news.xml`) must refresh fast — use `short` or `medium`. The posts/pages/sections sitemap can use `day` since a stale entry for a few hours isn't critical (Google will re-fetch).
+Sitemaps are relayed from the API by `src/routes/sitemaps/[file]/` (`$lib/server/sitemapCache`): news 300s; index, current period, categories, tags, authors, pages 3600s; closed years 86400s.
 
 Feeds (`[format=feed]/...`) use `short` — RSS readers poll frequently and expect fresh data.
 
