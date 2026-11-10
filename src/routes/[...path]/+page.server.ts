@@ -59,6 +59,7 @@ export const load: PageServerLoad = async ({
     layer: {
       'page.index': page,
       'content.type': 'category',
+      'content.id': category.data.id,
     },
     meta: {
       url: `${PUBLIC_BASE_URL}${category.data.attributes.path}` + (page > 1 ? `?page=${page}` : ''),

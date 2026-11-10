@@ -15,6 +15,7 @@ declare global {
         'page.query'?: string;
         'content.type': string;
         'content.id'?: number | string;
+        'content.taxonomy'?: string;
         'content.group'?: string;
         'content.tags'?: string[];
         'content.flags'?: string[];

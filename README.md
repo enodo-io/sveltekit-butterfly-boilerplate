@@ -156,20 +156,22 @@ npm run preview
 
 The setup script creates a `.env` file with the following variables:
 
-| Variable                | Required | Description                                                                                                                                      |
-| ----------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `PUBLIC_BASE_URL`       | Yes      | Your website's public URL (e.g., `https://mywebsite.com`)                                                                                        |
-| `PUBLIC_API_URL`        | Yes      | Butterfly API domain (from your Butterfly settings)                                                                                              |
-| `PUBLIC_API_KEY`        | Yes      | Butterfly API key (from your Butterfly settings)                                                                                                 |
-| `PUBLIC_MEDIA_URL`      | Yes      | Butterfly media domain (for static assets)                                                                                                       |
-| `PUBLIC_STATIC_PAGES`   | No       | JSON object mapping page slugs to IDs (e.g., `{"about":1,"legal":2}`)                                                                            |
-| `PUBLIC_INDEXABLE`      | Yes      | Set to `false` for staging/dev to prevent indexing. Defaults to `true` if not set                                                                |
-| `PUBLIC_LOCALE`         | Yes      | Locale code for your site (e.g., `fr_FR`, `en_US`, `es_ES`)                                                                                      |
-| `PUBLIC_LANGUAGE`       | Yes      | Language code (e.g., `fr`, `en`, `es`) - auto-extracted from locale by default                                                                   |
-| `PUBLIC_GTM_ID`         | No       | Google Tag Manager container ID (e.g., `GTM-XXXXXXX`)                                                                                            |
-| `PUBLIC_SENTRY_DSN`     | No       | Sentry DSN: error monitoring of the server and the browser (errors only, replay on error)                                                        |
-| `BUTTERFLY_PROPERTY_ID` | No       | Property id (the number in the back-office URL): enables the cache tags                                                                          |
-| `CACHE_TAGS`            | No       | Cache in front of the website: `xkey` (default), `cloudflare`, `fastly`, `vercel`, `netlify`, `none` (see [Cache and purges](#cache-and-purges)) |
+| Variable                       | Required | Description                                                                                                                                                                                      |
+| ------------------------------ | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `PUBLIC_BASE_URL`              | Yes      | Your website's public URL (e.g., `https://mywebsite.com`)                                                                                                                                        |
+| `PUBLIC_API_URL`               | Yes      | Butterfly API domain (from your Butterfly settings)                                                                                                                                              |
+| `PUBLIC_API_KEY`               | Yes      | Butterfly API key (from your Butterfly settings)                                                                                                                                                 |
+| `PUBLIC_MEDIA_URL`             | Yes      | Butterfly media domain (for static assets)                                                                                                                                                       |
+| `PUBLIC_STATIC_PAGES`          | No       | JSON object mapping page slugs to IDs (e.g., `{"about":1,"legal":2}`)                                                                                                                            |
+| `PUBLIC_INDEXABLE`             | Yes      | Set to `false` for staging/dev to prevent indexing. Defaults to `true` if not set                                                                                                                |
+| `PUBLIC_LOCALE`                | Yes      | Locale code for your site (e.g., `fr_FR`, `en_US`, `es_ES`)                                                                                                                                      |
+| `PUBLIC_LANGUAGE`              | Yes      | Language code (e.g., `fr`, `en`, `es`) - auto-extracted from locale by default                                                                                                                   |
+| `PUBLIC_GTM_ID`                | No       | Google Tag Manager container ID (e.g., `GTM-XXXXXXX`)                                                                                                                                            |
+| `PUBLIC_SENTRY_DSN`            | No       | Sentry DSN: error monitoring of the server and the browser (errors only, replay on error)                                                                                                        |
+| `PUBLIC_BUTTERFLY_TRACKER_URL` | No       | Butterfly audience tracker (`https://{propertyId}.tbtf.eno.do` or a custom tracker domain): cookieless pageview hits, not consent-gated. Empty = derived from `PUBLIC_API_URL`, `off` = disabled |
+| `PUBLIC_BUTTERFLY_TRACKER_DEV` | No       | `true` to also send tracker hits from `npm run dev` (off by default)                                                                                                                             |
+| `BUTTERFLY_PROPERTY_ID`        | No       | Property id (the number in the back-office URL): enables the cache tags                                                                                                                          |
+| `CACHE_TAGS`                   | No       | Cache in front of the website: `xkey` (default), `cloudflare`, `fastly`, `vercel`, `netlify`, `none` (see [Cache and purges](#cache-and-purges))                                                 |
 
 ### Butterfly Requirements
 
@@ -872,6 +874,7 @@ Every navigation pushes a `pageview` event with these fields (defined in `App.Pa
 
 - `content.type`: `home | articles | post | page | author | category | tag | search`
 - `content.id`: the resource id (stringified for consistent GTM matching)
+- `content.taxonomy`: taxonomy slug on a term page (`tags`)
 - `content.group`: category / taxonomy group
 - `content.tags`: array of tag labels
 - `content.flags`: array of flag strings
@@ -893,6 +896,10 @@ Three standard events ship with the container:
 | `infinite_scroll` | Pagination button auto-loads via inview   | `layer` + `page.index` of the page about to be loaded |
 
 Intent events (`load_more_click` / `infinite_scroll`) fire **before** the API call; the paired `pageview` fires **after** the load succeeds. This lets analytics derive the load-failure rate as `intent − pageview` for the same `page.index`.
+
+### Butterfly tracker
+
+By default (tracker URL derived from `PUBLIC_API_URL`, `PUBLIC_BUTTERFLY_TRACKER_URL` to override or `off` to disable), every navigation `pageview` also sends a first-party, cookieless hit to the Butterfly tracker (`POST {url}/h`, `text/plain` JSON via `sendBeacon`): `{ t: content.type, id?: content.id, tx?: content.taxonomy, pi?: page.index, q?: page.query }`. It is not consent-gated — no cookie, no storage, no identifier (CNIL audience-measurement exemption). Infinite-scroll loads and `?page=N` pages (`page.index > 1`) are not counted, nor is anything sent in dev unless `PUBLIC_BUTTERFLY_TRACKER_DEV=true`. See the `gtm-events` skill.
 
 ### Custom Events
 

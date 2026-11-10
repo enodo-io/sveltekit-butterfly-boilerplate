@@ -30,6 +30,10 @@ Missing any of these causes SSR errors (`+layout.server.ts` throws 500 when `PUB
 | `PUBLIC_INDEXABLE`    | `true` \| `false` (default `true`)  | If `false`, layout emits `<meta name="robots" content="noindex,nofollow">` by default |
 | `PUBLIC_GTM_ID`       | `GTM-XXXXXXX`                       | Enables `GTM.svelte` (auto-skipped if absent)                       |
 | `PUBLIC_SENTRY_DSN`   | `https://…@o0.ingest.sentry.io/0`   | Enables Sentry on the server (`hooks.server.ts`) and in the browser (`hooks.client.ts`); errors only, Session Replay on error, loaded once idle. Nothing without it, nothing in dev |
+| `PUBLIC_BUTTERFLY_TRACKER_URL` | `https://{propertyId}.tbtf.eno.do` (or the property's custom tracker domain), no trailing slash | Overrides the cookieless Butterfly tracker URL (`POST {url}/h`, not consent-gated). Empty = derived from `PUBLIC_API_URL` (`{id}.pubbtf.eno.do` → `{id}.tbtf.eno.do`, `api{x}.site` → `t{x}.site`), `off` = disabled. Nothing in dev |
+| `PUBLIC_BUTTERFLY_TRACKER_DEV` | `true` \| empty | Also send tracker hits in dev (debugging only) |
+
+`PUBLIC_SENTRY_DSN` and `PUBLIC_BUTTERFLY_TRACKER_*` are read through `$env/dynamic/public` (like `hooks.client.ts`), so a `.env` without them still builds — a missing `$env/static/public` import is a build error.
 
 ---
 

@@ -26,8 +26,9 @@ Every navigation pushes these (defined in `App.PageData.layer`, plus app-level f
 
 **Content scope** — per navigation:
 
-- `content.type` — `home | articles | post | page | author | category | tag | search` (required)
-- `content.id` — resource id
+- `content.type` — `home | articles | post | page | author | authors | category | tag | tags | search | rss | atom | json` (required)
+- `content.id` — resource id (post, page, category, tag, author pages)
+- `content.taxonomy` — taxonomy slug of a term page (`tags`, from the term's `taxonomy` relationship)
 - `content.group` — group/category
 - `content.tags` — array of tag names
 - `content.flags` — array of flag strings
@@ -97,11 +98,40 @@ The helper short-circuits on the server, so you can call `track` / `push` from a
 
 ---
 
+## Butterfly tracker sink (first-party, cookieless)
+
+`track('pageview', layer)` also sends a hit to the Butterfly tracker. On by default: the URL is derived from `PUBLIC_API_URL` (`{id}.pubbtf.eno.do` → `{id}.tbtf.eno.do`, `api{x}.site` → `t{x}.site`, see `trackerUrl()`); `PUBLIC_BUTTERFLY_TRACKER_URL` overrides it, `off` disables it. Nothing to call: every `pageview` already goes through it. Other events and `push()` never reach the tracker.
+
+- `POST {PUBLIC_BUTTERFLY_TRACKER_URL}/h`, body `text/plain` JSON → a CORS simple request, no preflight. `navigator.sendBeacon` first, `fetch(…, { keepalive: true, credentials: 'omit' })` as fallback. Fire-and-forget: never throws, never blocks, no-op on the server.
+- **Not consent-gated** (no `withConsent` / `whenCmpReady`): no cookie, no storage, no identifier, so it fits the CNIL audience-measurement exemption and counts every visit. Never add an identifier to it — that would require consent.
+- **One navigation = one hit**: hits with `page.index > 1` are skipped client-side (infinite-scroll loads, `?page=N` pages are not new views; the tracker drops them too), and the same hit for the same URL twice in a row is sent once. GTM still gets every `pageview`.
+- Off in dev unless `PUBLIC_BUTTERFLY_TRACKER_DEV=true`. Bots / prerender are filtered server-side.
+
+Payload (short keys on purpose, `toHit()` in `$lib/dataLayer`):
+
+| Key  | From layer         | Notes                                                    |
+| ---- | ------------------ | -------------------------------------------------------- |
+| `t`  | `content.type`     | required — sent as is (the tracker maps `tag` → term)    |
+| `id` | `content.id`       | stringified, when present                                |
+| `tx` | `content.taxonomy` | term pages only (`tags`)                                 |
+| `pi` | `page.index`       | when present (always 1, see above)                       |
+| `q`  | `page.query`       | search only                                              |
+| `e`  | —                  | `1` on the first hit after a full page load (entry)      |
+| `r`  | `document.referrer`| entry hit only: referrer HOSTNAME, never the full URL    |
+
+```json
+{ "t": "tag", "id": "svelte", "tx": "tags", "pi": 1 }
+```
+
+A new detail route (post, page, category, term, author) must set `content.type` + `content.id` in its `layer`; a new taxonomy also sets `content.taxonomy`.
+
+---
+
 ## Naming conventions
 
 | Event type           | Recommended `event` value                 | Where it fires                                               |
 | -------------------- | ----------------------------------------- | ------------------------------------------------------------ |
-| Page view            | `pageview`                                | `GTM.svelte` on every nav, routes after infinite-scroll load |
+| Page view            | `pageview`                                | `GTM.svelte` on every nav, routes after infinite-scroll load (the tracker counts the first only) |
 | Infinite scroll load | `infinite_scroll`                         | `Pagination.svelte` (auto-load via inview)                   |
 | "Load more" click    | `load_more_click`                         | `Pagination.svelte` (manual click)                           |
 | CTA / link click     | `click_cta`, `click_link`                 | component-level                                              |

@@ -123,7 +123,7 @@ const posts = (async () =>
       page: { size: 18, number: page },
     },
   }))();
-// layer: { 'content.type': '{singular}', 'content.id': term.data.id, 'page.index': page }
+// layer: { 'content.type': '{singular}', 'content.id': term.data.id, 'content.taxonomy': '{slug}', 'page.index': page }
 // scope: term
 // feeds: { posts: isDataRequest ? posts : await posts }
 ```

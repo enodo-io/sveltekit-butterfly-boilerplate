@@ -63,6 +63,7 @@ export const load: PageServerLoad = async ({ url, params, fetch, isDataRequest, 
       'page.index': page,
       'content.type': 'tag',
       'content.id': tag.data.id,
+      'content.taxonomy': String(tag.data.relationships.taxonomy?.data?.id ?? 'tags'),
     },
     meta: {
       url: `${PUBLIC_BASE_URL}/tags/${id}` + (page > 1 ? `?page=${page}` : ''),
