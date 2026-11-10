@@ -7,32 +7,34 @@
 
   type Props = { element: Butterfly.PostBody.Quote };
   const { element }: Props = $props();
+  // a quote may have no source: the page must not crash on `source.author`
+  const source = $derived(element.data.source ?? {});
 </script>
 
 <figure class="post--quote">
-  <blockquote cite={element.data.source?.url}>
+  <blockquote cite={source.url}>
     <p><InlineNodes nodes={element.data.value} /></p>
   </blockquote>
 
-  {#if element.data.source.author || element.data.source.title}
+  {#if source.author || source.title}
     <figcaption class="post--quote--credits">
-      {#if element.data.source.author}
-        — {element.data.source.author}{/if}{#if element.data.source.title},
-        {#if element.data.source.url && element.data.source.url.length}
+      {#if source.author}
+        — {source.author}{/if}{#if source.title},
+        {#if source.url && source.url.length}
           <cite>
             <!-- eslint-disable svelte/no-navigation-without-resolve -->
             <a
               target="_blank"
               rel="noopener noreferrer"
-              href={element.data.source.url.startsWith(PUBLIC_BASE_URL)
-                ? resolve(element.data.source.url.replace(PUBLIC_BASE_URL, '') as `/${string}`)
-                : element.data.source.url}
-              title={element.data.source.title}>{element.data.source.title}</a
+              href={source.url.startsWith(PUBLIC_BASE_URL)
+                ? resolve(source.url.replace(PUBLIC_BASE_URL, '') as `/${string}`)
+                : source.url}
+              title={source.title}>{source.title}</a
             >
             <!-- eslint-enable svelte/no-navigation-without-resolve -->
           </cite>
         {:else}
-          <cite>{element.data.source.title}</cite>
+          <cite>{source.title}</cite>
         {/if}
       {/if}
     </figcaption>
