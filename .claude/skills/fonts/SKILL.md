@@ -71,14 +71,25 @@ npm install -D @fontsource/poppins
 
 Typical set: `400`, `500`, `600`, `700`. Don't import unused weights.
 
-### Latin subset (optional, smaller file)
+### Latin subsets (default)
 
 ```css
-@import '@fontsource/poppins/latin/400.css'; /* latin only */
-@import '@fontsource/poppins/400.css'; /* full charset */
+@import '@fontsource/poppins/latin-400.css'; /* é, ü, ç… */
+@import '@fontsource/poppins/latin-ext-400.css'; /* Central European, ő, ł… */
 ```
 
-Use latin subset when the site doesn't need extended character sets.
+Import `latin` + `latin-ext` per weight, not `{weight}.css`: the full charset adds cyrillic, greek, devanagari, vietnamese… `@font-face` rules to the main CSS of every page (Poppins in 7 weights was 29% of the CSS). Add a subset only for a site written in that script. A variable font without per-subset files (`@fontsource-variable/open-sans`) is fine as is: its `unicode-range` already limits the download to the latin file.
+
+### Metric fallbacks (no layout shift at the swap)
+
+Each `--font-*` lists a `{Font} Fallback` face right after the web font: Arial with the `size-adjust` / `ascent-override` / `descent-override` / `line-gap-override` of the web font, so text keeps the same size and line height before and after `font-display: swap`. For a new font, compute them with Capsize:
+
+```bash
+npx -y -p @capsizecss/core -p @capsizecss/metrics node -e "
+const { createFontStack } = require('@capsizecss/core');
+const m = (n) => require('@capsizecss/metrics/' + n);
+console.log(createFontStack([{ ...m('poppins'), familyName: 'Poppins' }, m('arial')], { fontFaceFormat: 'styleString' }).fontFaces)"
+```
 
 ---
 
@@ -98,22 +109,23 @@ npm uninstall @fontsource/old-font-name
 
 ```css
 /* tailwind.css — imports + @theme */
-@import '@fontsource/poppins/300.css';
-@import '@fontsource/poppins/400.css';
-@import '@fontsource/poppins/500.css';
-@import '@fontsource/poppins/600.css';
-@import '@fontsource/poppins/700.css';
-@import '@fontsource/poppins/800.css';
-@import '@fontsource/poppins/900.css';
+@import '@fontsource/poppins/latin-400.css';
+@import '@fontsource/poppins/latin-ext-400.css';
+@import '@fontsource/poppins/latin-600.css';
+@import '@fontsource/poppins/latin-ext-600.css';
 @import '@fontsource-variable/open-sans';
-@import '@fontsource/fira-mono';
+@import '@fontsource/fira-mono/latin-400.css';
+@import '@fontsource/fira-mono/latin-ext-400.css';
+/* + the 'Open Sans Variable Fallback' and 'Poppins Fallback' @font-face */
 
 @theme {
-  --font-brand: 'Poppins', sans-serif;
-  --font-sans: 'Open Sans Variable', Arial, -apple-system, …, sans-serif;
+  --font-brand: 'Poppins', 'Poppins Fallback', sans-serif;
+  --font-sans: 'Open Sans Variable', 'Open Sans Variable Fallback', Arial, …, sans-serif;
   --font-mono: 'Fira Mono', monospace;
 }
 ```
+
+Poppins is the header font only (400 and 600): a new weight in the header needs its import.
 
 ---
 
