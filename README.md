@@ -324,7 +324,7 @@ Changes are live right away: the API purges its cache on every save and on every
 
 ### Cache and purges
 
-The pages of one post (articles, static pages) carry a **cache tag** (`42:post:123`) that Butterfly purges whenever the post changes. They can thus stay 6 hours in a shared cache (`s-maxage`) and still show an edit at once. The lists (home, categories, tags, authors) are not tagged and keep their short TTL: they change with every post anyway. The relayed sitemaps and text files are tagged too (purged when their plugin settings change).
+The pages of one post (articles, static pages) carry a **cache tag** (`42:post:123`) that Butterfly purges whenever the post changes. They can thus stay 6 hours in the shared cache and still show an edit at once: `s-maxage` for Varnish (`xkey`), the CDN's own header otherwise (`Cloudflare-CDN-Cache-Control`, `Surrogate-Control`, `Vercel-CDN-Cache-Control`, `Netlify-CDN-Cache-Control`), since `s-maxage` turns off stale-while-revalidate on Cloudflare. The browser keeps the route's short TTL. The lists (home, categories, tags, authors) are not tagged and keep their short TTL: they change with every post anyway. The relayed sitemaps and text files are tagged too (purged when their plugin settings change).
 
 Set `PRIVATE_BUTTERFLY_PROPERTY_ID` to enable the tags, and `PRIVATE_CACHE_TAGS` to the cache in front of the website (`$lib/server/cacheTags`):
 

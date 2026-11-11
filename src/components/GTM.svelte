@@ -17,7 +17,7 @@
         whenCmpReady(() => {
           const script = document.createElement('script');
           script.async = true;
-          script.src = `https://www.googletagmanager.com/gtag/js?id=${PUBLIC_GTM_ID}`;
+          script.src = `https://www.googletagmanager.com/gtm.js?id=${PUBLIC_GTM_ID}`;
           document.head.appendChild(script);
         });
       }

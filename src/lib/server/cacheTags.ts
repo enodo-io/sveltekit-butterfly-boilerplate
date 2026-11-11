@@ -27,7 +27,20 @@ const mode = vars.PRIVATE_CACHE_TAGS || vars.CACHE_TAGS || 'xkey';
 const tagHeader = propertyId ? HEADERS[mode.trim().toLowerCase()] : undefined;
 
 /** Shared cache TTL of a tagged page (6 hours): the purges keep it fresh. */
-const TAGGED_S_MAXAGE = 6 * 3600;
+const TAGGED_TTL = 6 * 3600;
+
+/**
+ * The CDN-only TTL of a tagged page. Varnish reads `s-maxage`; the CDNs get
+ * their own header instead, because `s-maxage` turns off stale-while-revalidate
+ * on Cloudflare. The browser keeps the short `cache-control` of the route.
+ */
+const CDN_TTL = `max-age=${TAGGED_TTL}, stale-while-revalidate=${TAGGED_TTL}`;
+const CDN_HEADERS: Record<string, [header: string, value: string]> = {
+  cloudflare: ['cloudflare-cdn-cache-control', CDN_TTL],
+  fastly: ['surrogate-control', CDN_TTL],
+  vercel: ['vercel-cdn-cache-control', CDN_TTL],
+  netlify: ['netlify-cdn-cache-control', `public, durable, ${CDN_TTL}`],
+};
 
 /** The tag header of these keys (`post:123` → `42:post:123`), `{}` when tags are off. */
 export function cacheTags(...keys: string[]): Record<string, string> {
@@ -36,6 +49,21 @@ export function cacheTags(...keys: string[]): Record<string, string> {
   return { [header]: keys.map((key) => `${propertyId}:${key}`).join(separator) };
 }
 
-/** `cacheControl` plus a long `s-maxage` when the page is tagged (purged), else as is. */
-export const taggedCacheControl = (cacheControl: string) =>
-  tagHeader ? `${cacheControl}, s-maxage=${TAGGED_S_MAXAGE}` : cacheControl;
+/**
+ * Headers of a page tagged with these keys: the route's `cacheControl` for the
+ * browser, the tags, and the long shared TTL the purges allow (`s-maxage` for
+ * Varnish/xkey, the CDN's own header otherwise). Tags off: `cacheControl` only.
+ */
+export function taggedCacheHeaders(
+  cacheControl: string,
+  ...keys: string[]
+): Record<string, string> {
+  if (!tagHeader) return { 'cache-control': cacheControl };
+  const key = mode.trim().toLowerCase();
+  const cdn = CDN_HEADERS[key];
+  return {
+    'cache-control': cdn ? cacheControl : `${cacheControl}, s-maxage=${TAGGED_TTL}`,
+    ...(cdn ? { [cdn[0]]: cdn[1] } : {}),
+    ...cacheTags(...keys),
+  };
+}

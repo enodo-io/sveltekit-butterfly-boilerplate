@@ -3,7 +3,7 @@ import httpErrors from '$lib/httpErrors';
 import api from '$lib/api';
 import { PUBLIC_BASE_URL, PUBLIC_STATIC_PAGES } from '$env/static/public';
 import { CACHE_CONTROL } from '$lib/cacheControl';
-import { cacheTags, taggedCacheControl } from '$lib/server/cacheTags';
+import { taggedCacheHeaders } from '$lib/server/cacheTags';
 import { ApiError, RedirectError } from '@enodo/butterfly-ts';
 import { withRenderedMarkdown } from '$lib/server/markdown';
 
@@ -29,10 +29,7 @@ export const load: PageServerLoad = async ({ fetch, params, setHeaders }) => {
       post.data.attributes.body as Butterfly.PostBody.BodyData[],
     ) as typeof post.data.attributes.body;
 
-    setHeaders({
-      'cache-control': taggedCacheControl(CACHE_CONTROL.short),
-      ...cacheTags(`post:${post.data.id}`),
-    });
+    setHeaders(taggedCacheHeaders(CACHE_CONTROL.short, `post:${post.data.id}`));
     return {
       layer: {
         'content.type': 'page',

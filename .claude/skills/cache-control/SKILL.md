@@ -68,9 +68,15 @@ Don't inline a raw string — it becomes a maintenance hazard when the team want
 
 ---
 
-## No `s-maxage`
+## No hand-written `s-maxage`
 
-Don't add `s-maxage` to split the CDN TTL from the browser TTL. Cloudflare reads it as `proxy-revalidate` and then never serves stale ("s-maxage disables stale-while-revalidate", its Origin Cache Control docs), which defeats the presets; Varnish reads `max-age` anyway. If a route needs a longer shared TTL, give it a longer preset.
+Don't add `s-maxage` to a route to split the CDN TTL from the browser TTL. Cloudflare reads it as `proxy-revalidate` and then never serves stale ("s-maxage disables stale-while-revalidate", its Origin Cache Control docs), which defeats the presets. If an untagged route needs a longer shared TTL, give it a longer preset.
+
+The one exception is built in: a page **tagged** for purges (`taggedCacheHeaders` in `$lib/server/cacheTags`) stays 6 hours in the shared cache, because Butterfly purges it on every change. The helper picks the header per `PRIVATE_CACHE_TAGS`: `s-maxage` for Varnish (`xkey`), `Cloudflare-CDN-Cache-Control` / `Surrogate-Control` / `Vercel-CDN-Cache-Control` / `Netlify-CDN-Cache-Control` for the CDNs (never `s-maxage` there). The browser keeps the route's preset.
+
+```ts
+setHeaders(taggedCacheHeaders(CACHE_CONTROL.short, `post:${post.data.id}`));
+```
 
 ---
 
