@@ -5,7 +5,6 @@
 
   import { PUBLIC_BASE_URL } from '$env/static/public';
   import { resolve } from '$app/paths';
-  import api from '$lib/api';
   import { track } from '$lib/dataLayer';
   import { generateJsonLd } from '$lib/JsonLD';
   import Feed from '$components/Feed.svelte';
@@ -28,7 +27,11 @@
     }
     loading = true;
 
-    const posts = api.get<Butterfly.Post[]>({ path: next });
+    // the API client (Butterfly client + qs, ~17 kB gz) only for "load more":
+    // imported on the first click / scroll, not with the page
+    const posts = import('$lib/api').then(({ default: api }) =>
+      api.get<Butterfly.Post[]>({ path: next }),
+    );
     more = [...more, posts];
 
     const p = await posts;

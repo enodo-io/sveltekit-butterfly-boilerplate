@@ -18,6 +18,32 @@ export const load: PageServerLoad = async ({ url, params, fetch, isDataRequest, 
     error(404, httpErrors[404]);
   }
 
+  // started with the term/author request, not after it: slugs are immutable ids,
+  // the URL id is the filter. Errors surface when awaited below (handled no-op
+  // catch: no unhandled rejection when the term/author request fails first).
+  const posts = (async () => {
+    const p = await api.get<Butterfly.Post[]>({
+      fetch,
+      endpoint: 'posts',
+      query: {
+        filter: {
+          types: '-page',
+          authors: id,
+        },
+        page: {
+          size: 18,
+          number: page,
+        },
+      },
+    });
+
+    if (p.data.length <= 0 && page > 1) {
+      error(404, httpErrors[404]);
+    }
+    return p;
+  })();
+  posts.catch(() => {});
+
   const author = await (async () => {
     try {
       const a = await api.get<Butterfly.Author>({ fetch, endpoint: 'authors', id });
@@ -31,28 +57,6 @@ export const load: PageServerLoad = async ({ url, params, fetch, isDataRequest, 
       }
       error(500, httpErrors[500]);
     }
-  })();
-
-  const posts = (async () => {
-    const p = await api.get<Butterfly.Post[]>({
-      fetch,
-      endpoint: 'posts',
-      query: {
-        filter: {
-          types: '-page',
-          authors: author.data.id,
-        },
-        page: {
-          size: 18,
-          number: page,
-        },
-      },
-    });
-
-    if (p.data.length <= 0 && page > 1) {
-      error(404, httpErrors[404]);
-    }
-    return p;
   })();
 
   // an empty listing (page 1, page 2+ already 404s) is a thin page: not indexed

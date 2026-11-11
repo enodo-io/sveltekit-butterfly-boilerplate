@@ -13,6 +13,9 @@ const config = {
       polyfill: true,
       out: 'build',
     }),
+    // CSS files under 4 kB (per-component styles: Image, Body, route chunks…) are
+    // inlined in the HTML instead of being extra render-blocking requests
+    inlineStyleThreshold: 4096,
     alias: {
       $components: './src/components',
       $directives: './src/directives',
