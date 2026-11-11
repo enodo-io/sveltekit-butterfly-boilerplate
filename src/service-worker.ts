@@ -11,8 +11,8 @@
  * Service worker: fast repeat visits and an offline fallback, without ever
  * standing between the browser and the network when it brings nothing.
  *
- * - App JS/CSS (`build`): precached on install, served cache-first (immutable,
- *   versioned by the deployment).
+ * - App entry/page modules and CSS: precached on install, served cache-first
+ *   (immutable, versioned by the deployment).
  * - Other build/static files (fonts, favicons, images of `static/`): cache-first,
  *   cached on first use only (no megabytes of unused fonts on the first visit).
  * - Navigations (HTML): network-first through navigation preload (the request
@@ -30,8 +30,10 @@ const PAGES = `pages-${version}`;
 /** HTML pages kept for the offline fallback */
 const MAX_PAGES = 30;
 
-// app shell: JS and CSS only (fonts, favicons… are cached when actually used)
-const PRECACHE = build.filter((file) => /\.(js|css)$/.test(file));
+// app shell: the entry and page modules and the CSS. Shared chunks (Sentry,
+// Replay, embeds…), fonts and favicons are cached when actually used: a site
+// without Sentry never downloads it.
+const PRECACHE = build.filter((file) => /\/(entry|nodes)\/.+\.js$|\.css$/.test(file));
 const STATIC = new Set([...build, ...files]);
 
 self.addEventListener('install', (event) => {

@@ -38,7 +38,7 @@ Request (GET)
 Rules that keep it fast:
 
 - **Navigation preload stays enabled** (`activate`). Without it every HTML request waits for the worker to boot.
-- **Precache JS/CSS only.** Precaching `files` and every font subset downloads megabytes nobody asked for on the first visit.
+- **Precache the entry and page modules and the CSS only.** Shared chunks (Sentry, Replay, embeds), fonts and `files` are cached on first use: precaching them downloads what the visit may never need (a site without Sentry would still fetch it).
 - **`return` (no `respondWith`) for what is not cached.** `respondWith(fetch())` adds latency and turns network errors into generic failures.
 - **No cache without a bound.** Unique URLs (search, `__data.json?x-sveltekit-invalidated`) would grow it forever.
 - **Never cache cross-origin `<img>` responses**: they are opaque (`status 0`), unreadable, and the HTTP cache already keeps them.
