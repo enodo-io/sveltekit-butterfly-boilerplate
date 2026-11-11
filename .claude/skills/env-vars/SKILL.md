@@ -29,7 +29,7 @@ Missing any of these causes SSR errors (`+layout.server.ts` throws 500 when `PUB
 | `PUBLIC_STATIC_PAGES` | JSON: `{"about":1,"legal":2}`       | Maps slugs → Butterfly post ids for `/[slug=page].html` routes      |
 | `PUBLIC_INDEXABLE`    | `true` \| `false` (default `true`)  | If `false`, layout emits `<meta name="robots" content="noindex,nofollow">` by default |
 | `PUBLIC_GTM_ID`       | `GTM-XXXXXXX`                       | Enables `GTM.svelte` (auto-skipped if absent)                       |
-| `PUBLIC_SENTRY_DSN`   | `https://…@o0.ingest.sentry.io/0`   | Enables Sentry on the server (`hooks.server.ts`) and in the browser (`hooks.client.ts`); errors only, Session Replay on error, loaded once idle. Nothing without it, nothing in dev |
+| `PUBLIC_SENTRY_DSN`   | `https://…@o0.ingest.sentry.io/0`   | Enables Sentry on the server (`hooks.server.ts`) and in the browser (`hooks.client.ts`); errors only; the browser SDK and Session Replay (on error, 10% of the sessions) are loaded once idle. Nothing without it, nothing in dev |
 | `PUBLIC_BUTTERFLY_TRACKER` | `true` \| empty | Turns the cookieless Butterfly tracker on. Off by default |
 | `PUBLIC_BUTTERFLY_TRACKER_URL` | `https://{propertyId}.tbtf.eno.do` (or the property's custom tracker domain), no trailing slash | Overrides the cookieless Butterfly tracker URL (`POST {url}/h`, not consent-gated). Empty = derived from `PUBLIC_API_URL` (`{id}.pubbtf.eno.do` → `{id}.tbtf.eno.do`, `api{x}.site` → `t{x}.site`). Only with `PUBLIC_BUTTERFLY_TRACKER=true`. Nothing in dev |
 | `PUBLIC_BUTTERFLY_TRACKER_DEV` | `true` \| empty | Also send tracker hits in dev (debugging only) |
