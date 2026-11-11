@@ -35,7 +35,13 @@
   let sponsored = $derived(hasFlag(post, 'sponso'));
   let sponsor = $derived(customString(post, 'sponsor'));
   let jsonLd: Graph | WithContext<Thing> | null = $derived(
-    generateJsonLd(data, post.attributes.type === 'faq' ? ['FAQPage'] : ['Article']),
+    generateJsonLd(data, [
+      'Article',
+      'VideoObject',
+      ...((post.attributes.body as Butterfly.PostBody.BodyData[]).some((b) => b.type === 'faq')
+        ? ['FAQPage']
+        : []),
+    ]),
   );
   let section: Butterfly.Category | null = $derived(
     post.relationships.category.data?.id

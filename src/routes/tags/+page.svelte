@@ -6,7 +6,9 @@
   import { generateJsonLd } from '$lib/JsonLD';
 
   let { data }: PageProps = $props();
-  let jsonLd: Graph | WithContext<Thing> | null = $derived(generateJsonLd(data, ['WebPage']));
+  let jsonLd: Graph | WithContext<Thing> | null = $derived(
+    generateJsonLd(data, ['CollectionPage']),
+  );
 </script>
 
 <svelte:head>

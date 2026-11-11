@@ -6,7 +6,7 @@ import type { PageServerLoad } from './$types';
 import type * as Butterfly from '@enodo/butterfly-ts';
 
 export const load: PageServerLoad = async ({ fetch, params, isDataRequest, setHeaders }) => {
-  const format = params.format as 'atom' | 'rss' | 'json';
+  const format = params.format as 'atom' | 'rss';
 
   const authors = api.get<Butterfly.SyndicateAuthor[]>({
     fetch,

@@ -59,6 +59,11 @@ export const load: PageServerLoad = async ({ url, params, fetch, isDataRequest, 
     }
   })();
 
+  // one URL per author: the API id (a variant it resolved, e.g. another case, 301s to it)
+  if (author.data.id !== id) {
+    redirect(301, `/authors/${author.data.id}${url.search}`);
+  }
+
   // an empty listing (page 1, page 2+ already 404s) is a thin page: not indexed
   const empty = !isDataRequest && (await posts).data.length === 0;
 
@@ -71,7 +76,7 @@ export const load: PageServerLoad = async ({ url, params, fetch, isDataRequest, 
     },
     meta: {
       robots: empty ? ROBOTS_NOINDEX : undefined,
-      url: `${PUBLIC_BASE_URL}/authors/${id}` + (page > 1 ? `?page=${page}` : ''),
+      url: `${PUBLIC_BASE_URL}/authors/${author.data.id}` + (page > 1 ? `?page=${page}` : ''),
       title: author.data.attributes.name + (page > 1 ? ` - Page ${page}` : ''),
       description:
         page > 1

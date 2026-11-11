@@ -18,13 +18,22 @@
   import { onNavigate } from '$app/navigation';
   import { getRelated } from '@enodo/butterfly-ts';
   import { getMediaUrl } from '$lib/getMediaUrl';
-  import { absoluteUrl, ROBOTS_INDEX } from '$lib/seo';
+  import { absoluteUrl, metaDescription, ROBOTS_INDEX } from '$lib/seo';
   import Header from '$components/Layout/Header.svelte';
   import Footer from '$components/Layout/Footer.svelte';
   import GTM from '$components/GTM.svelte';
   import Breadcrumb from '$components/Breadcrumb.svelte';
 
   let { data, children } = $props();
+
+  // share image: the scope's thumbnail, else the default one (1366x768 both)
+  let ogMedia = $derived(
+    page.data.scope?.data.relationships.thumbnail?.data
+      ? (getRelated(page.data.scope.data.relationships.thumbnail.data, page.data.scope.included) as
+          Butterfly.Media | undefined)
+      : undefined,
+  );
+  let description = $derived(metaDescription(page.data.meta?.description));
 
   onNavigate((navigation) => {
     if (!document.startViewTransition) return;
@@ -77,26 +86,19 @@
     <!-- No site suffix on og:title: the brand is already in og:site_name -->
     <meta property="og:title" content={page.data.meta.title} />
 
-    <meta name="description" content={page.data.meta.description} />
+    <meta name="description" content={description} />
 
-    <meta property="og:description" content={page.data.meta.description} />
+    <meta property="og:description" content={description} />
 
     <!-- meta.url is the canonical (a post's CMS canonical included): same URL for og:url and JSON-LD -->
     <link rel="canonical" href={page.data.meta.url} />
 
     <meta property="og:url" content={page.data.meta.url} />
 
-    {#if page.data.scope?.data.relationships.thumbnail?.data}
+    {#if ogMedia}
       <meta
         property="og:image"
-        content={getMediaUrl({
-          media: getRelated(
-            page.data.scope.data.relationships.thumbnail.data,
-            page.data.scope.included,
-          ) as Butterfly.Media,
-          format: 'thumb',
-          ext: 'jpg',
-        })}
+        content={getMediaUrl({ media: ogMedia, format: 'thumb', ext: 'jpg' })}
       />
     {:else}
       <!-- the default image is a build asset (relative path): og:image must be absolute -->
@@ -106,6 +108,13 @@
     <meta property="og:image:width" content="1366" />
     <meta property="og:image:height" content="768" />
     <meta property="og:image:type" content="image/jpeg" />
+    <meta
+      property="og:image:alt"
+      content={ogMedia?.attributes.description || page.data.meta.title}
+    />
+
+    <!-- X / Twitter: large image card; title, description and image come from og:* -->
+    <meta name="twitter:card" content="summary_large_image" />
 
     {#snippet feed(path: string, format: string)}
       <link

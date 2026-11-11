@@ -2,7 +2,7 @@ import { PUBLIC_BASE_URL } from '$env/static/public';
 import { CACHE_CONTROL } from '$lib/cacheControl';
 import { pageParam } from '$lib/server/pageParam';
 import { ROBOTS_NOINDEX } from '$lib/seo';
-import { error } from '@sveltejs/kit';
+import { error, redirect } from '@sveltejs/kit';
 import httpErrors from '$lib/httpErrors';
 import api from '$lib/api';
 import { getCategoryChildrenIds } from '@enodo/butterfly-ts';
@@ -28,6 +28,12 @@ export const load: PageServerLoad = async ({
   };
 
   if (!category.data) {
+    // a miscased inbound link (`/News`): 301 to the real path instead of a 404
+    const lower = path.toLowerCase();
+    const match = categories.data.find(
+      (c: Butterfly.Category) => c.attributes.path.toLowerCase() === lower,
+    );
+    if (match) redirect(301, `${match.attributes.path}${url.search}`);
     error(404, httpErrors[404]);
   }
 

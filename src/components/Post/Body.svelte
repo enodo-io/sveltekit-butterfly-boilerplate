@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { dev } from '$app/environment';
   import type * as Butterfly from '@enodo/butterfly-ts';
   import { setContext } from 'svelte';
 
@@ -91,7 +92,8 @@
     {:else}
       <Component element={element as never} resources={resources as never} />
     {/if}
-  {:else}
+  {:else if dev}
+    <!-- unknown block type: visible in dev only, nothing in production -->
     <p>[{element.type}]</p>
   {/if}
 {/each}

@@ -12,7 +12,7 @@
 </script>
 
 <svelte:head>
-  <meta property="og:type" content="webpage" />
+  <meta property="og:type" content="website" />
 
   {#if jsonLd}
     <!-- eslint-disable-next-line svelte/no-at-html-tags -->

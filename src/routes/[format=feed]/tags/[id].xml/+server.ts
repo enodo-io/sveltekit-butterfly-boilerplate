@@ -1,116 +1,34 @@
-import { Feed } from 'feed';
-import { getRelated, ApiError, RedirectError } from '@enodo/butterfly-ts';
-import { error } from '@sveltejs/kit';
-import { getMediaUrl } from '$lib/getMediaUrl';
 import api from '$lib/api';
-import { postHref } from '$lib/posts';
-import httpErrors from '$lib/httpErrors';
-import { PUBLIC_LANGUAGE, PUBLIC_BASE_URL } from '$env/static/public';
-import { CACHE_CONTROL } from '$lib/cacheControl';
+import {
+  feedError,
+  feedPosts,
+  feedResponse,
+  feedSettings,
+  type FeedFormat,
+} from '$lib/server/feed';
 
 import type { RequestHandler } from './$types';
 import type * as Butterfly from '@enodo/butterfly-ts';
 
 export const GET: RequestHandler = async ({ fetch, params }) => {
-  const format = params.format as 'atom' | 'rss' | 'json';
   const { id } = params;
-
-  if (!id || !id.length) {
-    error(404, 'Not found');
-  }
-
   try {
     const [settings, tag, posts] = await Promise.all([
-      api.get<Butterfly.Property>({ fetch, path: '/v1/' }),
-      api.get<Butterfly.Term>({
-        fetch,
-        endpoint: 'taxonomies/tags/relationships/terms',
-        id,
-      }),
-      api.get<Butterfly.Post[]>({
-        fetch,
-        endpoint: 'posts',
-        query: {
-          filter: {
-            types: '-page',
-            'terms<tags>': id,
-          },
-          page: {
-            size: 20,
-          },
-          sort: '-updatedAt',
-        },
-      }),
+      feedSettings(fetch),
+      api.get<Butterfly.Term>({ fetch, endpoint: 'taxonomies/tags/relationships/terms', id }),
+      feedPosts(fetch, { 'terms<tags>': id }),
     ]);
-
-    const lastBuildDate = new Date();
-    const feed = new Feed({
-      title: tag.data.attributes.name,
-      description:
-        tag.data.attributes.description ||
-        `All news about "${tag.data.attributes.name}" on ${settings.data.attributes.title}`,
-      id: `${PUBLIC_BASE_URL}/tags/${tag.data.id}`,
-      link: `${PUBLIC_BASE_URL}/tags/${tag.data.id}`,
-      language: PUBLIC_LANGUAGE,
-      image: `${PUBLIC_BASE_URL}/logo-88x31.jpg`,
-      favicon: `${PUBLIC_BASE_URL}/favicon.ico`,
-      copyright: `All rights reserved ${lastBuildDate.getFullYear()}, ${settings.data.attributes.title}`,
-      updated: new Date(),
-      generator: 'Enodo Butterfly',
-      ttl: 120,
-      feedLinks: {
-        rss: `${PUBLIC_BASE_URL}/rss/tags/${tag.data.id}.xml`,
-        json: `${PUBLIC_BASE_URL}/json/tags/${tag.data.id}.json`,
-        atom: `${PUBLIC_BASE_URL}/atom/tags/${tag.data.id}.xml`,
-      },
+    const { name, description } = tag.data.attributes;
+    return feedResponse({
+      format: params.format as FeedFormat,
+      settings,
+      posts,
+      title: name,
+      description: description || `All news about "${name}" on ${settings.data.attributes.title}`,
+      path: `/tags/${tag.data.id}`,
+      feedPath: `tags/${tag.data.id}`,
     });
-
-    posts.data.forEach((post: Butterfly.Post) => {
-      feed.addItem({
-        title: post.attributes.title,
-        id: postHref(post),
-        link: postHref(post),
-        description: post.attributes.resume,
-        date: new Date(post.attributes.publishedAt),
-        image: post.relationships.thumbnail.data?.id
-          ? getMediaUrl({
-              media: getRelated(
-                post.relationships.thumbnail.data,
-                posts.included,
-              ) as Butterfly.Media,
-              format: 'thumb',
-              ext: 'jpg',
-              width: 640,
-            })
-          : undefined,
-        author: post.relationships.authors.data.map((author: Butterfly.Related) => {
-          const a = getRelated(author, posts.included) as Butterfly.Author;
-          return {
-            name: a.attributes.name,
-            email: a.attributes.email || undefined,
-            link: `${PUBLIC_BASE_URL}/authors/${a.id}`,
-          };
-        }),
-      });
-    });
-
-    const responses = {
-      atom: () => feed.atom1(),
-      rss: () => feed.rss2(),
-      json: () => feed.json1(),
-    };
-    const res = new Response(responses[format]());
-    res.headers.set('Expires', new Date(Date.now() + 120).toUTCString());
-    res.headers.set('Cache-Control', CACHE_CONTROL.short);
-    res.headers.set('Content-Type', 'text/xml');
-    return res;
-  } catch (err: unknown) {
-    if (err instanceof ApiError) {
-      error(err.status, httpErrors[err.status]);
-    }
-    if (err instanceof RedirectError) {
-      error(410, httpErrors[410]);
-    }
-    error(500, httpErrors[500]);
+  } catch (err) {
+    feedError(err);
   }
 };

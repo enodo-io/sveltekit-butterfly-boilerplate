@@ -2,8 +2,8 @@
  * BreadcrumbList JSON-LD Schema Generator
  *
  * Generates breadcrumb navigation data for a page.
- * Automatically builds the breadcrumb trail based on category hierarchy,
- * tags, pagination, and other page metadata.
+ * Builds the trail from the category hierarchy (a post: its category path only,
+ * never a tag: one hierarchy per trail), pagination and other page metadata.
  *
  * @module BreadcrumbList
  * @param {App.PageData} data - Page data containing categories, scope, and layer
@@ -13,7 +13,6 @@
 import type { BreadcrumbList, ListItem } from 'schema-dts';
 import type * as Butterfly from '@enodo/butterfly-ts';
 import { PUBLIC_BASE_URL } from '$env/static/public';
-import { getRelated } from '@enodo/butterfly-ts';
 
 function pushItem(list: ListItem[], name: string, item?: string) {
   list.push({
@@ -59,14 +58,6 @@ export default function getBreadcrumbList(data: App.PageData): BreadcrumbList {
     tree.forEach((c) =>
       pushItem(itemListElement, c.attributes.name, `${PUBLIC_BASE_URL}${c.attributes.path}`),
     );
-  }
-
-  const tags = data.scope?.data.relationships.terms?.data.filter((t: Butterfly.Term) =>
-    t.type.includes('tags'),
-  );
-  if (tags?.length) {
-    const tag = getRelated(tags[0], data.scope?.included as Butterfly.Resource[]) as Butterfly.Term;
-    pushItem(itemListElement, tag.attributes.name, `${PUBLIC_BASE_URL}/tags/${tag.id}`);
   }
 
   if (data.layer['content.type'] === 'author') {

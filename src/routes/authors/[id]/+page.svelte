@@ -65,7 +65,7 @@
 </script>
 
 <svelte:head>
-  <meta property="og:type" content="website" />
+  <meta property="og:type" content="profile" />
   {#await data.feeds.posts then posts}
     {#if data.layer['page.index'] === 2}
       <link rel="prev" href="{PUBLIC_BASE_URL}/authors/{data.scope.data.id}" />

@@ -10,7 +10,9 @@
   import { generateJsonLd } from '$lib/JsonLD';
 
   let { data }: PageProps = $props();
-  let jsonLd: Graph | WithContext<Thing> | null = $derived(generateJsonLd(data, ['WebPage']));
+  let jsonLd: Graph | WithContext<Thing> | null = $derived(
+    generateJsonLd(data, ['CollectionPage']),
+  );
 
   let more: Promise<Butterfly.ApiResponse<Butterfly.Post[]>>[] = $state([]);
   let loading = $state(false);

@@ -17,12 +17,16 @@ import Organization from './Organization';
 import BreadcrumbList from './BreadcrumbList';
 import Article from './Article';
 import FAQPage from './FAQPage';
+import VideoObject from './VideoObject';
+import { getCollectionPage } from './WebPage';
 
 type JsonLdHandler = (data: App.PageData, types: string[]) => Graph | WithContext<Thing> | null;
 
-const handlers: { [k: string]: (data: App.PageData) => Thing } = {
+const handlers: { [k: string]: (data: App.PageData) => Thing | Thing[] } = {
   WebSite,
   WebPage,
+  CollectionPage: getCollectionPage,
+  VideoObject,
   ProfilePage,
   Organization,
   Article,
@@ -37,13 +41,14 @@ const handlers: { [k: string]: (data: App.PageData) => Thing } = {
  * @returns {Graph|WithContext<Thing>|null} - Generated structured data
  */
 export const generateJsonLd: JsonLdHandler = (data, types = ['WebSite']) => {
-  const schemes = types.map((type) => handlers[type](data));
+  // a handler may return several nodes (VideoObject: one per video) or none
+  const schemes = types.flatMap((type) => handlers[type](data));
 
   if (schemes.length <= 0) {
     return null;
   }
 
-  if (types.length > 1) {
+  if (schemes.length > 1) {
     const graph: Graph = {
       '@context': 'https://schema.org',
       '@graph': schemes,

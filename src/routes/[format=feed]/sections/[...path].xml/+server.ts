@@ -1,122 +1,47 @@
-import { Feed } from 'feed';
-import { getCategoryChildrenIds, getRelated, ApiError } from '@enodo/butterfly-ts';
 import { error } from '@sveltejs/kit';
-import { getMediaUrl } from '$lib/getMediaUrl';
+import { getCategoryChildrenIds } from '@enodo/butterfly-ts';
 import api from '$lib/api';
-import { postHref } from '$lib/posts';
 import httpErrors from '$lib/httpErrors';
-import { PUBLIC_LANGUAGE, PUBLIC_BASE_URL } from '$env/static/public';
-import { CACHE_CONTROL } from '$lib/cacheControl';
+import {
+  feedError,
+  feedPosts,
+  feedResponse,
+  feedSettings,
+  type FeedFormat,
+} from '$lib/server/feed';
 
 import type { RequestHandler } from './$types';
 import type * as Butterfly from '@enodo/butterfly-ts';
 
 export const GET: RequestHandler = async ({ fetch, params }) => {
-  const format = params.format as 'atom' | 'rss' | 'json';
   const path = `/${params.path}`;
-
   try {
     const [settings, categories] = await Promise.all([
-      api.get<Butterfly.Property>({ fetch, path: '/v1/' }),
+      feedSettings(fetch),
       api.get<Butterfly.Category[]>({
         fetch,
         endpoint: 'categories',
         query: { page: { size: 100 } },
       }),
     ]);
+    const category = categories.data.find((c) => c.attributes.path === path);
+    if (!category) error(404, httpErrors[404]);
 
-    const category = {
-      ...categories,
-      data: categories.data.find((c: Butterfly.Category) => c.attributes.path === path),
-    };
-
-    if (!category.data) {
-      error(404, httpErrors[404]);
-    }
-
-    const posts = await api.get<Butterfly.Post[]>({
-      fetch,
-      endpoint: 'posts',
-      query: {
-        filter: {
-          types: '-page',
-          categories: getCategoryChildrenIds(
-            (category as Butterfly.ApiResponse<Butterfly.Category>).data,
-            categories.data,
-          ).join(','),
-        },
-        page: {
-          size: 20,
-        },
-        sort: '-updatedAt',
-      },
+    const posts = await feedPosts(fetch, {
+      categories: getCategoryChildrenIds(category, categories.data).join(','),
     });
-
-    const lastBuildDate = new Date();
-    const feed = new Feed({
-      title: category.data.attributes.name,
+    const { name, description } = category.attributes;
+    return feedResponse({
+      format: params.format as FeedFormat,
+      settings,
+      posts,
+      title: name,
       description:
-        category.data.attributes.description ||
-        `All articles about "${category.data.attributes.name}" on ${settings.data.attributes.title}`,
-      id: `${PUBLIC_BASE_URL}${category.data.attributes.path}`,
-      link: `${PUBLIC_BASE_URL}${category.data.attributes.path}`,
-      language: PUBLIC_LANGUAGE,
-      image: `${PUBLIC_BASE_URL}/logo-88x31.jpg`,
-      favicon: `${PUBLIC_BASE_URL}/favicon.ico`,
-      copyright: `All rights reserved ${lastBuildDate.getFullYear()}, ${settings.data.attributes.title}`,
-      updated: new Date(),
-      generator: 'Enodo Butterfly',
-      ttl: 120,
-      feedLinks: {
-        rss: `${PUBLIC_BASE_URL}/rss/sections${category.data.attributes.path}.xml`,
-        json: `${PUBLIC_BASE_URL}/json/sections${category.data.attributes.path}.json`,
-        atom: `${PUBLIC_BASE_URL}/atom/sections${category.data.attributes.path}.xml`,
-      },
+        description || `All articles about "${name}" on ${settings.data.attributes.title}`,
+      path: category.attributes.path,
+      feedPath: `sections${category.attributes.path}`,
     });
-
-    posts.data.forEach((post: Butterfly.Post) => {
-      feed.addItem({
-        title: post.attributes.title,
-        id: postHref(post),
-        link: postHref(post),
-        description: post.attributes.resume,
-        date: new Date(post.attributes.publishedAt),
-        image: post.relationships.thumbnail.data?.id
-          ? getMediaUrl({
-              media: getRelated(
-                post.relationships.thumbnail.data,
-                posts.included,
-              ) as Butterfly.Media,
-              format: 'thumb',
-              ext: 'jpg',
-              width: 640,
-            })
-          : undefined,
-        author: post.relationships.authors.data.map((author: Butterfly.Related) => {
-          const a = getRelated(author, posts.included) as Butterfly.Author;
-          return {
-            name: a.attributes.name,
-            email: a.attributes.email || undefined,
-            link: `${PUBLIC_BASE_URL}/authors/${a.id}`,
-          };
-        }),
-      });
-    });
-
-    const responses = {
-      atom: () => feed.atom1(),
-      rss: () => feed.rss2(),
-      json: () => feed.json1(),
-    };
-    const res = new Response(responses[format]());
-    res.headers.set('Expires', new Date(Date.now() + 120).toUTCString());
-    res.headers.set('Cache-Control', CACHE_CONTROL.short);
-    res.headers.set('Content-Type', 'text/xml');
-    return res;
-  } catch (err: unknown) {
-    if (err instanceof ApiError) {
-      error(err.status, httpErrors[err.status]);
-    }
-    error(500, httpErrors[500]);
+  } catch (err) {
+    feedError(err);
   }
 };

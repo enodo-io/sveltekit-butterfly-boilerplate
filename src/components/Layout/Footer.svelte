@@ -1,6 +1,13 @@
 <script lang="ts">
   import { resolve } from '$app/paths';
   import { page } from '$app/state';
+  import { PUBLIC_STATIC_PAGES } from '$env/static/public';
+
+  // the static pages of the site (PUBLIC_STATIC_PAGES), not a hard-coded about.html
+  const staticPages = Object.keys(
+    JSON.parse(PUBLIC_STATIC_PAGES || '{}') as Record<string, number>,
+  );
+  const label = (slug: string) => slug.charAt(0).toUpperCase() + slug.slice(1).replace(/-/g, ' ');
 
   const currentPage = $derived(page.url.pathname);
 </script>
@@ -46,12 +53,12 @@
           aria-current={currentPage === resolve('/search') ? 'page' : undefined}>Search</a
         >
       </li>
-      <li>
-        <a
-          href={resolve('/about.html')}
-          aria-current={currentPage === resolve('/about.html') ? 'page' : undefined}>About</a
-        >
-      </li>
+      {#each staticPages as slug (slug)}
+        {@const href = resolve(`/${slug}.html`)}
+        <li>
+          <a href={href} aria-current={currentPage === href ? 'page' : undefined}>{label(slug)}</a>
+        </li>
+      {/each}
       <li>
         <a
           href={resolve('/rss.html')}

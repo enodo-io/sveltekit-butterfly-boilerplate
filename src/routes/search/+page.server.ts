@@ -69,7 +69,8 @@ export const load: PageServerLoad = async ({ url, fetch, isDataRequest, setHeade
       'content.type': 'search',
     },
     meta: {
-      robots: query ? ROBOTS_NOINDEX : undefined,
+      // search pages are never indexed (thin, infinite variations); links followed
+      robots: ROBOTS_NOINDEX,
       url: `${PUBLIC_BASE_URL}/search` + (params.length ? `?${params.join('&')}` : ''),
       title: query ? `Search results for ${query}` + (page > 1 ? ` - Page ${page}` : '') : 'Search',
       description:

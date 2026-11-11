@@ -9,7 +9,9 @@
 
   let { data }: PageProps = $props();
 
-  let jsonLd: Graph | WithContext<Thing> | null = $derived(generateJsonLd(data, ['WebSite']));
+  let jsonLd: Graph | WithContext<Thing> | null = $derived(
+    generateJsonLd(data, ['WebSite', 'Organization']),
+  );
 </script>
 
 <svelte:head>
@@ -48,13 +50,16 @@
   {/if}
 </svelte:head>
 
+<!-- the page subject is the site: its name is the h1 (visually hidden, the header shows the logo) -->
+<h1 class="sr-only">{data.meta.title}</h1>
+
 <section id="featured">
   <!-- featured image: 5fr of a 5fr/7fr grid from sm, in the 992px column from md -->
   <Feed
     feed={data.feeds.featured}
     format="square"
     length={1}
-    heading="h1"
+    heading="h2"
     lazyloadAfter={3}
     priority
     sizes="(min-width: 1008px) 413px, (min-width: 600px) 41vw, 100vw"
@@ -66,10 +71,14 @@
     (c: Butterfly.Category) => c.id === parseInt(id, 10),
   ) as Butterfly.Category}
   <section class="flex flex-col gap-4">
-    <header>
+    <header class="flex items-baseline justify-between gap-4">
       <h2 class="fs-trafalgar font-bold text-light-700">
         <a href={resolve(category.attributes.path)}>{category.attributes.name}</a>
       </h2>
+      <!-- real text (not CSS content): it is the anchor text crawlers read -->
+      <a class="shrink-0" href={resolve(category.attributes.path)}
+        >All {category.attributes.name} articles</a
+      >
     </header>
     <div class="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
       <!-- prettier-ignore -->
@@ -80,14 +89,7 @@
 
 <style lang="scss">
   section > header > h2 > a {
-    display: flex;
-    justify-content: space-between;
     text-decoration: none;
-    &:after {
-      content: 'See all articles';
-      font-size: 1rem;
-      font-weight: 400;
-    }
   }
 
   :global(#featured .card--thumb) {

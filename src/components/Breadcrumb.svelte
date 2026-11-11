@@ -15,7 +15,10 @@
     <ol>
       {#each breadcrumb as element, i (element.position)}
         {#if i === 0}
-          <li><a href={resolve('/')} aria-label={String(element.name)}><Home size={16} /></a></li>
+          <!-- text in the link (visually hidden), not aria-label: it is the anchor text crawlers read -->
+          <li>
+            <a href={resolve('/')}><Home size={16} /><span class="sr-only">{element.name}</span></a>
+          </li>
         {:else}
           <li>
             {#if element.item && typeof element.item === 'string'}
@@ -54,6 +57,7 @@
     gap: 0.5rem;
     + li:before {
       content: '/';
+      content: '/' / ''; /* decorative: not read by screen readers */
     }
     &:not(:last-child) {
       min-width: 0;

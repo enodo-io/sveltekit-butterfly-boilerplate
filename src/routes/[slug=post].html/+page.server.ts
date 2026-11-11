@@ -1,14 +1,22 @@
 import { error, redirect } from '@sveltejs/kit';
 import httpErrors from '$lib/httpErrors';
 import api from '$lib/api';
-import { PUBLIC_BASE_URL } from '$env/static/public';
+import { PUBLIC_BASE_URL, PUBLIC_STATIC_PAGES } from '$env/static/public';
 import { CACHE_CONTROL } from '$lib/cacheControl';
 import { cacheTags, taggedCacheControl } from '$lib/server/cacheTags';
 import { absoluteUrl, ROBOTS_INDEX, ROBOTS_NOINDEX } from '$lib/seo';
 import { ApiError, RedirectError } from '@enodo/butterfly-ts';
+import { withRenderedMarkdown } from '$lib/server/markdown';
 
 import type { PageServerLoad } from './$types';
 import type * as Butterfly from '@enodo/butterfly-ts';
+
+// static pages (`about.html` → post id): their posts are served there only
+const staticPages: Record<string, number> = JSON.parse(PUBLIC_STATIC_PAGES || '{}');
+const staticPath = (id: number) => {
+  const slug = Object.keys(staticPages).find((s) => Number(staticPages[s]) === id);
+  return slug ? `/${slug}.html` : undefined;
+};
 
 export const load: PageServerLoad = async ({ fetch, params, isDataRequest, setHeaders, url }) => {
   const id = parseInt(params.slug.split(/[-]+/).pop()!, 10);
@@ -22,6 +30,10 @@ export const load: PageServerLoad = async ({ fetch, params, isDataRequest, setHe
       endpoint: 'posts',
       id,
     });
+    // Markdown blocks rendered here (server only): real HTML for crawlers, no parser on the client
+    post.data.attributes.body = withRenderedMarkdown(
+      post.data.attributes.body as Butterfly.PostBody.BodyData[],
+    ) as typeof post.data.attributes.body;
 
     // create 404 for unpublished posts with a bad url
     if (
@@ -30,6 +42,12 @@ export const load: PageServerLoad = async ({ fetch, params, isDataRequest, setHe
       params.slug !== `${post.data.attributes.slug}-${post.data.id}`
     ) {
       throw new ApiError(404, httpErrors[404]);
+    }
+
+    // a static page (PUBLIC_STATIC_PAGES) has one URL: `/about.html`, not `/about-1.html`
+    const pagePath = post.data.attributes.type === 'page' ? staticPath(post.data.id) : undefined;
+    if (pagePath) {
+      throw new RedirectError(301, pagePath);
     }
 
     // redirect to correct canonical if it is on domain. Compared with PUBLIC_BASE_URL,

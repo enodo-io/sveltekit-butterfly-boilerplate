@@ -1,8 +1,7 @@
 /**
  * FAQPage JSON-LD Schema Generator
  *
- * Generates structured data for faq pages.
- * Includes page URL, ID, and breadcrumb navigation.
+ * The questions of a post's FAQ blocks.
  *
  * @module FAQPage
  * @param {App.PageData} data - Page data
@@ -11,10 +10,7 @@
 
 import type { FAQPage, Question } from 'schema-dts';
 import type * as Butterfly from '@enodo/butterfly-ts';
-import { getRelated } from '@enodo/butterfly-ts';
-import { getMediaUrl } from '$lib/getMediaUrl';
-import BreadcrumbList from './BreadcrumbList';
-import Organization from './Organization';
+import { WEBSITE_ID } from './ids';
 
 function inlineNodesToText(nodes: string | Butterfly.PostBody.BodyInlineNode[]): string {
   if (typeof nodes === 'string') return nodes;
@@ -48,31 +44,14 @@ export default function getFAQPage(data: App.PageData): FAQPage {
       },
     }));
 
-  const breadcrumb = BreadcrumbList(data);
-
-  const scheme: FAQPage = {
+  // emitted with the Article of the post (FAQ rich results are limited to
+  // government and health sites since 2023: the Article carries the post)
+  return {
     '@type': 'FAQPage',
-    '@id': `${data.meta.url}#scope`,
+    '@id': `${data.meta.url}#faq`,
     url: data.meta.url,
-    mainEntity: questions ?? [],
-    breadcrumb: (breadcrumb.itemListElement as unknown[]).length > 1 ? breadcrumb : undefined,
-    headline: post.attributes.title,
-    description: post.attributes.resume,
-    datePublished: post.attributes.publishedAt,
-    publisher: Organization(data),
+    name: post.attributes.title,
+    isPartOf: { '@id': WEBSITE_ID },
+    mainEntity: questions,
   };
-
-  if (post.attributes.publishedAt < post.attributes.updatedAt) {
-    scheme.dateModified = post.attributes.updatedAt;
-  }
-
-  if (post.relationships.thumbnail.data?.id) {
-    const media = getRelated<Butterfly.Media>(
-      post.relationships.thumbnail.data,
-      data.scope?.included || [],
-    );
-    scheme.image = media ? [getMediaUrl({ media, format: 'thumb', ext: 'jpg' })] : undefined;
-  }
-
-  return scheme;
 }

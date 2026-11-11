@@ -5,6 +5,7 @@ import { PUBLIC_BASE_URL, PUBLIC_STATIC_PAGES } from '$env/static/public';
 import { CACHE_CONTROL } from '$lib/cacheControl';
 import { cacheTags, taggedCacheControl } from '$lib/server/cacheTags';
 import { ApiError, RedirectError } from '@enodo/butterfly-ts';
+import { withRenderedMarkdown } from '$lib/server/markdown';
 
 import type { PageServerLoad } from './$types';
 import type * as Butterfly from '@enodo/butterfly-ts';
@@ -23,6 +24,10 @@ export const load: PageServerLoad = async ({ fetch, params, setHeaders }) => {
       endpoint: 'posts',
       id,
     });
+    // Markdown blocks rendered here (server only): real HTML for crawlers, no parser on the client
+    post.data.attributes.body = withRenderedMarkdown(
+      post.data.attributes.body as Butterfly.PostBody.BodyData[],
+    ) as typeof post.data.attributes.body;
 
     setHeaders({
       'cache-control': taggedCacheControl(CACHE_CONTROL.short),

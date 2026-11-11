@@ -58,13 +58,15 @@
   <meta property="og:type" content="website" />
   {#if data.feeds.posts}
     {#await data.feeds.posts then posts}
+      <!-- the query is part of every page URL (without it /search?page=N redirects) -->
+      {@const q = `query=${encodeURIComponent(data.layer['page.query'] || '')}`}
       {#if data.layer['page.index'] === 2}
-        <link rel="prev" href="{PUBLIC_BASE_URL}/search" />
+        <link rel="prev" href="{PUBLIC_BASE_URL}/search?{q}" />
       {:else if data.layer['page.index'] > 1}
-        <link rel="prev" href="{PUBLIC_BASE_URL}/search?page={data.layer['page.index'] - 1}" />
+        <link rel="prev" href="{PUBLIC_BASE_URL}/search?{q}&page={data.layer['page.index'] - 1}" />
       {/if}
       {#if !!posts.links?.next}
-        <link rel="next" href="{PUBLIC_BASE_URL}/search?page={data.layer['page.index'] + 1}" />
+        <link rel="next" href="{PUBLIC_BASE_URL}/search?{q}&page={data.layer['page.index'] + 1}" />
       {/if}
     {/await}
   {/if}

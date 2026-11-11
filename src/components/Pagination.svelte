@@ -89,14 +89,14 @@
     <ul class:hidden={hide}>
       {#if current > 1}
         <li class="prev">
-          <a aria-label="Go to previous page" href={resolve(url(current - 1))}>Previous page</a>
+          <a href={resolve(url(current - 1))} rel="prev">Previous page</a>
         </li>
       {/if}
       {#each pages as page, i (i)}
         <li
           class="sm:flex"
           class:hidden={page !== current && page !== 1 && page !== max}
-          class:flex={page === current || page !== 1 || page !== max}
+          class:flex={page === current || page === 1 || page === max}
           class:sep={typeof page !== 'number'}
         >
           {#if typeof page !== 'number'}
@@ -112,7 +112,7 @@
       {/each}
       {#if current < max}
         <li class="next">
-          <a href={resolve(url(current + 1))} aria-label="Go to next page">Next page</a>
+          <a href={resolve(url(current + 1))} rel="next">Next page</a>
         </li>
       {/if}
     </ul>
@@ -155,12 +155,15 @@
       }
     }
 
+    /* decorative arrows: the link text ("Previous page") is what gets read */
     .prev:before {
       content: '<';
+      content: '<' / '';
     }
 
     .next:before {
       content: '>';
+      content: '>' / '';
     }
 
     &,

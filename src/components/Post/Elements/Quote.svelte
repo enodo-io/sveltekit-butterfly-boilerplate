@@ -1,14 +1,14 @@
 <script lang="ts">
   import type * as Butterfly from '@enodo/butterfly-ts';
 
-  import { PUBLIC_BASE_URL } from '$env/static/public';
-  import { resolve } from '$app/paths';
+  import { contentLink, externalRel } from '$lib/links';
   import InlineNodes from '../InlineNodes.svelte';
 
   type Props = { element: Butterfly.PostBody.Quote };
   const { element }: Props = $props();
   // a quote may have no source: the page must not crash on `source.author`
   const source = $derived(element.data.source ?? {});
+  const link = $derived(contentLink(source.url));
 </script>
 
 <figure class="post--quote">
@@ -20,16 +20,13 @@
     <figcaption class="post--quote--credits">
       {#if source.author}
         — {source.author}{/if}{#if source.title},
-        {#if source.url && source.url.length}
+        {#if link}
           <cite>
             <!-- eslint-disable svelte/no-navigation-without-resolve -->
             <a
-              target="_blank"
-              rel="noopener noreferrer"
-              href={source.url.startsWith(PUBLIC_BASE_URL)
-                ? resolve(source.url.replace(PUBLIC_BASE_URL, '') as `/${string}`)
-                : source.url}
-              title={source.title}>{source.title}</a
+              href={link.href}
+              target={link.web && !link.internal ? '_blank' : undefined}
+              rel={link.internal ? undefined : externalRel({})}>{source.title}</a
             >
             <!-- eslint-enable svelte/no-navigation-without-resolve -->
           </cite>

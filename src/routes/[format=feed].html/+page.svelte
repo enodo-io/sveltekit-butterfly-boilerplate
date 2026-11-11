@@ -22,14 +22,16 @@
     <h1 class="fs-foolscap font-bold text-light-700">{data.meta.title}</h1>
   </header>
 
-  <h2 class="fs-paragon">
-    <a href={resolve(`/${data.layer['content.type']}/index.xml`)}>The full feed</a>
-  </h2>
+  <p class="fs-paragon">
+    <a href={resolve(`/${data.layer['content.type']}/index.xml`)}
+      >All the articles of {data.settings.title}</a
+    >
+  </p>
 </section>
 
 <section class="flex flex-col gap-4">
   <header>
-    <h3 class="fs-trafalgar font-bold text-light-700">Sections</h3>
+    <h2 class="fs-trafalgar font-bold text-light-700">Sections</h2>
   </header>
 
   <ul class="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-4">
@@ -45,7 +47,7 @@
 
 <section class="flex flex-col gap-4">
   <header>
-    <h3 class="fs-trafalgar font-bold text-light-700">Authors</h3>
+    <h2 class="fs-trafalgar font-bold text-light-700">Authors</h2>
   </header>
 
   <ul class="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-4">
@@ -69,7 +71,7 @@
 
 <section class="flex flex-col gap-4">
   <header>
-    <h3 class="fs-trafalgar font-bold text-light-700">Tags</h3>
+    <h2 class="fs-trafalgar font-bold text-light-700">Tags</h2>
   </header>
 
   <ul class="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-4">

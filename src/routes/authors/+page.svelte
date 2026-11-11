@@ -6,11 +6,14 @@
   import { resolve } from '$app/paths';
   import { getRelated } from '@enodo/butterfly-ts';
   import Image from '$components/Image.svelte';
+  import Pagination from '$components/Pagination.svelte';
   import { UserRound as Avatar } from '@lucide/svelte';
   import { generateJsonLd } from '$lib/JsonLD';
 
   let { data }: PageProps = $props();
-  let jsonLd: Graph | WithContext<Thing> | null = $derived(generateJsonLd(data, ['WebPage']));
+  let jsonLd: Graph | WithContext<Thing> | null = $derived(
+    generateJsonLd(data, ['CollectionPage']),
+  );
 </script>
 
 <svelte:head>
@@ -71,4 +74,12 @@
       {/each}
     {/await}
   </div>
+
+  {#await data.feeds.authors then authors}
+    <Pagination
+      current={data.layer['page.index'] || 1}
+      max={Math.ceil((authors.meta?.total || 1) / (authors.meta?.size || 1))}
+      url={(p) => (p > 1 ? `/authors?page=${p}` : '/authors')}
+    />
+  {/await}
 </section>
