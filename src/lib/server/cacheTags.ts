@@ -6,7 +6,7 @@ import * as env from '$env/static/private';
  * fresh. Only the pages of one object are tagged (a post: `post:{id}`); the
  * lists keep their short TTL (see the README, « Cache and purges »).
  *
- * .env: `BUTTERFLY_PROPERTY_ID` (no tag without it) and `CACHE_TAGS`, the
+ * .env: `PRIVATE_BUTTERFLY_PROPERTY_ID` (no tag without it) and `PRIVATE_CACHE_TAGS`, the
  * cache in front of the website: `xkey` (default, Varnish),
  * `cloudflare`, `fastly`, `vercel`, `netlify` or `none`.
  */
@@ -20,10 +20,10 @@ const HEADERS: Record<string, [header: string, separator: string]> = {
 };
 
 // read like this, an absent variable is undefined instead of a build error
-const { BUTTERFLY_PROPERTY_ID: propertyId, CACHE_TAGS: mode = 'xkey' } = env as Record<
-  string,
-  string | undefined
->;
+const vars = env as Record<string, string | undefined>;
+// BUTTERFLY_PROPERTY_ID / CACHE_TAGS: former names, still read for the sites set up before
+const propertyId = vars.PRIVATE_BUTTERFLY_PROPERTY_ID || vars.BUTTERFLY_PROPERTY_ID;
+const mode = vars.PRIVATE_CACHE_TAGS || vars.CACHE_TAGS || 'xkey';
 const tagHeader = propertyId ? HEADERS[mode.trim().toLowerCase()] : undefined;
 
 /** Shared cache TTL of a tagged page (6 hours): the purges keep it fresh. */

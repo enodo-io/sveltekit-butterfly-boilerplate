@@ -156,23 +156,23 @@ npm run preview
 
 The setup script creates a `.env` file with the following variables:
 
-| Variable                       | Required | Description                                                                                                                                                                                                                    |
-| ------------------------------ | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `PUBLIC_BASE_URL`              | Yes      | Your website's public URL (e.g., `https://mywebsite.com`)                                                                                                                                                                      |
-| `PUBLIC_API_URL`               | Yes      | Butterfly API domain (from your Butterfly settings)                                                                                                                                                                            |
-| `PUBLIC_API_KEY`               | Yes      | Butterfly API key (from your Butterfly settings)                                                                                                                                                                               |
-| `PUBLIC_MEDIA_URL`             | Yes      | Butterfly media domain (for static assets)                                                                                                                                                                                     |
-| `PUBLIC_STATIC_PAGES`          | No       | JSON object mapping page slugs to IDs (e.g., `{"about":1,"legal":2}`)                                                                                                                                                          |
-| `PUBLIC_INDEXABLE`             | Yes      | Set to `false` for staging/dev to prevent indexing. Defaults to `true` if not set                                                                                                                                              |
-| `PUBLIC_LOCALE`                | Yes      | Locale code for your site (e.g., `fr_FR`, `en_US`, `es_ES`)                                                                                                                                                                    |
-| `PUBLIC_LANGUAGE`              | Yes      | Language code (e.g., `fr`, `en`, `es`) - auto-extracted from locale by default                                                                                                                                                 |
-| `PUBLIC_GTM_ID`                | No       | Google Tag Manager container ID (e.g., `GTM-XXXXXXX`)                                                                                                                                                                          |
-| `PUBLIC_SENTRY_DSN`            | No       | Sentry DSN: error monitoring of the server and the browser (errors only, replay on error)                                                                                                                                      |
-| `PUBLIC_BUTTERFLY_TRACKER`     | No       | `true` to send cookieless pageview hits to the Butterfly tracker (off by default)                                                                                                                                              |
-| `PUBLIC_BUTTERFLY_TRACKER_URL` | No       | Butterfly audience tracker (`https://{propertyId}.tbtf.eno.do` or a custom tracker domain): cookieless pageview hits, not consent-gated. Empty = derived from `PUBLIC_API_URL`. Only used with `PUBLIC_BUTTERFLY_TRACKER=true` |
-| `PUBLIC_BUTTERFLY_TRACKER_DEV` | No       | `true` to also send tracker hits from `npm run dev` (off by default)                                                                                                                                                           |
-| `BUTTERFLY_PROPERTY_ID`        | No       | Property id (the number in the back-office URL): enables the cache tags                                                                                                                                                        |
-| `CACHE_TAGS`                   | No       | Cache in front of the website: `xkey` (default), `cloudflare`, `fastly`, `vercel`, `netlify`, `none` (see [Cache and purges](#cache-and-purges))                                                                               |
+| Variable                        | Required | Description                                                                                                                                                                                                                    |
+| ------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `PUBLIC_BASE_URL`               | Yes      | Your website's public URL (e.g., `https://mywebsite.com`)                                                                                                                                                                      |
+| `PUBLIC_API_URL`                | Yes      | Butterfly API domain (from your Butterfly settings)                                                                                                                                                                            |
+| `PUBLIC_API_KEY`                | Yes      | Butterfly API key (from your Butterfly settings)                                                                                                                                                                               |
+| `PUBLIC_MEDIA_URL`              | Yes      | Butterfly media domain (for static assets)                                                                                                                                                                                     |
+| `PUBLIC_STATIC_PAGES`           | No       | JSON object mapping page slugs to IDs (e.g., `{"about":1,"legal":2}`)                                                                                                                                                          |
+| `PUBLIC_INDEXABLE`              | Yes      | Set to `false` for staging/dev to prevent indexing. Defaults to `true` if not set                                                                                                                                              |
+| `PUBLIC_LOCALE`                 | Yes      | Locale code for your site (e.g., `fr_FR`, `en_US`, `es_ES`)                                                                                                                                                                    |
+| `PUBLIC_LANGUAGE`               | Yes      | Language code (e.g., `fr`, `en`, `es`) - auto-extracted from locale by default                                                                                                                                                 |
+| `PUBLIC_GTM_ID`                 | No       | Google Tag Manager container ID (e.g., `GTM-XXXXXXX`)                                                                                                                                                                          |
+| `PUBLIC_SENTRY_DSN`             | No       | Sentry DSN: error monitoring of the server and the browser (errors only, replay on error)                                                                                                                                      |
+| `PUBLIC_BUTTERFLY_TRACKER`      | No       | `true` to send cookieless pageview hits to the Butterfly tracker (off by default)                                                                                                                                              |
+| `PUBLIC_BUTTERFLY_TRACKER_URL`  | No       | Butterfly audience tracker (`https://{propertyId}.tbtf.eno.do` or a custom tracker domain): cookieless pageview hits, not consent-gated. Empty = derived from `PUBLIC_API_URL`. Only used with `PUBLIC_BUTTERFLY_TRACKER=true` |
+| `PUBLIC_BUTTERFLY_TRACKER_DEV`  | No       | `true` to also send tracker hits from `npm run dev` (off by default)                                                                                                                                                           |
+| `PRIVATE_BUTTERFLY_PROPERTY_ID` | No       | Property id (the number in the back-office URL): enables the cache tags                                                                                                                                                        |
+| `PRIVATE_CACHE_TAGS`            | No       | Cache in front of the website: `xkey` (default), `cloudflare`, `fastly`, `vercel`, `netlify`, `none` (see [Cache and purges](#cache-and-purges))                                                                               |
 
 ### Butterfly Requirements
 
@@ -326,16 +326,16 @@ Changes are live right away: the API purges its cache on every save and on every
 
 The pages of one post (articles, static pages) carry a **cache tag** (`42:post:123`) that Butterfly purges whenever the post changes. They can thus stay 6 hours in a shared cache (`s-maxage`) and still show an edit at once. The lists (home, categories, tags, authors) are not tagged and keep their short TTL: they change with every post anyway. The relayed sitemaps and text files are tagged too (purged when their plugin settings change).
 
-Set `BUTTERFLY_PROPERTY_ID` to enable the tags, and `CACHE_TAGS` to the cache in front of the website (`$lib/server/cacheTags`):
+Set `PRIVATE_BUTTERFLY_PROPERTY_ID` to enable the tags, and `PRIVATE_CACHE_TAGS` to the cache in front of the website (`$lib/server/cacheTags`):
 
-| `CACHE_TAGS`     | Header                          |
-| ---------------- | ------------------------------- |
-| `xkey` (default) | `xkey` (Varnish, Enodo hosting) |
-| `cloudflare`     | `Cache-Tag`                     |
-| `fastly`         | `Surrogate-Key`                 |
-| `vercel`         | `Vercel-Cache-Tag`              |
-| `netlify`        | `Netlify-Cache-Tag`             |
-| `none`           | no tag, no long TTL             |
+| `PRIVATE_CACHE_TAGS` | Header                          |
+| -------------------- | ------------------------------- |
+| `xkey` (default)     | `xkey` (Varnish, Enodo hosting) |
+| `cloudflare`         | `Cache-Tag`                     |
+| `fastly`             | `Surrogate-Key`                 |
+| `vercel`             | `Vercel-Cache-Tag`              |
+| `netlify`            | `Netlify-Cache-Tag`             |
+| `none`               | no tag, no long TTL             |
 
 **CDN purges**: Butterfly calls its purge API through a webhook: back-office › Plugins › **Hooks** › « Ajouter un endpoint », events `post.*`, `sitemap.changed`, `txtfile.changed`, « Regroupement » on (purge APIs are rate limited). The `{cacheTags}` placeholder holds the keys to purge; in a JSON body, `"{cacheTags}"` alone stays a list. Store the API token in the plugin « Secrets » and use it as `{secret:name}`.
 
