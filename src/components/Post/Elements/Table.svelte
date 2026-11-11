@@ -28,12 +28,7 @@
   <!-- wide tables scroll horizontally inside the column (not the page): the
        scrollable region is focusable and named so keyboard users can scroll it -->
   <!-- svelte-ignore a11y_no_noninteractive_tabindex (WCAG: a scrollable region must be keyboard reachable, axe scrollable-region-focusable) -->
-  <div
-    class="post--table--scroll"
-    role="region"
-    aria-label={element.data.caption || 'Table'}
-    tabindex="0"
-  >
+  <section class="post--table--scroll" aria-label={element.data.caption || 'Table'} tabindex="0">
     <table>
       {#if element.data.head?.length}
         <thead>
@@ -91,7 +86,7 @@
         </tfoot>
       {/if}
     </table>
-  </div>
+  </section>
 
   {#if element.data.caption}
     <figcaption class="post--media--caption">

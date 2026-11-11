@@ -19,6 +19,8 @@ import type * as Butterfly from '@enodo/butterfly-ts';
 import { getRelated } from '@enodo/butterfly-ts';
 import { getMediaUrl } from '$lib/getMediaUrl';
 import { customString } from '$lib/posts';
+import { absoluteUrl } from '$lib/seo';
+import defaultThumb from '$assets/images/thumb.jpg';
 import generateWebPage from './WebPage';
 import generateOrganization from './Organization';
 import getAuthor from './Person';
@@ -64,7 +66,10 @@ export default function getArticle(data: App.PageData): ArticleLike {
         ? post.attributes.updatedAt
         : post.attributes.publishedAt,
     url: data.meta.url,
-    image: articleImages(getRelated<Butterfly.Media>(post.relationships.thumbnail.data, included)),
+    // no thumbnail: the site's default image (the same as og:image)
+    image: articleImages(
+      getRelated<Butterfly.Media>(post.relationships.thumbnail.data, included),
+    ) ?? [absoluteUrl(defaultThumb)],
     articleSection: section?.attributes.name,
     keywords: tags.length ? tags.join(', ') : undefined,
     publisher: generateOrganization(data),
