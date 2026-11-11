@@ -74,8 +74,9 @@ Inline nodes (`InlineNodes/*.svelte`) are small, focused pieces. They're typical
 - `Emphasis` → `<em>`
 - `Strong` → `<strong>`
 - `Code` → `<code>`
-- `Link` → `<a>` — follows `seo-links` rules (but also **opens CMS-external links** in a new tab; read the component before editing)
-- `Underline`, `Strikethrough`, `Subscript`, `Superscript`, `Abbreviation`, `Quote`, `Break`
+- `Link` → `<a>` through `$lib/links`: `contentLink()` classifies by host (internal = same host as `PUBLIC_BASE_URL`, rendered as a path, same tab; external web = `target="_blank"`), `externalRel()` adds `noopener` + `sponsored` (CMS attribute, or any external link of a `sponso` post) / `ugc` / `nofollow` (CMS `rel`). An empty or `#` href renders the text without a link. See `seo-links`.
+- `Quote` → `<q>` (inline quote), `cite` only when the source is a URL, the source in `title`
+- `Underline`, `Strikethrough`, `Subscript`, `Superscript`, `Abbreviation`, `Break`
 - `CustomStyle` → `<span data-customstyle="<key>">` — see the dedicated section below
 
 If you need, e.g., external-link icons: edit `InlineNodes/Link.svelte`. Keep changes minimal — inline nodes render hundreds of times per article.
@@ -148,33 +149,65 @@ If Butterfly introduces a new block type (e.g. `callout`):
 1. **Create** `src/components/Post/Elements/Callout.svelte` — accept the node as props, render the HTML.
 2. **Register** the mapping inside `Post/Body.svelte` (type-name → component).
 3. **Add** `.post--callout` styles in `src/assets/styles/post.css`.
-4. **Keep a fallback** — unknown types should render nothing silently, not crash.
+4. **Unknown types**: `Body.svelte` renders nothing for a type missing from its `registry` in production, and a `[type]` placeholder in dev only. Keep it that way — never crash, never ship a placeholder.
 
 ---
 
-## Embeds — sandboxing caveats
+## Heading outline — `$lib/postOutline`
 
-Social embeds (YouTube, Instagram, TikTok, Twitter/X, Facebook, Vimeo, Dailymotion) use their native embed scripts or iframes. Don't lazy-load them via IntersectionObserver unless the platform supports it natively — some iframes break when hidden at mount.
+`Body.svelte` computes `postOutline(body)` and passes `level` and `id` to `Title` (and the FAQ questions):
 
-For YouTube/Vimeo specifically: use the `lite-youtube` / `lite-vimeo` pattern if performance is critical. The current boilerplate uses standard `<iframe>` with `loading="lazy"` where safe.
+- **No level skip**: the page title is the `h1`; a CMS `title4` right after a `title2` renders as `h3` (at most one level below the previous heading, `h2` at least).
+- **FAQ questions are `h2`**.
+- **Anchors are unique and never empty** (slugified text, `intro`, `intro-2`…).
+
+Don't render a heading level straight from the CMS type in a new element: take `level` from the outline.
+
+---
+
+## Markdown — rendered on the server
+
+The post and static page loads call `withRenderedMarkdown(body)` (`$lib/server/markdown`, `marked` with GFM): every `markdown` block gets an `html` field, headings shifted one level down when the Markdown uses `#` (the page title stays the only `h1`), scripts stripped. `Markdown.svelte` renders `element.html` (`{@html}`) and only falls back to the source in a `<pre>` when there is no `html`. Crawlers get real HTML; the client ships no Markdown parser. A new route rendering a post body must call `withRenderedMarkdown` in its load too.
+
+---
+
+## Embeds
+
+- **YouTube, Vimeo, Dailymotion, raw `embed`**: the oEmbed / embed HTML goes through `stripScripts` then `embedHtml(html, title)` (`$lib/embedHtml`): every `<iframe>` gets `loading="lazy"`, a `title` (the oEmbed title, else « Embedded content »), no `frameborder`. **No click-to-load facade on purpose**: the iframe stays in the HTML so the video is indexed (and `VideoObject` describes it).
+- **`iframe` block**: `title` from the CMS, else « Embedded content from {host} », `loading="lazy"`.
+- **X, Facebook, Instagram, TikTok** (`OEmbed.svelte`): the oEmbed HTML (through `stripScripts`) is in the page; the network SDK is loaded once per page when the embed comes within 600px of the viewport (`IntersectionObserver`), not at hydration.
+- Never `{@html}` oEmbed or CMS HTML without `stripScripts`.
+
+---
+
+## Tables
+
+`Table.svelte`: `<figure>` → a scroll region `<section tabindex="0" aria-label={caption || 'Table'}>` (wide tables scroll inside the column, keyboard reachable and named) → `<table>`. Header cells are `<th scope="col">`; an **empty** header cell (a corner) is a `<td>` (a `th` must name its column). The caption is the `<figcaption>`.
+
+---
+
+## Quotes
+
+- Block `quote`: `<figure>` → `<blockquote cite={source.url}>` → `<figcaption>` « — author, `<cite>`title`</cite>` », the title linked through `contentLink`/`externalRel` when the source has a URL. A quote without a source renders without credits.
+- Inline: `<q>` (see inline nodes).
 
 ---
 
 ## Related posts
 
-`Post/Elements/Related.svelte` renders the internal link mesh (same-tag articles). Customise via the `.post--related` class. Don't change the underlying link-selection logic here — it lives in the article page's server load.
+`Post/Elements/Related.svelte` (a `related` block of the body): a named `<aside aria-label={title || 'Related articles'}>` with a list of links to the posts (24px targets). Customise via `.post--related`. The « Related articles » column of the article page is something else: `feeds.related` of the post load (same tags, else same category, pages excluded).
 
 ---
 
 ## Gallery
 
-`Post/Elements/Gallery.svelte` shows multiple images as a carousel/grid. Uses `<Image>` from `$components` — the `image-picture` skill applies (widths, sizes, lazyload).
+`Post/Elements/Gallery.svelte`: a `<ul>` of `<li><figure>`; each thumbnail is a `<button type="button">` (visually hidden text « Enlarge ») that opens the media in `Dialog.svelte` (`<dialog closedby="any">`, named « Media viewer »). Thumbnails use `<Image>` (`image-picture` skill).
 
 ---
 
-## Markdown / raw HTML
+## Raw HTML
 
-Posts may embed raw markdown or HTML blocks. `Post/Elements/Markdown.svelte` handles the former; HTML blocks use `{@html …}` with scripts stripped by `$lib/stripScripts`. **Never** `{@html}` user-authored content without going through `stripScripts` — XSS risk.
+HTML blocks use `{@html …}` with scripts stripped by `$lib/stripScripts`. **Never** `{@html}` user-authored content without it — XSS risk.
 
 ---
 
@@ -188,6 +221,9 @@ Posts may embed raw markdown or HTML blocks. `Post/Elements/Markdown.svelte` han
 - [ ] Styling a per-property custom style? → add `[data-customstyle="<key>"] { … }` in `post.css`
 - [ ] Styling a per-property block template? → add `[data-template="<key>"] { … }` in `post.css`
 - [ ] Handling raw HTML? — `stripScripts` first, always
+- [ ] A heading? — `level`/`id` from `postOutline`, never the raw CMS level
+- [ ] An iframe? — `title` + `loading="lazy"` (`embedHtml`)
+- [ ] A link? — `contentLink` / `externalRel`, never a raw `href` from the CMS
 
 ---
 

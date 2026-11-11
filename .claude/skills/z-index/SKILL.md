@@ -31,6 +31,13 @@ Always use the named `z-*` classes. Never use raw `z-index` values or Tailwind's
 <div class="z-tooltip">...</div>
 ```
 
+In CSS (a `<style>` block, `.scss`), use the variables: `z-index: var(--z-modal)`.
+
+### Stacking used by the project
+
+- Skip link: `z-modal` (above the fixed header). Fixed header (mobile): `z-nav-fixed`. Dialog close button: `z-modal`.
+- Stretched card link (`seo-links` rule 4): the title's `::after` at `var(--z-selected)`, the other links/buttons of the card at `var(--z-active)` to sit above it.
+
 ## When no class fits
 
 If the exact layer isn't covered, prefer adapting to the closest named class and adjusting the element's role. Only as a last resort, use `calc()` in CSS with the underlying CSS variable:

@@ -7,6 +7,15 @@ description: Push custom events to the GTM `dataLayer` and understand the standa
 
 GTM loads via `src/components/GTM.svelte` only when `PUBLIC_GTM_ID` is set. The container script is appended once the consent layer is up (`whenCmpReady` in `$lib/consent`: a TCF v2 CMP, Google's CMP, or straight away without one), so a slow first visit paints the consent banner before the tags; `gtm.js` is pushed first and the events queue in the `dataLayer` meanwhile. `withConsent(fn)` in the same module runs `fn` only after the visitor consented to the TCF purposes (never on a refusal) — use it for anything that sets cookies outside GTM. The standard data layer is driven by `data.layer` from each route's `+page.server.ts`. All pushes go through the helper in `$lib/dataLayer` — never touch `window.dataLayer` directly.
 
+The container is loaded from `https://www.googletagmanager.com/gtm.js?id=…` (the documented GTM snippet, `async`), never `gtag/js`.
+
+### Other third parties load late too
+
+- **Sentry** (`src/hooks.client.ts`): the browser SDK is imported on `requestIdleCallback` (timeout 5 s, `setTimeout` 3 s fallback), not in the entry bundle; errors raised before are queued and sent then; Replay records 10% of the sessions, sent on error only. No `PUBLIC_SENTRY_DSN`: nothing downloaded.
+- **Social embed SDKs** (X, Facebook, Instagram, TikTok, `Post/Elements/OEmbed.svelte`): loaded when the embed comes within 600px of the viewport.
+
+Don't add a third-party script to `app.html` or the layout head: load it after consent / on idle / near the viewport, like these.
+
 A ready-to-import GTM container template lives in `scripts/GTM.json` (tags, triggers, variables, GA4 forwarding). Import it into any GTM account — account/container IDs are placeholders and get reassigned.
 
 ## Standard data-layer fields (auto-populated)
@@ -26,7 +35,7 @@ Every navigation pushes these (defined in `App.PageData.layer`, plus app-level f
 
 **Content scope** — per navigation:
 
-- `content.type` — `home | articles | post | page | author | authors | category | tag | tags | search | rss | atom | json` (required)
+- `content.type` — `home | articles | post | page | author | authors | category | tag | tags | search | rss | atom` (required; `rss`/`atom` are the feed directories `/rss.html`, `/atom.html`)
 - `content.id` — resource id (post, page, category, tag, author pages)
 - `content.taxonomy` — taxonomy slug of a term page (`tags`, from the term's `taxonomy` relationship)
 - `content.group` — group/category

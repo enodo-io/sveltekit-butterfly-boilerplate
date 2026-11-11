@@ -98,15 +98,19 @@ This is exactly what `src/routes/+page.server.ts` does.
   let { data } = $props();
 </script>
 
-<Feed feed={data.feeds.posts} length={9} lazyloadAfter={3} />
+<ul id="posts" class="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+  <Feed feed={data.feeds.posts} length={18} lazyloadAfter={3} heading="h2" priority />
+</ul>
 ```
 
-`<Feed>` handles:
+`<Feed>` renders `<li>` items: **always place it in a `<ul>`**. It handles:
 
-- Promise resolution with a skeleton loader (`length` = skeleton count)
-- Graceful empty state
-- Per-card props (`format`, `width`, `widths`, `sizes`, `heading`, `thumbnail`, `resume`, `author`, `date`)
-- Eager-load opt-out for the first N cards via `lazyloadAfter` (see `image-picture` skill)
+- Promise resolution with a skeleton loader (`length` = skeleton count, `aria-hidden` placeholders)
+- An empty list renders nothing (the route shows its own message); a failed promise renders one error `<li>`
+- Per-card props (`format`, `width`, `widths`, `sizes`, `heading`, `thumbnail`, `resume`), see `card`
+- `heading`: the card heading level from the page outline (`h2` under a listing `h1`, default `h3`)
+- `lazyloadAfter`: the first N cards are not lazy (above the fold)
+- `priority`: the first card's image is the LCP candidate (preload + `fetchpriority="high"`), see `image-picture`
 
 `length` should match the expected page size so the skeleton matches the real layout and avoids CLS.
 
@@ -144,9 +148,30 @@ For infinite scroll, pass `onload` and `next`:
 
 ---
 
-## Deep pagination
+## Page links — `deep-pagination`
 
-For pages beyond ~100, use the `deep-pagination` package to walk cursors efficiently. Don't just bump `page[number]` — offset pagination is O(n) on the DB.
+`Pagination.svelte` builds its page links with `deepPagination({ current, max, pad })` (the `deep-pagination` package): the pages around the current one, the first and last, `…` gaps, and multi-level jump pages (250, 500, 1000…) on big listings, so a crawler reaches any page of a deep listing in a few hops. It only generates page numbers: the data is still fetched with `page[number]`/`page[size]` (or `links.next` for « load more »). The gaps are `aria-hidden`; prev/next are real links with text (« Previous page » / « Next page », `rel="prev"`/`rel="next"`), the arrows are decorative CSS.
+
+The page URLs come from the `url` prop and must be canonical: page 1 without `?page`, the query encoded on search (`/search?query=${encodeURIComponent(q)}&page=N`).
+
+### « Load more » / infinite scroll
+
+`loadMore` in the listing pages imports `$lib/api` **dynamically** on the first click/scroll (the API client is not in the page bundle) and follows `links.next`. `Pagination` announces « N more items loaded » in a polite `role="status"`, and after a click moves the focus to the first new card's link (not on infinite scroll).
+
+---
+
+## Await on purpose, start in parallel
+
+- **Related posts are awaited on SSR on purpose** (`[slug=post].html`: `related: isDataRequest ? related : await related`): they are internal links, they must be in the HTML crawlers get. Their request starts before the return, in parallel with nothing else blocking.
+- **Start independent requests together.** Tag and author pages start the posts request (filtered by the URL id) before awaiting the term/author request, instead of after it; `posts.catch(() => {})` avoids an unhandled rejection when the term request fails first, the error surfaces where `posts` is awaited.
+
+```ts
+const posts = (async () => api.get<Butterfly.Post[]>({ fetch, endpoint: 'posts', query: { filter: { 'terms<tags>': id } } }))();
+posts.catch(() => {});
+const tag = await api.get<Butterfly.Term>({ fetch, endpoint: 'taxonomies/tags/relationships/terms', id });
+```
+
+- The home starts `featured` before `await parent()`.
 
 ---
 
@@ -156,6 +181,8 @@ For pages beyond ~100, use the `deep-pagination` package to walk cursors efficie
 - **Forgetting `await` on initial SSR**: the promise never resolves before HTML flushes; empty content ships to crawlers.
 - **Creating the promise inside the returned object**: `feeds: { posts: api.get(...) }` — fine, but then the `isDataRequest` branch can't short-circuit; keep the promise in a variable.
 - **Using `<Feed>` without matching `length`**: skeleton is off-size → layout shift on resolution.
+- **`<Feed>` outside a `<ul>`**: `<li>` without a list, invalid HTML.
+- **Sequential awaits** of requests that don't depend on each other.
 
 ---
 

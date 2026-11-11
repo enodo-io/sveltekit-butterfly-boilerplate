@@ -16,10 +16,10 @@ Scaffold a new Butterfly taxonomy for slug `$1` with singular name `$2` (e.g. `/
 
 - [ ] `src/routes/$1/+page.server.ts` — list all terms via `syndication/terms` with filter `taxonomies: '$1'`
 - [ ] `src/routes/$1/+page.svelte` — mirrors `src/routes/tags/+page.svelte`
-- [ ] `src/routes/$1/[id]/+page.server.ts` — one term + its posts, filter `terms<$1>: term.data.id`
-- [ ] `src/routes/$1/[id]/+page.svelte` — mirrors `src/routes/tags/[slug]/+page.svelte`
-- [ ] Tell the user to add a `terms` sitemap (taxonomy `$1`) and its term permalink to the Sitemap plugin of the back-office: the index and robots.txt follow on their own
-- [ ] Optionally add `/rss/$1/[id].xml` feed — mirror `[format=feed]/tags/[id].xml`
+- [ ] `src/routes/$1/[id]/+page.server.ts` — one term + its posts (filter `terms<$1>: id`, started in parallel with the term request), 301 to the API id, `pageParam`, empty page 1 `noindex`
+- [ ] `src/routes/$1/[id]/+page.svelte` — mirrors `src/routes/tags/[id]/+page.svelte`
+- [ ] Tell the user to add a `terms` sitemap (taxonomy `$1`) and its term permalink `/{taxonomy}/{id}` to the Sitemap plugin of the back-office: the index and robots.txt follow on their own
+- [ ] Optionally add the `[format=feed]/$1/[id].xml` feed through `$lib/server/feed` — mirror `[format=feed]/tags/[id].xml`
 
 Use `content.type: '$1'` for the index and `content.type: '$2'` for detail pages. Pass the taxonomy slug dynamically — never hardcode field names outside the `terms<$1>` interpolation.
 

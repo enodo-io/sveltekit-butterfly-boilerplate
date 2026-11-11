@@ -16,21 +16,60 @@ Three layers, each with a purpose:
 ## Commands
 
 ```bash
-npm run test:unit    # Vitest (all unit + browser specs)
-npm run test:e2e     # Playwright
-npm run test         # Both sequentially
+npm run test:unit      # Vitest (all unit + browser specs)
+npm run test:e2e       # Playwright (all e2e, builds and serves the app on :4173)
+npm run test:quality   # Playwright, e2e/quality.test.ts only
+npm run test           # unit (--run) then e2e
+npm run budget         # performance budget of the last build (after npm run build)
 ```
 
-The `Stop` hook also runs `vitest run` on every response, so tests must pass to avoid spam.
+The e2e suites read the real API of `.env` (`PUBLIC_API_URL`, `PUBLIC_API_KEY`): no `.env`, no e2e. `playwright.config.ts` runs `npm run build && npm run preview` (reused locally when already running).
+
+The `Stop` hook also runs `svelte-check` and `vitest run` on every response, so tests must pass to avoid spam. The pre-commit hook (`.githooks/pre-commit`) runs `npm run lint` (Prettier + ESLint, including the semantic HTML rules) and `npm run check`.
+
+---
+
+## Quality gate
+
+### `e2e/quality.test.ts` (`npm run test:quality`)
+
+On pages picked from the API: home, `/articles`, `/tags`, `/authors`, `/rss.html`, a search, the first and the deepest category, a tag, an author, the static pages, the post using the most block types (« kitchen sink ») and another post.
+
+1. **html-validate** (`recommended` + `a11y` presets, formatting rules off) on the raw SSR HTML: flow content in `<a>`/`<button>`, list children, unknown elements, missing `alt` / iframe `title` / button `type`, unnamed landmarks, duplicate ids…
+2. **SEO head contract**: canonical absolute and equal to `og:url`; absolute `og:image`; `max-image-preview:large` unless noindex; `twitter:card`; a meta description; no `og:article:*`; every JSON-LD block parses; exactly one `h1`; no heading level skip; at most one `img[fetchpriority="high"]`.
+3. **axe-core** (WCAG 2.0/2.1/2.2 A+AA + best practices) after hydration, then with the mobile menu open (390px) and the gallery media viewer open. Third-party content is excluded (iframes, `.post--embed`, X/TikTok/Instagram/Facebook widgets).
+
+A new route that lists or renders content is added to the `pages` list of `beforeAll`.
+
+### `scripts/check-budget.js` (`npm run budget`, after `npm run build`)
+
+| Budget                                               | Limit       |
+| ---------------------------------------------------- | ----------- |
+| first-load JS per route (entry + root layout + route node and their static imports, gzip) | 72 kB  |
+| main CSS (gzip)                                      | 12 kB       |
+| font files in the build                              | 30          |
+
+Exit 1 when exceeded: a dependency imported at the top of a page, Sentry back in the entry, every font weight again… Raise a budget only on purpose, in the script, with the reason.
+
+### ESLint (`eslint.config.js`, `.svelte` files)
+
+`svelte/button-has-type`, `svelte/no-target-blank`, vague anchor texts (« read more », « lire la suite »…), `href="#"` / empty `href`. See `seo-links`.
+
+### CI — `.github/workflows/quality.yml`
+
+On push to `master` and on pull requests: `lint`, `check`, `test:unit --run`, `build`, `budget` (with `.env.example` as `.env`); then the whole e2e suite (`npm run test:e2e`, quality gate included) on the demo API **only when the `DEMO_API_KEY` repository secret is set** (it is written as `PUBLIC_API_KEY`); without it the e2e job is skipped.
 
 ---
 
 ## Where existing specs live
 
-- `src/lib/getMediaUrl.spec.ts` — pure unit test on a lib utility
-- `src/lib/stripScripts.spec.ts` — input/output assertions on string transforms
-- `src/lib/JsonLD/Organization.spec.ts` — schema generator output shape
+- `src/lib/getMediaUrl.spec.ts`, `imageWidths.spec.ts` — pure unit tests on lib utilities
+- `src/lib/stripScripts.spec.ts`, `embedHtml.spec.ts` — input/output assertions on string transforms
+- `src/lib/links.spec.ts`, `seo.spec.ts`, `postOutline.spec.ts` — link classification, `absoluteUrl` / `metaDescription`, heading outline
+- `src/lib/server/pageParam.spec.ts`, `cacheTags.spec.ts`, `markdown.spec.ts`, `sitemapCache.spec.ts` — server helpers (`$env/*` mocked with `vi.mock` / `vi.doMock` where they read it)
+- `src/lib/JsonLD/Organization.spec.ts`, `VideoObject.spec.ts` — schema generator output shape
 - `src/lib/JsonLD/generateJsonLd.spec.ts` — schema dispatcher behaviour
+- `e2e/routes/*.test.ts` — one file per route; `e2e/helpers/` (API pickers, SEO and a11y checks)
 
 Use these as reference for new specs.
 
@@ -106,6 +145,9 @@ Run one file: `npx playwright test e2e/home.test.ts`.
 | New Svelte component       | Browser spec (`vitest-browser-svelte`)       |
 | New route / flow           | Playwright e2e test                          |
 | Bug fix                    | Regression test at the appropriate layer     |
+| New lib helper on a route path (pagination, URLs, links) | Unit spec + the e2e route test |
+| New page type / template  | Add it to the pages of `e2e/quality.test.ts` |
+| New dependency on the client | `npm run build && npm run budget`     |
 | Design-system rule (skill) | **Not testable by tests** — enforced by hook |
 
 ---
@@ -137,13 +179,14 @@ Keep fixtures small and focused. Don't ship real API responses as test data — 
 
 ## `PUBLIC_*` env vars in tests
 
-Tests run with the `.env` loaded by Vite. For deterministic tests, override in the test file:
+Unit specs don't depend on the `.env`: mock the `$env` module the code imports, then import the module under test (see `links.spec.ts`, `cacheTags.spec.ts`):
 
 ```ts
-import.meta.env.PUBLIC_BASE_URL = 'https://test.example';
+vi.mock('$env/static/public', () => ({ PUBLIC_BASE_URL: 'https://www.site.test' }));
+const { contentLink } = await import('./links');
 ```
 
-Or use `.env.test` (already supported by `.gitignore` exception).
+`vi.resetModules()` + `vi.doMock()` when one spec needs several values (module-level constants are read at import).
 
 ---
 

@@ -19,19 +19,13 @@ Localise the entire boilerplate to `$1` (e.g. `French`, `fr_FR`, `Spanish`, `es_
 
 - [ ] `.env`: update `PUBLIC_LOCALE` and `PUBLIC_LANGUAGE`
 - [ ] `src/lib/formatRelativeDate.ts`: translate `Today` / `Yesterday` / `${n} days ago`; adjust `hour12`, `timeZone`, and any AM/PM replacement
-- [ ] `src/lib/httpErrors.ts`: translate all 9 messages
-- [ ] `src/routes/+layout.svelte`: `aria-label` on skip link
-- [ ] `src/components/Layout/Header.svelte`: nav/menu/search aria-labels + visible "Search"
-- [ ] `src/components/Layout/Footer.svelte`: all link texts + static copy
-- [ ] `src/routes/search/+page.svelte`: form strings + no-results message
-- [ ] `src/routes/search/+page.server.ts`: SEO titles + descriptions
-- [ ] `src/components/Pagination.svelte`: aria-labels + default `label` prop
-- [ ] `src/components/Dialog.svelte`: close aria-label
-- [ ] `src/components/Breadcrumb.svelte`: nav aria-label
-- [ ] `src/lib/JsonLD/BreadcrumbList.ts`: segment names
-- [ ] `src/routes/+page.svelte`: CSS `content:` strings
+- [ ] `src/lib/httpErrors.ts` and `src/routes/+error.svelte`: every message
+- [ ] Every file of the skill's Step 3 table: visible text, visually hidden text (skip link, « Enlarge »…) and `aria-label`s (« Menu », « Main menu », « Footer », « Media viewer »…)
+- [ ] Route titles, descriptions and their fallbacks (`+page.server.ts`), feed descriptions
+- [ ] `src/lib/JsonLD/BreadcrumbList.ts`: segment names + the ` - Page N` regex
+- [ ] Visible labels and accessible names still identical (WCAG 2.5.3)
 
-Use the ripgrep searches listed in the skill to catch any stray English strings. Don't translate Butterfly CMS content — that's authored in the CMS, not the codebase.
+Use the grep listed in the skill to catch any stray English strings. Don't translate Butterfly CMS content — that's authored in the CMS, not the codebase.
 
 **Important:** this is a **single-language localisation**, not i18n. The site serves one language after this change. If the user actually wants multi-language support, flag that this is a scoped migration (recommended: Paraglide with SvelteKit) — not what this command does.
 

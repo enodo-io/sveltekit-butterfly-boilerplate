@@ -1,131 +1,148 @@
 ---
 name: seo-links
-description: Enforce proper SEO-friendly anchor tag creation. Use when writing or reviewing any HTML that contains <a> links — especially in cards, navigation, lists, or any clickable elements. Ensures anchor text is clean, descriptive, and keyword-rich, and that block elements are never wrapped in <a> tags.
+description: Enforce proper SEO-friendly anchor tag creation. Use when writing or reviewing any HTML that contains <a> links — especially in cards, navigation, lists, or any clickable elements. Ensures anchor text is clean, descriptive, and keyword-rich, that block elements are never wrapped in <a> or <button>, and that internal/external links get the right target and rel.
 ---
 
 # Rules for clean, SEO-friendly `<a>` links
 
 ## Core principle
 
-Google reads the raw text content inside `<a>` tags as the **primary SEO signal** for a link. That text must be:
+Google reads the text content inside `<a>` as the **primary signal** of a link, and screen readers list links by that same text. It must be:
 
-- **Descriptive**: tell the user exactly what they'll find
-- **Keyword-rich**: use the important terms from the target page
-- **Clean**: as little HTML markup as possible around the text
+- **Descriptive**: tell the user exactly what they'll find, out of context
+- **Keyword-rich**: use the important terms of the target page
+- **Real text**: in the HTML, not in CSS, not only in an attribute
+
+Part of this is enforced by ESLint (`eslint.config.js`, `.svelte` files, blocks the commit): vague anchor texts, `href="#"` / empty `href`, `target="_blank"` without `rel`, `<button>` without `type`. The rest is review (`semantic-html-auditor` agent) and `npm run test:quality` (html-validate on the rendered pages).
 
 ---
 
-## Rule 1 — Text only inside `<a>`, maximize keywords, minimize HTML
+## Rule 1 — Descriptive text, as little markup as needed
 
 ```html
-<!-- ✅ Good: pure descriptive text, keywords inside -->
-<a href="/recipes/chocolate">List of chocolate-based recipes</a>
+<!-- ✅ pure descriptive text -->
+<a href="/recipes/chocolate">Chocolate-based recipes</a>
 
-<!-- ❌ Bad: "Click here" gives Google zero signal -->
-<a href="/recipes/chocolate">Click here</a>
+<!-- ✅ a span for styling is fine: the text is still the anchor text -->
+<a href="/recipes/chocolate">Chocolate <span class="font-bold">recipes</span></a>
 
-<!-- ❌ Bad: unnecessary tags pollute the anchor text signal -->
-<a href="/recipes/chocolate"><span class="icon"></span><span>Recipes</span></a>
+<!-- ❌ parasitic markup: an empty icon span and a wrapper that only add noise -->
+<a href="/recipes/chocolate"><span class="icon"></span><div><span>Recipes</span></div></a>
 ```
 
+Banned anchor texts (ESLint flags them): « read more », « learn more », « click here », « here », « more », « lire la suite », « en savoir plus », « cliquez ici », « ici », « plus ». Write what the target page is about (`All {category} articles`, the post title…).
+
+Also banned:
+
+- **`href="#"` or an empty `href`**: an action is a `<button type="button">`, a link has a real URL.
+- **CSS `content:` as link text** (`a::after { content: 'See all' }`): crawlers and some screen readers don't read it. Decorative pseudo-content is silenced with `content: '>' / ''`.
+- **Icon-only links named only by `aria-label`**: `aria-label` is not anchor text for Google. Put the text in the link, visually hidden:
+
+```svelte
+<!-- ✅ Breadcrumb.svelte -->
+<a href={resolve('/')}><Home size={16} /><span class="sr-only">{siteTitle}</span></a>
+
+<!-- ❌ -->
+<a href="/" aria-label="Home"><Home size={16} /></a>
+```
+
+- **A `title` repeating the link text**: noise for screen readers, no SEO value. Use `title` only for extra information.
+
 ---
 
-## Rule 2 — Never put block elements inside `<a>`
+## Rule 2 — No flow content inside `<a>` or `<button>`
 
-`<a>` is an **inline** element. It cannot contain block elements (`<div>`, `<article>`, `<h2>`, `<p>`, `<section>`…). This is invalid HTML and confuses crawlers.
+`<a>` and `<button>` take phrasing content only. No `<div>`, `<article>`, `<h2>`, `<p>`, `<section>`, `<ul>`, `<figure>` inside. Invalid HTML (html-validate flags it) and a diluted anchor text.
 
 ```html
-<!-- ✅ Valid: link is INSIDE the block element -->
+<!-- ✅ the link is inside the heading -->
 <h3><a href="/article/why-chocolate">Why is chocolate so good?</a></h3>
 
-<!-- ❌ Invalid: block element INSIDE the link -->
-<a href="/article/why-chocolate">
-  <h3>Why is chocolate so good?</h3>
-</a>
+<!-- ❌ heading inside the link -->
+<a href="/article/why-chocolate"><h3>Why is chocolate so good?</h3></a>
+
+<!-- ❌ same for a button -->
+<button type="button"><div class="card">…</div></button>
 ```
 
 ---
 
 ## Rule 3 — Never wrap an entire card in `<a>`
 
-This is the most frequent and most damaging mistake. Wrapping a whole `<div>` in `<a>`:
-
-- Makes the HTML invalid (block inside inline)
-- Dilutes the anchor text signal with parasitic markup (img, spans, icons…)
-- Prevents having multiple independent links inside the card
+Wrapping a whole card makes the HTML invalid, turns the image, resume and labels into anchor text, and forbids any second link inside the card.
 
 ```html
-<!-- ❌ Very bad: entire card inside the link -->
+<!-- ❌ -->
 <a href="/article/chocolate">
-  <div class="card">
-    <img src="chocolate.jpg" alt="Chocolate" />
-    <h3>Why is chocolate so good?</h3>
-    <p>An article description...</p>
-  </div>
+  <article class="card"><img … /><h3>Why is chocolate so good?</h3><p>…</p></article>
 </a>
 
-<!-- ✅ Good: only the title carries the link, everything else is free -->
-<div class="card">
-  <img src="chocolate.jpg" alt="Chocolate" />
+<!-- ✅ only the title carries the link -->
+<article class="card">
   <h3><a href="/article/chocolate">Why is chocolate so good?</a></h3>
-  <p>An article description...</p>
-</div>
+  <p>An article description…</p>
+  <img … alt="" />
+</article>
 ```
 
 ---
 
-## Rule 4 — Make an entire card clickable without wrapping it in `<a>`
+## Rule 4 — Whole card clickable: the stretched `::after`
 
-Use the `::after` pseudo-element on the title link to create an invisible click zone covering the whole card.
+The title link's `::after` covers the card. Use the z-index tokens (`z-index` skill), never raw numbers:
 
 ```css
 .card {
   position: relative; /* required */
 }
 
-.card a::after {
+.card__title a::after {
   content: '';
   position: absolute;
-  z-index: 1;
-  inset: 0; /* shorthand for top: 0; right: 0; bottom: 0; left: 0; */
+  inset: 0;
+  z-index: var(--z-selected);
+}
+
+/* any other link or button inside the card sits above the click zone */
+.card a:not(.card__title a),
+.card button {
+  position: relative;
+  z-index: var(--z-active);
 }
 ```
 
-Any other link inside the card (author, category…) must have `position: relative; z-index: 2` to sit above the click zone.
+The utilities `link--overlay` (the `::after`) and `link--wrapper` (raises the other links/buttons) in `src/assets/styles/tailwind.css` do the same.
 
 ---
 
 ## Rule 5 — Image links
 
-When the only content of a `<a>` is an image, the `alt` attribute acts as the anchor text for Google.
+When the only content of an `<a>` is an image, its `alt` is the anchor text: it must describe the target. An image **next to** a text link to the same target is decorative: `alt=""` (the card thumbnail without a description, the avatar next to the author name).
 
-```html
-<!-- ✅ Good: descriptive alt = good anchor text -->
-<a href="/recipes/chocolate">
-  <img src="chocolate.jpg" alt="Dark chocolate dessert recipes" />
-</a>
+---
 
-<!-- ❌ Bad: empty alt = empty anchor text, link is invisible to Google -->
-<a href="/recipes/chocolate">
-  <img src="chocolate.jpg" alt="" />
-</a>
-```
+## Rule 6 — Internal vs external
+
+Content links (post body, quote sources) go through `$lib/links`:
+
+- `contentLink(href)` classifies by **host**: same host as `PUBLIC_BASE_URL` (www or not, http or https) or relative = **internal**, rendered as a path. `''`, `#`, unparsable → `null`: render the text, no link.
+- **Internal**: same tab (never `target="_blank"`), never `rel="sponsored"`/`nofollow`; `resolve()` for the routes of the app.
+- **External web**: `target="_blank"` with `rel` from `externalRel({ sponsored, ugc, nofollow })` → always `noopener`, plus:
+  - `sponsored`: a paid link (the CMS `sponsored` attribute/`rel`, or every external link of a post flagged `sponso`)
+  - `ugc`: user-generated content (comments, forum)
+  - `nofollow`: a link you don't vouch for
+- `mailto:`, `tel:`: as they are, no target.
+
+Author links carry `rel="author"`. A hand-written paid link elsewhere (a partner banner) gets `rel="sponsored noopener"` explicitly.
 
 ---
 
 ## Quick checklist
 
-Before validating any `<a>` tag:
-
-- [ ] Is the text inside descriptive and keyword-rich?
-- [ ] Is there only text inside (no divs, h2, p, article)?
-- [ ] Is the card/component NOT entirely wrapped in `<a>`?
-- [ ] If clickable card → using `::after` on the title link?
-- [ ] If image link → is `alt` descriptive?
-
----
-
-## Paid links — `rel="sponsored"`
-
-A link that was paid for carries `rel="sponsored"` (Google's rule; `nofollow` alone is the old form). The post body does it on its own: `Post/InlineNodes/Link.svelte` marks a link the CMS flagged as sponsored (the `sponsored` attribute of the link node), and every external link of a post flagged `sponso` (partner content, see `Post/Body.svelte` and its `sponsored` prop). Internal links never carry it. A hand-written paid link elsewhere (a partner banner, a shop button) gets `rel="sponsored noopener"` explicitly.
-
+- [ ] The text inside `<a>` is descriptive and not in the banned list?
+- [ ] No flow content (div, h*, p, article, ul, figure) inside `<a>` or `<button>`?
+- [ ] No `href="#"`, no empty href, no CSS `content:` as text?
+- [ ] Icon-only link → visually hidden text, not just `aria-label`?
+- [ ] Card → link on the title only, stretched `::after` with `--z-selected`, other links `--z-active`?
+- [ ] Image link → `alt` describes the target; image next to its text link → `alt=""`?
+- [ ] CMS link → `contentLink` / `externalRel`: internal same tab, external `_blank` + `noopener` (+ sponsored/ugc/nofollow)?

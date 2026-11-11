@@ -13,7 +13,7 @@ A matcher is a small function that decides whether a URL segment qualifies for a
 | -------------------- | ------------------------------------------------------------ | ----------------------------------------- |
 | `src/params/feed.ts` | `param === 'rss' \|\| param === 'atom'`                      | `/[format=feed]/...` feed routes          |
 | `src/params/page.ts` | `param in JSON.parse(PUBLIC_STATIC_PAGES \|\| '{}')`         | `/[slug=page].html` static pages          |
-| `src/params/post.ts` | Ends with `-<digits>` (so `my-article-42` matches, `tags` doesn't) | `/[slug=post].html` article pages   |
+| `src/params/post.ts` | `/^(?:.*-)?[1-9]\d*$/`: `{slug}-{id}` or a bare `{id}`, the id a positive integer (`my-article-42`, `42` match; `tags`, `my-article-0`, `my-article-042` don't) | `/[slug=post].html` article pages (the load 301s to the full `{slug}-{id}` URL) |
 
 Read them before writing a new one — they're each 1–4 lines.
 

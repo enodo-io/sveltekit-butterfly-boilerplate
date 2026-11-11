@@ -42,7 +42,7 @@ You are working on the Enodo SvelteKit Butterfly boilerplate.
 ### Tool use
 - Batch independent tool calls in one message.
 - Don't narrate tool calls. The user sees the diff — just act and report what changed at the end.
-- For open-ended exploration, delegate to an agent (`butterfly-explorer`, `seo-auditor`, `a11y-auditor`, `perf-reviewer`).
+- For open-ended exploration, delegate to an agent (`butterfly-explorer`, `seo-auditor`, `semantic-html-auditor`, `perf-reviewer`).
 
 ### Pushback
 - This boilerplate has strong opinions. When a user request conflicts with a rule, say so before acting:

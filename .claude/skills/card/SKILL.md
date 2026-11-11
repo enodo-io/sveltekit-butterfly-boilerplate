@@ -8,13 +8,34 @@ description: Create a semantic, accessible, SEO-friendly card component. Use whe
 ## Principles
 
 1. **DOM order follows semantic/accessibility logic**, not visual logic.
-   The title (`h2`/`h3`) comes first in the DOM for screen readers and crawlers, even if it should visually appear below the image.
+   The title comes first in the DOM for screen readers and crawlers, even if it should visually appear below the image.
+
+   **Its level follows the page outline**: one level below the heading the cards sit under. Cards of a listing whose page title is the `h1` are `h2` (`<Feed heading="h2">` on articles, categories, tags, authors, search, and the home featured post); cards under a section `h2` (home category blocks, the post's « Related articles ») stay `h3` (the default). Never skip a level (`h1` → `h3`).
 
 2. **The link lives only on the title.** Never wrap the entire card in `<a>`. See the `seo-links` skill.
 
 3. **The entire card stays clickable** thanks to the `::after` pseudo-element on the title link.
 
 4. **Flexbox + `order`** change the visual position of elements without modifying the DOM.
+
+5. **A list of cards is a list.** `Feed.svelte` renders each card in a `<li>`: its container is a `<ul>` (screen readers announce « list, 18 items »).
+
+```svelte
+<ul id="posts" class="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+  <Feed feed={data.feeds.posts} length={18} lazyloadAfter={3} heading="h2" priority />
+</ul>
+```
+
+---
+
+## The project's card — `src/components/Card.svelte`
+
+- `<article class="card">` → `.card--content` (`<svelte:element this={heading}>` with the link, the « Partner content » label for `sponso` posts, the resume) → `<picture class="card--thumb">` with `<Image>` (placed first visually by `order`).
+- `heading`: `'h1' | 'h2' | 'h3' | 'h4'`, default `'h3'` — set it from the page outline (above).
+- `alt`: the thumbnail's description, else `""`. Without a description the image only repeats the title next to it: decorative, an empty `alt` avoids reading the title twice.
+- `priority`: the LCP card only (`Feed` gives it to its first card when `priority` is set). One per page, see `image-picture`.
+- `lazyload`: `Feed` sets it from `lazyloadAfter` (the cards above the fold are not lazy).
+- The stretched link: `.card a::after` in `src/assets/styles/_cards.scss`.
 
 ---
 
@@ -27,28 +48,27 @@ The Butterfly media API automatically serves the right format (WebP, AVIF, JPEG�
 ```svelte
 <script>
   import Image from '$components/Image.svelte';
-  // `post.attributes.image` is a Butterfly.Media object
+  // thumb: the post's thumbnail, a Butterfly.Media (getRelated on the included resources)
 </script>
 
-<!-- Lazy (default): adds loading="lazy" -->
+<!-- Lazy (default): adds loading="lazy". No description → alt="" (decorative, next to the title) -->
 <Image
   class="card__image"
-  media={post.attributes.image}
+  media={thumb}
   format="thumb"
-  widths={[320, 480, 768]}
-  sizes="(min-width: 768px) 33vw, 100vw"
-  alt="Dark chocolate squares on a wooden board"
+  widths={[320, 380, 480, 540]}
+  sizes="(min-width: 1008px) 320px, (min-width: 600px) 50vw, 100vw"
+  alt={thumb?.attributes.description || ''}
 />
 
-<!-- The LCP image (one per page): not lazy, fetchpriority="high" + <link rel="preload"> -->
+<!-- The LCP card (one per page): fetchpriority="high" + <link rel="preload" fetchpriority="high">, never lazy -->
 <Image
   class="card__image"
-  media={post.attributes.image}
+  media={thumb}
   format="thumb"
-  widths={[320, 480, 768]}
-  sizes="(min-width: 768px) 33vw, 100vw"
-  alt="Dark chocolate squares on a wooden board"
-  lazyload={false}
+  widths={[320, 380, 480, 540]}
+  sizes="(min-width: 1008px) 320px, (min-width: 600px) 50vw, 100vw"
+  alt={thumb?.attributes.description || ''}
   priority
 />
 ```
@@ -81,15 +101,18 @@ No `<picture>` with `<source>` elements. The format negotiation happens at the H
 ## Reference HTML structure
 
 ```html
+<!-- in a <ul>: a list of cards is a list -->
+<li>
 <article class="card">
   <!--
-    Title is FIRST in the DOM: semantic priority.
+    Title is FIRST in the DOM: semantic priority. Its level follows the page
+    outline (h2 under the listing's h1).
     The link lives here, and only here.
     Its ::after will cover the entire card to make it clickable.
   -->
-  <h3 class="card__title">
-    <a href="/article/why-chocolate-is-so-good"> Why is chocolate so good? </a>
-  </h3>
+  <h2 class="card__title">
+    <a href="/article/why-chocolate-is-so-good">Why is chocolate so good?</a>
+  </h2>
 
   <!--
     Image is second in the DOM.
@@ -105,7 +128,7 @@ No `<picture>` with `<source>` elements. The format negotiation happens at the H
       /images/chocolate-768.jpg 768w
     "
     sizes="(min-width: 768px) 33vw, 100vw"
-    alt="Dark chocolate squares on a wooden board"
+    alt=""
     width="400"
     height="225"
     loading="lazy"
@@ -121,6 +144,7 @@ No `<picture>` with `<source>` elements. The format negotiation happens at the H
     <time datetime="2025-03-15">March 15, 2025</time>
   </footer>
 </article>
+</li>
 ```
 
 ---
@@ -148,7 +172,7 @@ No `<picture>` with `<source>` elements. The format negotiation happens at the H
 .card__title a::after {
   content: '';
   position: absolute;
-  z-index: 1;
+  z-index: var(--z-selected); /* z-index tokens, never raw numbers */
   inset: 0; /* covers the entire card */
 }
 
@@ -156,7 +180,7 @@ No `<picture>` with `<source>` elements. The format negotiation happens at the H
 .card__author,
 .card__footer a {
   position: relative;
-  z-index: 2;
+  z-index: var(--z-active);
 }
 
 /* ─── Visual reordering via flexbox ─── */
@@ -240,7 +264,7 @@ Visual render:    [image] [title] [description] [footer]
 .card__category {
   order: -2; /* floats above the image if needed, adjust as required */
   position: relative;
-  z-index: 2;
+  z-index: var(--z-active); /* a link: above the click zone */
 }
 ```
 
@@ -248,12 +272,14 @@ Visual render:    [image] [title] [description] [footer]
 
 ## Checklist before shipping a card
 
-- [ ] Is `<h2>`/`<h3>` first in the DOM?
+- [ ] Is the heading first in the DOM, one level below the heading the cards sit under (no skip)?
+- [ ] Are the cards `<li>` in a `<ul>` (`Feed` → `<ul>`)?
 - [ ] Is the `<a>` link only on the title text?
 - [ ] Does `.card` have `position: relative`?
 - [ ] Does the `::after` on the title link cover the entire card?
-- [ ] Do secondary links have `position: relative; z-index: 2`?
+- [ ] Do secondary links have `position: relative; z-index: var(--z-active)` (above the `--z-selected` click zone)?
 - [ ] Butterfly CMS image → `<Image>` component with `media`, `format`, `widths`, `sizes`?
 - [ ] Static/external image → plain `<img>` with `srcset` + `sizes` (no `<picture>/<source>`)?
-- [ ] Does the image have a descriptive `alt`?
+- [ ] `alt`: the media description, or `""` when the image only illustrates the title next to it?
+- [ ] `priority` only on the LCP card of the page?
 - [ ] Used `order` for visual layout instead of reordering the DOM?

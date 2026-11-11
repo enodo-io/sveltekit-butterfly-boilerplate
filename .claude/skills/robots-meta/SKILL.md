@@ -27,12 +27,13 @@ The canonical case. `/search?q=...` pages must not be indexed (duplicate content
 ```ts
 // src/routes/search/+page.server.ts
 return {
-  layer: { 'content.type': 'search', 'page.query': query },
+  layer: { 'content.type': 'search', 'page.query': query || undefined },
   meta: {
-    url: `${PUBLIC_BASE_URL}/search`,
+    // the query is encoded in the canonical
+    url: `${PUBLIC_BASE_URL}/search` + (params.length ? `?${params.join('&')}` : ''),
     title: query ? `Search results for ${query}` : 'Search',
     description: '...',
-    robots: 'noindex,follow',
+    robots: ROBOTS_NOINDEX, // from $lib/seo, never a hand-written string
   },
 };
 ```
@@ -59,7 +60,7 @@ Do **not** `noindex` page 2+ of a listing. Modern Google indexes paginated serie
 
 - Keep `index,follow` on every page.
 - Make sure `meta.url` includes the `?page=N` query (so the canonical is correct for each page).
-- Add `rel="next"` / `rel="prev"` if you want belt-and-braces (optional; not critical).
+- The listings also emit `<link rel="prev">` / `<link rel="next">` in their head (page 1 without `?page`, the search query encoded). Google no longer uses them for indexing; keep them correct anyway.
 
 ---
 

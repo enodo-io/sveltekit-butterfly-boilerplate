@@ -101,5 +101,5 @@ Clear the service worker between tests: DevTools → Application → "Clear site
 
 ## Cross-ref
 
-- PWA support (`navigator.standalone`) is already in `app.d.ts`. If you want a full PWA, add a manifest in `static/` and link it from `src/app.html`.
+- PWA: `static/manifest.json` is linked from `src/app.html`, `navigator.standalone` is typed in `app.d.ts` (GTM reports `app.platform: pwa`).
 - `cacheControl.ts` presets are unrelated to the service worker — they set HTTP cache headers for the CDN/browser HTTP cache, which is a separate layer.

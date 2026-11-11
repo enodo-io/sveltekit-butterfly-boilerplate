@@ -7,30 +7,23 @@ Create a new JSON-LD schema generator named `$1` (PascalCase, e.g. `Recipe`, `Ev
 
 **Before touching files, read:**
 
-1. `.claude/skills/jsonld-schema/SKILL.md` — generator conventions, `@id` cross-references, rendering
+1. `.claude/skills/jsonld-schema/SKILL.md` — generator conventions, shared `@id`s, rendering
 2. `src/lib/JsonLD/index.ts` — registration map
-3. Existing generators (`Organization.ts`, `Article.ts`) as reference
+3. `src/lib/JsonLD/ids.ts` and existing generators (`Organization.ts`, `Article.ts`, `VideoObject.ts`) as reference
 
 **Steps:**
 
 1. Create `src/lib/JsonLD/$1.ts`:
    - Import types from `schema-dts`
-   - Default export `function $1(data: App.PageData): Thing`
-   - Emit a fully populated Schema.org object for `$1` — ask the user which fields they need if the type has many optional properties
-   - Use absolute URLs (`${PUBLIC_BASE_URL}/...`)
-   - Use `new Date(...).toISOString()` for dates
-   - Reference `Organization` / `WebSite` by `@id` when applicable
-2. Register `$1` in `src/lib/JsonLD/index.ts`:
-   ```ts
-   import $1 from './$1';
-   const handlers = { WebSite, WebPage, ..., $1 };
-   ```
-3. Add a minimal spec `src/lib/JsonLD/$1.spec.ts`:
-   - Asserts `@type === '$1'`
-   - Asserts required fields are present
-   - Mirror the style of `Organization.spec.ts`
-4. Remind the user **where** to use the new schema — which route(s) should pass `'$1'` to `generateJsonLd()`?
+   - Default export `function $1(data: App.PageData)` returning one node, or an array of nodes (empty when nothing applies)
+   - Emit the Schema.org fields the rich result needs — ask the user which ones if the type has many optional properties
+   - `url: data.meta.url` (the canonical), absolute URLs via `PUBLIC_BASE_URL` / `absoluteUrl()`
+   - ISO 8601 dates, `undefined` (not `null`) for absent values, no personal data
+   - Reference `WEBSITE_ID` / `ORGANIZATION_ID` / `authorId()` from `ids.ts` instead of redefining those nodes
+2. Register `$1` in the `handlers` map of `src/lib/JsonLD/index.ts`.
+3. Add a spec `src/lib/JsonLD/$1.spec.ts`: `@type === '$1'`, required fields present (mirror `Organization.spec.ts`).
+4. Tell the user **where** to use it: which route's `+page.svelte` should pass `'$1'` to `generateJsonLd()`.
 
-Validate the schema shape with [Google's Rich Results test](https://search.google.com/test/rich-results) after wiring it into a route.
+Validate the output with [Google's Rich Results test](https://search.google.com/test/rich-results) once wired into a route.
 
 **After scaffolding**, report: generator created, registered, spec created, and which route the user should wire it into.

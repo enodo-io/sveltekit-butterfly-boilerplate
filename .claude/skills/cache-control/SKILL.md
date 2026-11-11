@@ -38,16 +38,16 @@ res.headers.set('Cache-Control', CACHE_CONTROL.day);
 
 ## Decision table
 
-| Content                           | Preset           | Rationale                     |
-| --------------------------------- | ---------------- | ----------------------------- |
-| A live page, a countdown          | `minute`         | May change any minute         |
-| Search results                    | `short`          | User-dependent, changes often |
-| Home page, article listings       | `short`          | New posts appear frequently   |
-| Article detail, author, tag pages | `medium`         | Stable between publishes      |
-| Taxonomy index pages              | `long`           | New terms are rare            |
-| Static/CMS pages (about, legal)   | `longer`         | Change infrequently           |
-| RSS/Atom feeds                    | `short`          | See breakdown below           |
-| robots.txt / ads.txt (API)        | `longer`         | Purged on save in the API     |
+| Content (route)                                          | Preset                                   | Rationale                                  |
+| -------------------------------------------------------- | ---------------------------------------- | ------------------------------------------ |
+| A live page, a countdown                                 | `minute`                                 | May change any minute                      |
+| Home, search                                             | `short`                                  | New posts appear often / user-dependent    |
+| Article, CMS static page (one post)                      | `taggedCacheHeaders(CACHE_CONTROL.short, 'post:{id}')` | Short in the browser, 6 h in the shared cache, purged on change |
+| Listings: articles, category, tag, author                | `medium`                                 | Change with every new post                 |
+| Authors index                                            | `long`                                   | New authors are rare                       |
+| Tags index, feed directories (`/rss.html`, `/atom.html`) | `longer`                                 | Change infrequently                        |
+| RSS/Atom feeds                                           | `short` (set by `$lib/server/feed`)      | See breakdown below                        |
+| robots.txt / ads.txt (API)                               | `longer` (`medium` for the fallback)     | Purged on save in the API                  |
 
 ### Sitemaps / feeds
 

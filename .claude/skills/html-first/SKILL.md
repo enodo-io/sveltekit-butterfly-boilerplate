@@ -21,21 +21,22 @@ JavaScript is for **progressive enhancement** of a solid HTML base, not a replac
 Use `popover` + `popovertarget` for anything that toggles open/closed over other content.
 
 ```html
-<!-- Trigger: no JS needed to open/close -->
-<button popovertarget="main-menu" aria-label="Open navigation">Menu</button>
+<!-- Trigger: no JS needed to open/close. Its accessible name is its visible text -->
+<button type="button" popovertarget="main-menu">Menu</button>
 
 <!-- Panel -->
 <div id="main-menu" popover>
-  <nav>...</nav>
+  <nav aria-label="Main menu">...</nav>
 </div>
 ```
 
+Don't add `aria-label="Open navigation"` to a button whose visible text is « Menu »: the accessible name must contain the visible label (WCAG 2.5.3, voice control users say what they see). An icon-only trigger gets one static name (`aria-label="Menu"`); `popovertarget` already exposes the open/closed state (`aria-expanded`) — never swap the name between « Open » and « Close », never add `aria-expanded`/`aria-controls` by hand.
+
 What you get for free:
 
-- Toggle on click
+- Toggle on click, `aria-expanded` on the trigger
 - Close on Escape
 - Close on click outside (`popover="auto"`, the default)
-- Light-dismiss behaviour
 - `::backdrop` pseudo-element for overlay styling
 
 **Style open/closed state in CSS — no class toggling needed:**
@@ -57,22 +58,14 @@ What you get for free:
 }
 ```
 
-**Then enrich with JS only for what CSS can't do:**
+**Then enrich with JS only for what CSS can't do.** This is what `src/components/Layout/Header.svelte` does:
 
-```js
-// Lock body scroll when open (the project's Header.svelte does this)
-menuEl.addEventListener('toggle', (e) => {
-  document.body.style.overflow = e.newState === 'open' ? 'hidden' : '';
-});
-
-// Close on SPA navigation
-navigating.subscribe(() => menuEl.hidePopover());
-```
-
-This is exactly how `src/components/Layout/Header.svelte` works:
-
-- `popovertarget="menu"` on the burger button → declarative open/close
-- `toggle` event listener → tracks state for the JS-driven features (body lock, icon swap, close on navigate)
+- `<button type="button" popovertarget="menu" aria-label="Menu">` (icon only, one static name; the icon swaps, the name doesn't), inside `<nav aria-label="Main menu">`
+- a `toggle` listener on the popover sets `menu` (open state) for the JS-driven features
+- `$effect` on `menu`: body scroll lock, `inert` on `#page`, the footer and the skip link while the menu is open
+- `$effect` on `navigating.to`: `hidePopover()` and close the open `<details>` on SPA navigation
+- sub-menus are `<details>/<summary>`; opening one closes its siblings (`ontoggle`)
+- the header auto-hides on scroll (mobile) through a **passive** scroll listener throttled with `requestAnimationFrame` (no reactive state written per scroll event), and stays visible while it holds the focus (`header:focus-within`)
 
 ---
 
@@ -81,17 +74,19 @@ This is exactly how `src/components/Layout/Header.svelte` works:
 Use `<dialog>` for anything that blocks interaction with the rest of the page.
 
 ```html
-<dialog id="confirm-delete">
-  <h2>Delete this article?</h2>
+<dialog id="confirm-delete" aria-labelledby="confirm-title" closedby="any">
+  <h2 id="confirm-title">Delete this article?</h2>
   <p>This action cannot be undone.</p>
   <form method="dialog">
     <!-- `method="dialog"` closes the dialog and sets returnValue -->
-    <button value="cancel">Cancel</button>
-    <button value="confirm">Delete</button>
+    <button type="submit" value="cancel">Cancel</button>
+    <button type="submit" value="confirm">Delete</button>
   </form>
 </dialog>
 
-<button onclick="document.getElementById('confirm-delete').showModal()">Delete</button>
+<button type="button" onclick="document.getElementById('confirm-delete').showModal()">
+  Delete
+</button>
 ```
 
 What you get for free:
@@ -101,6 +96,9 @@ What you get for free:
 - `::backdrop` for the overlay
 - `aria-modal` semantics
 - Return value via `<form method="dialog">`
+- `closedby="any"`: light dismiss (backdrop click, Escape) declared in HTML
+
+Name it (`aria-label` or `aria-labelledby` on a heading). `src/components/Dialog.svelte` is the project's one: `<dialog closedby="any" aria-label={label}>` (default « Media viewer »), opened with `showModal()` from an `$effect`, a backdrop click handler as fallback where `closedby` is not supported, a `<button type="button">` to close, body scroll lock.
 
 ```js
 // Read the return value after close
@@ -117,14 +115,14 @@ The Invoker API (`commandfor` + `command`) is the evolution of `popovertarget`: 
 
 ```html
 <!-- Open a modal dialog declaratively — zero JS -->
-<button commandfor="my-dialog" command="show-modal">Open</button>
+<button type="button" commandfor="my-dialog" command="show-modal">Open</button>
 <dialog id="my-dialog">
   <p>Hello!</p>
-  <button commandfor="my-dialog" command="close">Close</button>
+  <button type="button" commandfor="my-dialog" command="close">Close</button>
 </dialog>
 
 <!-- Toggle a popover declaratively -->
-<button commandfor="my-tooltip" command="toggle-popover">Help</button>
+<button type="button" commandfor="my-tooltip" command="toggle-popover">Help</button>
 <div id="my-tooltip" popover>Tooltip content</div>
 ```
 
@@ -330,7 +328,7 @@ Prefer `:has()` over any JS that adds/removes classes to reflect child state on 
 Position an element relative to another without measuring the DOM in JS. Replaces `getBoundingClientRect()` + manual position math.
 
 ```html
-<button id="help-btn" popovertarget="help-tip">?</button>
+<button type="button" id="help-btn" popovertarget="help-tip">Help</button>
 <div id="help-tip" popover>Tooltip content</div>
 ```
 
@@ -406,6 +404,41 @@ Rules:
 
 ---
 
+## Native elements for everything else
+
+### Link or button?
+
+- **Goes somewhere** (a URL, a page, an anchor) → `<a href>`.
+- **Does something** (opens a dialog/menu, copies, loads more, submits) → `<button>`. The gallery thumbnail that opens the viewer is a `<button type="button">`, not a link with `preventDefault`.
+- **Every `<button>` has a `type`** (`button`, `submit`, `reset`): without it a button inside a form submits it. ESLint `svelte/button-has-type` enforces it.
+- No `<div onclick>`, no `role="button"` + `tabindex` + key handlers: that is re-implementing `<button>`. The fix for « click handler without keyboard handler » is the native element, not an `onkeydown`.
+
+### No ARIA re-implementation of native widgets
+
+The first rule of ARIA: don't use it when an element does the job. `<details>`, `popovertarget` and `<dialog>` expose their state themselves; `role="list"` on a `<ul>`, `role="search"` on `<search>`, `role="navigation"` on `<nav>` are redundant. ARIA is for naming (`aria-label` on a landmark that has no visible heading, `aria-labelledby`), `aria-current="page"`, `aria-hidden` on decorative icons, and live regions (`role="status"` announcing « N more items loaded » in `Pagination.svelte`).
+
+### `<search>` + `<form>` + `<label>`
+
+```html
+<search>
+  <form action="/search" method="GET">
+    <label for="search-query" class="sr-only">Search news, topics and more</label>
+    <input id="search-query" name="query" type="search" />
+    <button type="submit">Search</button>
+  </form>
+</search>
+```
+
+`<search>` is the search landmark (no `role="search"`). A `<label>` per input (visually hidden if needed), never a placeholder as the only label. `action` without a trailing slash (no redirect).
+
+### Quotes, dates, contact
+
+- Inline quote: `<q cite="https://…">` (`cite` only when it is a URL; a source name goes in the text or `title`). Block quote: `<figure><blockquote cite="…">…</blockquote><figcaption>— Author, <cite>Work</cite></figcaption></figure>`.
+- Dates: `<time datetime="2026-11-11T09:00:00Z">Today, 9:00 a.m.</time>` — machine-readable value, human text.
+- `<address>`: contact information of the page/article owner only, not any postal address.
+
+---
+
 ## Decision tree
 
 ```
@@ -454,7 +487,7 @@ Once the HTML base works, JS can enrich it:
 
 | Behaviour              | HTML base                      | JS enhancement                              |
 | ---------------------- | ------------------------------ | ------------------------------------------- |
-| Burger menu open/close | `popover`                      | Lock body scroll, close on navigate         |
+| Burger menu open/close | `popover`                      | Lock body scroll, `inert`, close on navigate |
 | Modal close            | `<dialog>` + `method="dialog"` | Read `returnValue`, async actions           |
 | Accordion              | `<details>`                    | Collapse siblings (accordion group)         |
 | Dropdown               | `popover`                      | Keyboard arrow navigation, focus first item |
@@ -476,4 +509,10 @@ Before writing any JS for UI interaction:
 - [ ] Is it positioning relative to another element? → CSS anchor positioning
 - [ ] Is it animating show/hide? → `@starting-style` + `allow-discrete`
 - [ ] Can the trigger be declarative? → `popovertarget` or `commandfor`
+- [ ] Goes somewhere → `<a href>`; does something → `<button type="button">`?
+- [ ] Every `<button>` has a `type`?
+- [ ] Accessible name contains the visible text (no `aria-label` that contradicts it)?
+- [ ] No hand-written `aria-expanded`/`role` where the native element provides it?
+- [ ] Search → `<search>` + `<form>` + `<label>` + `<input type="search">`?
+- [ ] Quotes `<q cite>`/`<blockquote cite>`, dates `<time datetime>`?
 - [ ] Is JS only adding what CSS/HTML genuinely can't do?

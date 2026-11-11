@@ -5,7 +5,7 @@ description: Rules for `src/routes/+layout.server.ts` — the single place where
 
 # `+layout.server.ts` — shared server data
 
-There is exactly one `+layout.server.ts` at `src/routes/+layout.server.ts`. It fetches the data that every page needs: the site's Butterfly `Property` (settings) and the flat list of `Category` resources.
+There is exactly one `+layout.server.ts` at `src/routes/+layout.server.ts`. It fetches the data that every page needs: the site's Butterfly `Property` (settings) and the flat list of **all** `Category` resources.
 
 ## Current shape
 
@@ -15,21 +15,25 @@ export const load: ServerLoad = async ({ fetch }) => {
     error(500, '`PUBLIC_LANGUAGE` environment variable is undefined');
   }
 
-  const [settings, categories] = await Promise.all([
-    api.get<Butterfly.Property>({ fetch, path: '/v1/' }),
-    api.get<Butterfly.Category[]>({
-      fetch,
-      endpoint: 'categories',
-      query: { page: { size: 100 } },
-    }),
-  ]);
-
-  return {
-    settings: settings.data.attributes, // note: unwrapped to attributes
-    categories, // note: full ApiResponse (data + included)
-  };
+  try {
+    const [settings, categories] = await Promise.all([
+      api.get<Butterfly.Property>({ fetch, path: '/v1/' }),
+      allCategories(fetch), // $lib/server/categories
+    ]);
+    return {
+      settings: settings.data.attributes, // note: unwrapped to attributes
+      categories, // note: an ApiResponse (data + included)
+    };
+  } catch (err) {
+    console.error('[Layout]', err);
+    error(500, httpErrors[500]);
+  }
 };
 ```
+
+### `allCategories(fetch)` — `$lib/server/categories`
+
+Follows `links.next` from a first page of 100 until the last page (at most 20 pages, a guard against a looping `next`): the menu, the breadcrumbs, the category routes and the section feeds need the full tree — a single page of 100 lost the rest of a big site (404 and out of the menu). The result is serialised in every page's data, so each item is slimmed to `id`/`type`/`attributes`/`relationships` (no per-item `links`/`meta`). Anything that needs the categories (a feed endpoint, a new route) calls `allCategories`, never `api.get({ endpoint: 'categories' })` with one page.
 
 Both are typed on `App.PageData`:
 
@@ -104,10 +108,10 @@ If you add expensive layout data, consider memoising via a module-level cache wi
 The layout's `+layout.svelte` receives `data.settings`, `data.categories`, plus the child's `data`. Use them for:
 
 - `<html lang>` — already driven by `PUBLIC_LANGUAGE` via `app.html`.
-- Header title/logo — `data.settings.title`, `data.settings.logo`.
-- Footer — site copyright, publisher info.
-- Navigation — `data.categories.data`.
-- JSON-LD — `WebSite` and `Organization` schemas read from `settings`.
+- Header — the site title (`page.data.settings.title`, visually hidden below `sm`), logo `/favicon.svg`; the category menu from `page.data.categories.data`.
+- Footer — site title, the `PUBLIC_STATIC_PAGES` links.
+- Head — `og:site_name`, the ` | {title}` suffix of `<title>`.
+- JSON-LD — `WebSite` and `Organization` read `settings` (`title`, custom field `sameAs`); they are emitted by the home page, not the layout.
 
 ---
 

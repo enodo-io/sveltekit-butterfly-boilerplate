@@ -1,6 +1,6 @@
 ---
 name: butterfly-api
-description: Patterns for querying the Butterfly CMS via the pre-configured `$lib/api` client. Use whenever calling `api.get`, building filters, paginating, using `include`, or reading `syndication/*` endpoints. Covers endpoints, filter syntax (categories, types, terms<slug>), pagination, relationships/include, and deep pagination.
+description: Patterns for querying the Butterfly CMS via the pre-configured `$lib/api` client. Use whenever calling `api.get`, building filters, paginating, using `include`, or reading `syndication/*` endpoints. Covers endpoints, filter syntax (categories, types, terms<slug>), pagination and relationships/include.
 ---
 
 # Butterfly API — `$lib/api` usage
@@ -106,7 +106,7 @@ const first = await api.get({ fetch, endpoint: 'posts' });
 const next = first.links.next ? await api.get({ fetch, path: first.links.next }) : null;
 ```
 
-For deep pagination (page 100+), use the `deep-pagination` package which handles cursor-based walking.
+`deep-pagination` (used by `Pagination.svelte`) only generates the page-number links of a listing, it does not fetch: see `feed-streaming`.
 
 ---
 

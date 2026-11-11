@@ -14,15 +14,15 @@ Always install fonts via npm. Never use `<link>` tags to Google Fonts or any CDN
 Font configuration lives in **`src/assets/styles/tailwind.css`** — both the `@import` (font-face declarations) and the `--font-*` CSS variable (Tailwind token) belong in the same file so they stay in sync.
 
 ```css
-/* 1. Import font-face at the top of tailwind.css */
+/* 1. Import font-face at the top of tailwind.css: the weights in use, latin subsets */
 @import '@fontsource-variable/open-sans';
-@import '@fontsource/poppins/400.css';
-@import '@fontsource/poppins/700.css';
+@import '@fontsource/poppins/latin-400.css';
+@import '@fontsource/poppins/latin-ext-400.css';
 
-/* 2. Declare the token in @theme */
+/* 2. Declare the token in @theme, the metric fallback right after the web font */
 @theme {
-  --font-brand: 'Poppins', sans-serif;
-  --font-sans: 'Open Sans Variable', Arial, sans-serif;
+  --font-brand: 'Poppins', 'Poppins Fallback', sans-serif;
+  --font-sans: 'Open Sans Variable', 'Open Sans Variable Fallback', Arial, sans-serif;
 }
 ```
 
@@ -63,13 +63,7 @@ npm install -D @fontsource/poppins
 
 ### Static font — only the weights actually used
 
-```css
-@import '@fontsource/poppins/400.css';
-@import '@fontsource/poppins/600.css';
-@import '@fontsource/poppins/700.css';
-```
-
-Typical set: `400`, `500`, `600`, `700`. Don't import unused weights.
+One import per weight **and** subset (next section): `@fontsource/poppins/latin-600.css`, never `600.css`. Don't import unused weights: each one is `@font-face` rules in the main CSS of every page (`npm run budget` caps the build at 30 font files).
 
 ### Latin subsets (default)
 

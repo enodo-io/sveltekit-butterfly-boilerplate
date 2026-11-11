@@ -71,91 +71,38 @@ Timezones by region: `Europe/Paris`, `Europe/Madrid`, `Europe/Berlin`, `Europe/R
 
 ## Step 3 — Hardcoded strings per file
 
-### `src/routes/+layout.svelte`
+Visible text, visually hidden text (`sr-only`) and `aria-label`s alike: a screen reader user hears them. Keep a visible label and its accessible name identical (the burger button is named « Menu »: translate both together).
 
-```svelte
-<a href="#page" class="skip-link" aria-label="Skip to main content"></a>
-```
+| File                                              | Strings                                                                                                                                                                                                 |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/routes/+layout.svelte`                       | skip link text « Skip to main content » (real text, not an `aria-label`)                                                                                                                                 |
+| `src/components/Layout/Header.svelte`             | `aria-label="Menu"` (burger), `<nav aria-label="Main menu">`, « Search » (menu link)                                                                                                                     |
+| `src/components/Layout/Footer.svelte`             | « Powered by », « Copyright © », `<nav aria-label="Footer">`, « Articles », « Tags », « Authors », « Search », « RSS Feeds », « Atom Feeds »; static page labels are derived from the `PUBLIC_STATIC_PAGES` slugs |
+| `src/components/Breadcrumb.svelte`                | `aria-label="Breadcrumb"`                                                                                                                                                                               |
+| `src/lib/JsonLD/BreadcrumbList.ts`                | « Authors », « Tags », « Search », « Page N » (also the visible breadcrumb)                                                                                                                              |
+| `src/components/Pagination.svelte`                | `aria-label="Navigate the pages"`, « Previous page », « Next page », `Go to page ${page}`, default `label = 'Load more'`, status `${n} more items loaded`                                                 |
+| Listing pages (`articles`, `[...path]`, `tags/[id]`, `authors/[id]`, `search`) | `label="Load more articles"`, « Page N »                                                                                                                                       |
+| `src/components/Dialog.svelte`                    | default `label = 'Media viewer'`, `aria-label="Close modal"`                                                                                                                                            |
+| `src/components/Card.svelte`                      | « Partner content »                                                                                                                                                                                     |
+| `src/components/Feed.svelte`                      | the two error messages (« Check your network connection and try again. », « An error has occurred while loading data, please try again later. »)                                                         |
+| `src/routes/+page.svelte` (home)                  | « All {name} articles » (real link text), CSS `content: 'FEATURED'` (a badge, not link text)                                                                                                             |
+| `src/routes/[slug=post].html/+page.svelte`        | « Related articles », « Share », « Link copied », « Published », « Updated », « Sponsored by {sponsor} », « Partner content »                                                                             |
+| `src/components/Post/Authorship.svelte`           | « By », « and »                                                                                                                                                                                         |
+| `src/components/Post/Elements/Gallery.svelte`     | « Enlarge » (hidden button text), « Media not available »                                                                                                                                               |
+| `src/components/Post/Elements/Related.svelte`     | fallback `aria-label` « Related articles »                                                                                                                                                              |
+| `src/components/Post/Elements/Table.svelte`       | fallback `aria-label` « Table »                                                                                                                                                                         |
+| `src/components/Post/Elements/Iframe.svelte`, `src/lib/embedHtml.ts` | « Embedded content from {host} », « Embedded content » (iframe titles)                                                                                                               |
+| `Video.svelte`, `Post/Elements/Video.svelte`      | « Video not available »                                                                                                                                                                                 |
+| `src/routes/search/+page.svelte`                  | `<label>` and `placeholder` « Search news, topics and more », submit button « Search », the no-results paragraph                                                                                         |
+| `src/routes/+error.svelte`                        | the 404 / 410 / 500 titles and texts, « Error {status} », « Back to the home page »                                                                                                                      |
+| `src/routes/[format=feed].html/+page.svelte`      | « Sections », « Authors », « Tags »                                                                                                                                                                     |
+| `+page.server.ts` files                           | titles (« All articles », « All authors », « All tags », « RSS Feeds » / « Atom Feeds », `Search results for ${query}`, « Search », ` - Page ${page}`) and every description, fallbacks included (`All the articles about ${name}.`, `Browse all articles about/by ${name}.`…) |
+| `src/routes/[format=feed]/*`                      | feed description fallbacks (`All news about "${name}" on ${site}`, `All articles about…`); `copyright` « All rights reserved » in `src/lib/server/feed.ts`                                                |
+| `src/lib/httpErrors.ts`                           | every message                                                                                                                                                                                           |
 
-→ `aria-label="Aller au contenu principal"` (FR), `"Ir al contenido principal"` (ES), etc.
+` - Page ${page}` is also stripped by a regex in `BreadcrumbList.ts` (`/ - Page (\d+)/`): change both together.
 
----
-
-### `src/components/Layout/Header.svelte`
-
-| Location                                                     | String                                            |
-| ------------------------------------------------------------ | ------------------------------------------------- |
-| `<nav aria-label="Home">`                                    | `"Accueil"` / `"Inicio"`                          |
-| `aria-label={menu ? 'Close navigation' : 'Open navigation'}` | `'Fermer la navigation' : 'Ouvrir la navigation'` |
-| `aria-label="Main navigation"`                               | `"Navigation principale"`                         |
-| `<li ... aria-label="Search">`                               | `"Recherche"`                                     |
-| `<span class="md:hidden">Search</span>`                      | `"Recherche"`                                     |
-
----
-
-### `src/components/Layout/Footer.svelte`
-
-Translate visible link texts and static phrases: "Articles", "Tags", "Authors", "Search", "About", "RSS Feeds", "Atom Feeds", "Powered by", "Copyright ©".
-
----
-
-### `src/routes/search/+page.svelte`
-
-```svelte
-aria-label="Search news, topics and more" placeholder="Search news, topics and more" value="Search" <!-- submit button -->
-"We couldn't find any results for your search. Try adjusting your keywords or explore other articles on
-our website."
-```
-
----
-
-### `src/routes/search/+page.server.ts`
-
-Dynamic strings for SEO titles and meta descriptions:
-
-- `"Search results for ${query}"`
-- `"Search"` (default page title)
-- `"- Page ${page}"`
-- The two meta description strings
-
----
-
-### `src/components/Pagination.svelte`
-
-```svelte
-aria-label="Navigate the pages" aria-label="Go to previous page" aria-label="Go to next page"
-aria-label="Go to page ${page}" label = 'Load more' <!-- default prop value -->
-```
-
-Also check call sites — e.g. `search/+page.svelte` passes `label="Load more articles"`.
-
----
-
-### `src/components/Dialog.svelte`
-
-```svelte
-aria-label="Close modal"
-```
-
----
-
-### `src/components/Breadcrumb.svelte`
-
-```svelte
-aria-label="Breadcrumb"
-```
-
----
-
-### `src/lib/JsonLD/BreadcrumbList.ts`
-
-Hardcoded breadcrumb segment names: `"Authors"`, `"Tags"`, `"Search"`, `"Page ${page}"`.
-
----
-
-### `src/routes/+page.svelte` (home page)
-
-CSS `content:` values with English text (e.g. `"See all articles"`, `"FEATURED"`). These are set via CSS — search for `content:` in the `<style>` block or as Tailwind `content-[...]` utilities.
+Then grep for leftovers: `grep -rnE "aria-label=\"[A-Z]|>[A-Z][a-z]+ [a-z]+" src/components src/routes`.
 
 ---
 
@@ -164,13 +111,9 @@ CSS `content:` values with English text (e.g. `"See all articles"`, `"FEATURED"`
 - [ ] `.env`: `PUBLIC_LOCALE` and `PUBLIC_LANGUAGE` updated
 - [ ] `formatRelativeDate.ts`: strings (Today/Yesterday/days ago) translated
 - [ ] `formatRelativeDate.ts`: `hour12`, timezone, and AM/PM logic adjusted
-- [ ] `+layout.svelte`: skip link aria-label
-- [ ] `Header.svelte`: all aria-labels and "Search" visible text
-- [ ] `Footer.svelte`: all link texts and static copy
-- [ ] `search/+page.svelte`: form strings and no-results message
-- [ ] `search/+page.server.ts`: SEO titles and meta descriptions
-- [ ] `Pagination.svelte`: aria-labels and default label prop
-- [ ] `Dialog.svelte`: close aria-label
-- [ ] `Breadcrumb.svelte`: nav aria-label
-- [ ] `BreadcrumbList.ts`: segment names
-- [ ] `+page.svelte`: CSS content strings
+- [ ] Every file of the Step 3 table, visible and hidden text alike
+- [ ] Visible labels and their accessible names still match (burger « Menu », search label)
+- [ ] `BreadcrumbList.ts` segment names + the ` - Page N` regex
+- [ ] Route titles/descriptions and their fallbacks, feed descriptions
+- [ ] `httpErrors.ts` and `+error.svelte`
+- [ ] `npm run test:quality` still passes (it clicks the button named « Menu »: update the test with the new name)

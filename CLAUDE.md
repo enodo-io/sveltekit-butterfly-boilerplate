@@ -23,10 +23,12 @@ npm run setup            # Interactive env wizard (.env generation)
 npm run dev              # Dev server (runs setup:breakpoints first)
 npm run check            # svelte-check (tsconfig)
 npm run test:unit        # Vitest
-npm run test:e2e         # Playwright
-npm run test             # Both
+npm run test:e2e         # Playwright (needs a .env with the API; builds + previews on :4173)
+npm run test:quality     # Playwright, e2e/quality.test.ts only: html-validate, SEO head contract, axe-core
+npm run test             # unit (--run) then e2e
 npm run build            # Production build
-npm run lint             # Prettier check + ESLint
+npm run budget           # performance budget of the last build (first-load JS, CSS, fonts)
+npm run lint             # Prettier check + ESLint (incl. the semantic HTML rules)
 npm run format           # Prettier write
 npm run generate:favicons # Regen favicons from static/favicon.svg
 ```
@@ -50,7 +52,7 @@ Every `+page.server.ts` returns the shape defined in `src/app.d.ts` → `App.Pag
 
 ### Feed streaming
 
-`feeds` values must follow the `isDataRequest ? promise : await promise` pattern. Never await feed promises unconditionally — it breaks streaming on initial SSR and kills TTFB. See `.claude/skills/feed-streaming/SKILL.md`.
+`feeds` values must follow the `isDataRequest ? promise : await promise` pattern. Never await feed promises unconditionally — it breaks streaming on initial SSR and kills TTFB. Start independent requests together (tag/author pages start the posts request with the term/author one). See `.claude/skills/feed-streaming/SKILL.md`.
 
 ### New routes need a sitemap entry
 
@@ -66,20 +68,32 @@ The boilerplate is **written in English**. A consuming site serves one language 
 
 True multi-language support (multiple locales live in the same deployment) is **not shipped out of the box**. A consumer who needs it should evolve the boilerplate — [Paraglide](https://inlang.com/m/gerre34r/library-inlang-paraglideJs) is the recommended fit with SvelteKit. Treat that as a scoped migration, not a translation task.
 
+### SEO head contract
+
+The layout renders the head from `data.meta`: `<link rel="canonical">`, `og:url` and the JSON-LD `url` are all `meta.url` (absolute, `PUBLIC_BASE_URL` / `absoluteUrl()` from `$lib/seo`, never `url.origin`); robots from `ROBOTS_INDEX` / `ROBOTS_NOINDEX` (`$lib/seo`, `max-image-preview:large` by default); description clamped to 160 characters; absolute `og:image` + `og:image:alt` + `twitter:card`. Listings read `?page` through `pageParam` (`?page=1` → 301, invalid → 404) and are `noindex` when empty. Structured data comes from `src/lib/JsonLD/` only (shared `@id`s in `ids.ts`, no `SearchAction`). See `route-server`, `robots-meta`, `jsonld-schema`.
+
+### Quality gate
+
+- **Pre-commit** (`.githooks/pre-commit`): `npm run lint` + `npm run check`. ESLint enforces `button-has-type`, `no-target-blank`, no vague anchor text, no `href="#"`.
+- **`npm run test:quality`** (`e2e/quality.test.ts`, real API of `.env`): html-validate on the SSR HTML, the SEO head contract (canonical = `og:url`, absolute `og:image`, `max-image-preview:large`, `twitter:card`, no `og:article:*`, JSON-LD parses, one `h1`, no heading skip, one high-priority image), axe-core WCAG 2.2 AA (also with the menu and the media viewer open).
+- **`npm run budget`** (`scripts/check-budget.js`, after a build): first-load JS ≤ 72 kB gz per route, main CSS ≤ 12 kB gz, ≤ 30 font files.
+- **CI** (`.github/workflows/quality.yml`): lint, check, unit, build + budget on every push to `master` and PR; the e2e suite on the demo API when the `DEMO_API_KEY` repository secret is set.
+
 ## Design system rules
 
 These are enforced by a `PostToolUse` hook — violations will be flagged. Learn them.
 
-| Rule            | Do                                          | Don't                                    | Skill             |
-| --------------- | ------------------------------------------- | ---------------------------------------- | ----------------- |
-| Font sizes      | `fs-canon`, `fs-trafalgar`, `fs-body-copy`… | `text-sm`, `text-lg`, raw `font-size`    | `typography`      |
-| Spacing         | `p-4`, `gap-7` (BBC GEL scale, SU 1–16)     | `p-[20px]`, `m-[2rem]`, scale stacking   | `spacing`         |
-| Z-index         | `z-modal`, `z-nav`, `z-dropdown`…           | `z-10`, `z-50`, raw `z-index`            | `z-index`         |
-| Fonts           | Fontsource npm packages                     | Google Fonts `<link>`, `@import` CDN     | `fonts`           |
-| Links           | `<h3><a>text</a></h3>`, `::after` trick     | `<a>` wrapping blocks, "click here" text | `seo-links`       |
-| Cards           | Title-first DOM, `order` for visual reorder | Whole card inside `<a>`                  | `card`            |
-| Tailwind vs CSS | Utilities inline                            | Custom class for a single-use element    | `css-vs-tailwind` |
-| Interactive UI  | `<dialog>`, `popover`, `<details>`          | `<div>` + state + JS toggle              | `html-first`      |
+| Rule            | Do                                                                    | Don't                                                                                                           | Skill             |
+| --------------- | --------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- | ----------------- |
+| Font sizes      | `fs-canon`, `fs-trafalgar`, `fs-body-copy`…                           | `text-sm`, `text-lg`, raw `font-size`                                                                           | `typography`      |
+| Spacing         | `p-4`, `gap-7` (BBC GEL scale, SU 1–16)                               | `p-[20px]`, `m-[2rem]`, scale stacking                                                                          | `spacing`         |
+| Z-index         | `z-modal`, `z-nav`, `z-dropdown`…                                     | `z-10`, `z-50`, raw `z-index`                                                                                   | `z-index`         |
+| Fonts           | Fontsource npm packages                                               | Google Fonts `<link>`, `@import` CDN                                                                            | `fonts`           |
+| Links           | `<h3><a>text</a></h3>`, `::after` trick, `contentLink` for CMS links  | flow content in `<a>`/`<button>`, "read more"/"lire la suite", `href="#"`, icon-only link named by `aria-label` | `seo-links`       |
+| Cards           | Title-first DOM, heading level from the outline, `<ul>` around `Feed` | Whole card inside `<a>`, `h1` → `h3` skip                                                                       | `card`            |
+| Images          | `<Image>`, one `priority` image per page, `sizes` from the grid       | `100vw` in a 992px column, several `fetchpriority="high"`                                                       | `image-picture`   |
+| Tailwind vs CSS | Utilities inline                                                      | Custom class for a single-use element                                                                           | `css-vs-tailwind` |
+| Interactive UI  | `<button type>`, `<dialog>`, `popover`, `<details>`, `<search>`       | `<div onclick>`, hand-written `aria-expanded`, `aria-label` ≠ visible text                                      | `html-first`      |
 
 **`fs-*` classes must NEVER be inside `@apply`** — keep them as Tailwind classes on the element so typography stays overridable at the template level.
 
@@ -98,73 +112,86 @@ Optional:
 - `PUBLIC_INDEXABLE` — set to `false` on staging/dev
 - `PUBLIC_GTM_ID`
 - `PUBLIC_SENTRY_DSN` — Sentry, server + browser, errors only (nothing without it, nothing in dev)
+- `PRIVATE_BUTTERFLY_PROPERTY_ID` + `PRIVATE_CACHE_TAGS` — cache tags of the post pages (`xkey` default, `cloudflare`, `fastly`, `vercel`, `netlify`, `none`), see `cache-control`
 - `PUBLIC_BUTTERFLY_TRACKER_URL` — Butterfly audience tracker (`https://{propertyId}.tbtf.eno.do`), cookieless pageview hits from `$lib/dataLayer`, not consent-gated; off unless `PUBLIC_BUTTERFLY_TRACKER=true`, URL derived from `PUBLIC_API_URL`: `{id}.pubbtf.eno.do` → `{id}.tbtf.eno.do`, `api{x}.site` → `t{x}.site` unless set, nothing in dev unless `PUBLIC_BUTTERFLY_TRACKER_DEV=true`
 
-Butterfly CMS prerequisites: taxonomy `tags`, post type `page`, custom feed `featured`. Optional: flag `sponso` and custom field `sponsor` for partner content (badge, `rel="sponsored"` links, out of the news sitemap, `AdvertiserContentArticle`). See README for details.
+Butterfly CMS prerequisites: taxonomy `tags`, post type `page`, custom feed `featured`. Optional: flag `sponso` and custom field `sponsor` for partner content (badge, `rel="sponsored"` links, out of the news sitemap, `AdvertiserContentArticle`); flag `news` (`NewsArticle`); property custom field `sameAs` (official profiles, `Organization.sameAs`). Replace `static/favicon-512.png` with the site's square logo (JSON-LD `Organization.logo`). See README for details.
 
 ## File layout at a glance
 
 ```
 src/
 ├── app.d.ts                 ← PageData contract
-├── hooks.server.ts          ← DNS cache (cacheable-lookup)
-├── service-worker.ts
+├── hooks.server.ts          ← DNS cache on the undici dispatcher, Sentry (server)
+├── hooks.client.ts          ← Sentry (browser) loaded once idle
+├── service-worker.ts        ← navigation preload, small precache, offline pages
 ├── lib/
 │   ├── api.ts               ← Butterfly client (env-driven)
+│   ├── seo.ts               ← ROBOTS_INDEX / ROBOTS_NOINDEX, absoluteUrl, metaDescription
+│   ├── links.ts             ← contentLink (internal by host), externalRel (sponsored/ugc/nofollow)
+│   ├── postOutline.ts       ← post body heading levels (no skip) + unique anchors
+│   ├── imageWidths.ts       ← width ladder of the media CDN
+│   ├── embedHtml.ts         ← lazy iframes with a title
 │   ├── cacheControl.ts      ← minute/short/medium/long/longer/day presets, max-age + stale-while-revalidate
 │   ├── getMediaUrl.ts       ← media URL builder
 │   ├── httpErrors.ts        ← user-facing messages for 4xx/5xx
-│   ├── formatRelativeDate.ts
-│   ├── stripScripts.ts
+│   ├── formatRelativeDate.ts, stripScripts.ts, consent.ts, dataLayer.ts, posts.ts
 │   ├── breakpoints.ts       ← auto-generated, do not edit
-│   └── JsonLD/              ← typed schema-dts generators
+│   ├── server/              ← pageParam, feed, markdown, categories, cacheTags, sitemapCache, apiFiles, txtFile
+│   └── JsonLD/              ← typed schema-dts generators, ids.ts (shared @ids)
 ├── components/
-│   ├── Card, Feed, Pagination, Breadcrumb, Image, Picture, Dialog, GTM…
+│   ├── Card, Feed, Pagination, Breadcrumb, Image, Picture, Video, Dialog, GTM
 │   ├── Layout/Header, Footer
-│   └── Post/Body + Post/Elements/* + Post/InlineNodes/*
+│   └── Post/Body + Post/Elements/* + Post/InlineNodes/* + Post/Authorship
 ├── routes/
-│   ├── +layout.server.ts    ← settings + categories (shared)
+│   ├── +layout.server.ts    ← settings + all categories (shared)
 │   ├── +page.server.ts      ← home
 │   ├── [slug=post].html/    ← article
 │   ├── [slug=page].html/    ← CMS static page
 │   ├── [...path]/           ← category
-│   ├── articles, authors, tags, search
-│   ├── sitemaps/[file]/     ← relays /v1/sitemaps/{file} (sitemap plugin)
-│   ├── robots.txt, ads.txt, app-ads.txt ← relay /v1/txt-files (txt-files plugin)
-│   └── [format=feed]/       ← rss | atom | json (matcher on format)
+│   ├── articles, authors, authors/[id], tags, tags/[id], search
+│   ├── [format=feed].html/  ← /rss.html, /atom.html feed directories
+│   ├── [format=feed]/       ← rss | atom feeds (index, sections, tags, authors), via $lib/server/feed
+│   ├── sitemaps/[file]/     ← relays /v1/sitemaps/{file} (sitemap plugin); sitemap.xml → 301
+│   └── robots.txt, ads.txt, app-ads.txt ← relay /v1/txt-files (txt-files plugin)
 ├── params/                  ← route matchers (feed, page, post)
 └── directives/clickoutside.ts
+e2e/                         ← Playwright: routes/*, quality.test.ts, helpers/
+scripts/check-budget.js      ← performance budget
 ```
 
 ## When to reach for a skill
 
 Claude: **load the skill before acting** when any of these apply.
 
-| Touching / creating                              | Skill                  |
-| ------------------------------------------------ | ---------------------- |
-| `+page.server.ts`                                | `route-server`         |
-| `+layout.server.ts`                              | `layout-server`        |
-| A new static route                               | `static-route-sitemap` |
-| A taxonomy (routes + sitemap + feed)             | `taxonomies`           |
-| Translating to another language                  | `translate`            |
-| Calling the Butterfly API (`api.get`)            | `butterfly-api`        |
-| Adding/editing JSON-LD schemas                   | `jsonld-schema`        |
-| Using `<Image>` / `<Picture>`                    | `image-picture`        |
-| Feed pagination / streaming                      | `feed-streaming`       |
-| Customising article body rendering (`Post/Body`) | `post-body`            |
-| Pushing GTM events                               | `gtm-events`           |
-| Writing Svelte components                        | `svelte5-runes`        |
-| Choosing a cache header                          | `cache-control`        |
-| Error pages / `error()` usage                    | `http-errors`          |
-| Writing tests                                    | `testing`              |
-| Any `<a>` tag                                    | `seo-links`            |
-| Any card / article preview                       | `card`                 |
-| Font sizes                                       | `typography`           |
-| Spacing (margin/padding/gap)                     | `spacing`              |
-| Z-index                                          | `z-index`              |
-| Adding/removing a font                           | `fonts`                |
-| Any interactive UI (modals, menus, accordions)   | `html-first`           |
-| Deciding Tailwind utility vs custom class        | `css-vs-tailwind`      |
+| Touching / creating                              | Skill                         |
+| ------------------------------------------------ | ----------------------------- |
+| `+page.server.ts`                                | `route-server`                |
+| `+layout.server.ts`                              | `layout-server`               |
+| A new static route                               | `static-route-sitemap`        |
+| A taxonomy (routes + sitemap + feed)             | `taxonomies`                  |
+| Translating to another language                  | `translate`                   |
+| Calling the Butterfly API (`api.get`)            | `butterfly-api`               |
+| Adding/editing JSON-LD schemas                   | `jsonld-schema`               |
+| Using `<Image>` / `<Picture>`                    | `image-picture`               |
+| Feed pagination / streaming                      | `feed-streaming`              |
+| Customising article body rendering (`Post/Body`) | `post-body`                   |
+| Pushing GTM events                               | `gtm-events`                  |
+| Writing Svelte components                        | `svelte5-runes`               |
+| Choosing a cache header                          | `cache-control`               |
+| Error pages / `error()` usage                    | `http-errors`                 |
+| Writing tests                                    | `testing`                     |
+| Any `<a>` tag                                    | `seo-links`                   |
+| `<head>`, robots, canonical                      | `robots-meta`, `route-server` |
+| An RSS/Atom feed                                 | `static-route-sitemap`        |
+| Service worker                                   | `service-worker`              |
+| Any card / article preview                       | `card`                        |
+| Font sizes                                       | `typography`                  |
+| Spacing (margin/padding/gap)                     | `spacing`                     |
+| Z-index                                          | `z-index`                     |
+| Adding/removing a font                           | `fonts`                       |
+| Any interactive UI (modals, menus, accordions)   | `html-first`                  |
+| Deciding Tailwind utility vs custom class        | `css-vs-tailwind`             |
 
 ## Working style
 
@@ -184,7 +211,7 @@ Scaffolding and audits live in `.claude/commands/`:
 - `/new-feed <path>` — new `[format=feed]/<path>.xml` endpoint
 - `/translate-to <lang>` — run the `translate` skill end-to-end
 - `/change-palette` — rewrite the `@theme` colour tokens
-- `/audit-seo` — sweep for SEO/a11y/design-system violations
+- `/audit-seo` — runs the three auditors + a design-system sweep
 - `/check-butterfly-env` — validate `.env` + ping the API
 - `/add-static-page <slug>` — wire up a CMS-backed static page
 - `/svelte4-to-5` — migrate a legacy Svelte 4 component to Runes
@@ -194,6 +221,8 @@ Scaffolding and audits live in `.claude/commands/`:
 Specialist subagents under `.claude/agents/`:
 
 - `butterfly-explorer` — navigates `@enodo/butterfly-ts` types and API surface
-- `seo-auditor` — finds violations of the SEO skills repo-wide
-- `a11y-auditor` — accessibility sweep (aria, focus, semantics)
-- `perf-reviewer` — LCP, streaming, lazy-loading, preload
+- `seo-auditor` — head contract, canonical/URLs, soft 404s, JSON-LD, links, feeds, sitemaps
+- `semantic-html-auditor` — link/button content, anchor text, native elements, headings, landmarks, lists, tables, focus
+- `perf-reviewer` — budget, LCP image, `sizes`, service worker, fonts, third parties, waterfalls, INP
+
+All three are read-only: they run the project's gates (`lint`, `check`, `build`, `budget`, `test:quality` when a `.env` exists), then the judgement checks, then trace every call site of the components, and report `[CATEGORY] path:line — finding — fix` (`CERTAIN`/`LIKELY`).

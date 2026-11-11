@@ -1,29 +1,25 @@
 ---
-description: Scaffold a new RSS/Atom/JSON feed endpoint under [format=feed]
+description: Scaffold a new RSS/Atom feed endpoint under [format=feed] through $lib/server/feed
 argument-hint: <path>
 ---
 
-Create a new feed endpoint at `src/routes/[format=feed]/$1.xml/+server.ts`. The `[format=feed]` matcher serves `rss`, `atom`, and `json` formats from the same file.
+Create a new feed endpoint at `src/routes/[format=feed]/$1.xml/+server.ts`. The `[format=feed]` matcher serves `rss` and `atom` (no JSON feed) from the same file.
 
 **Before touching files, read:**
 
-1. `.claude/skills/static-route-sitemap/SKILL.md` — feed section
-2. `.claude/skills/butterfly-api/SKILL.md` — picking the right query
-3. `.claude/skills/http-errors/SKILL.md` — ApiError handling
-4. `.claude/skills/cache-control/SKILL.md` — use `CACHE_CONTROL.short`
-5. Existing feed `src/routes/[format=feed]/index.xml/+server.ts` — reference implementation
+1. `.claude/skills/static-route-sitemap/SKILL.md` — feed section (the `$lib/server/feed` helpers)
+2. `src/lib/server/feed.ts` — `feedSettings`, `feedPosts`, `feedResponse`, `feedError`
+3. `.claude/skills/butterfly-api/SKILL.md` — picking the right filter
+4. Existing feed `src/routes/[format=feed]/tags/[id].xml/+server.ts` — reference implementation
 
 **Steps:**
 
-1. Ask the user what the feed should contain (all posts, tag-filtered, author-filtered, category-filtered…) if not obvious from `$1`.
+1. Ask the user what the feed should contain (tag-, author-, category-, taxonomy-filtered…) if `$1` doesn't say.
 2. Create `src/routes/[format=feed]/$1.xml/+server.ts`:
-   - `GET` RequestHandler reading `params.format` (`'rss' | 'atom' | 'json'`)
-   - Fetch settings (`api.get({ path: '/v1/' })`) + posts with the right filter
-   - Build a `Feed` from the `feed` package with `title`, `description`, `id`, `link`, `language`, `image`, `favicon`, `copyright`, `updated`, `generator: 'Enodo Butterfly'`, `ttl: 120`, `feedLinks` (rss/atom/json)
-   - Add items with `title`, `id`, `link`, `description`, `date`, `image` (via `getMediaUrl`), `author`
-   - Map `format` → `feed.rss2 / feed.atom1 / feed.json1`
-   - Set headers: `Expires` (+120s), `Cache-Control: CACHE_CONTROL.short`, `Content-Type: text/xml`
-   - Wrap in `try/catch` — on `ApiError` throw `error(err.status, httpErrors[err.status])`; else `error(500, httpErrors[500])`
-3. Add the feed to `src/routes/rss.html/+page.svelte` (RSS directory) if the user wants it discoverable.
+   - `GET` handler, `Promise.all` of `feedSettings(fetch)`, the scope resource if any, and `feedPosts(fetch, filter)` (20 latest posts, `-publishedAt`, pages excluded)
+   - `return feedResponse({ format: params.format as FeedFormat, settings, posts, title, description, path, feedPath })` — `path` is the HTML page of the feed, `feedPath` the path after `/{format}/` without `.xml`
+   - `catch (err) { feedError(err); }`
+   - Do **not** build a `Feed` by hand, set headers, add `Expires`, a JSON format or author emails: `feedResponse` owns the content type (`application/rss+xml` / `application/atom+xml`) and `CACHE_CONTROL.short`
+3. Advertise it: a `<link rel="alternate">` branch for the page's `content.type` in `src/routes/+layout.svelte`, and an entry on `/rss.html` / `/atom.html` (`src/routes/[format=feed].html/`) if it should be listed there.
 
-**After scaffolding**, report: file created, filter applied, and whether the feed was added to the RSS directory.
+**After scaffolding**, report: file created, filter applied, where the feed is advertised.

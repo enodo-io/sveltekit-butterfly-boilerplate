@@ -43,10 +43,11 @@ Props at a glance:
 - `width` — base width (single `src`)
 - `widths` — array of widths for `srcset`
 - `sizes` — CSS `sizes` attribute
-- `alt` — required for a11y
-- `lazyload` — defaults to `true`; set `false` for above-the-fold/LCP
+- `alt` — the media description by default; `""` for a decorative image (it repeats the text next to it)
+- `lazyload` — defaults to `true`; set `false` for above-the-fold images
+- `priority` — the LCP image (below)
 
-`<Image>` automatically generates 2× variants for retina screens.
+`<Image>` adds the 2× of every width and **snaps every width to one ladder** (`$lib/imageWidths`: 160, 240, 320, 400, 480, 640, 768, 960, 1080, 1280, 1536, 1920, 2560): 640/760/768 are one CDN variant shared by every component, never above the source width. The `src` is `snapWidth(width)`.
 
 ---
 
@@ -66,6 +67,8 @@ Props at a glance:
   alt={post.attributes.title}
 />
 ```
+
+With `priority`, `<Picture>` emits one `<link rel="preload" fetchpriority="high" media="…">` per `<source>` (only the matching one downloads) and `fetchpriority="high"` on the `<img>`, never a preload of the fallback on top.
 
 Use `<Picture>` only when the layout demands a different **visual** source per breakpoint — e.g. portrait mobile hero vs landscape desktop hero. For pure size variation, `<Image>` is lighter (no `<source>` elements, single tag in the DOM).
 
@@ -125,7 +128,9 @@ Lazy loading the LCP image kills Core Web Vitals. For the **first** image on a p
 Two props, two jobs:
 
 - `lazyload={false}`: no `loading="lazy"` (every image above the fold).
-- `priority`: `fetchpriority="high"` on the `<img>` and a `<link rel="preload" fetchpriority="high">` in `<svelte:head>`. **One image per page at most**, the LCP candidate: several "high" images compete with each other and with the CSS, and a small avatar must never get it.
+- `priority`: `fetchpriority="high"` on the `<img>` and a `<link rel="preload" fetchpriority="high">` in `<svelte:head>` (the default image when there is no media), never lazy. **One image per page at most**, the LCP candidate: several "high" images compete with each other and with the CSS, and a small avatar must never get it. `e2e/quality.test.ts` fails on more than one `img[fetchpriority="high"]`.
+
+Where it is today: the first card of every listing (`<Feed priority>`), the home featured post, the category hero when the category has a thumbnail (then the feed has no `priority`). Post pages have none (the avatar is not the LCP).
 
 Other images on the page stay with the default `lazyload={true}`.
 
@@ -152,7 +157,7 @@ No fade-in on images: an `<img>` kept at `opacity: 0` until hydration is invisib
 ## What NOT to do
 
 - Don't build `<picture>` with multiple `<source type="image/webp">` for format negotiation — Butterfly's API does that via the `Accept` header.
-- Don't use `<Image>` without `alt`. Empty string `alt=""` is valid for decorative images only; post thumbnails must have descriptive alt.
+- Don't use `<Image>` without thinking about `alt`: the media description when it informs; `alt=""` when the image only repeats adjacent text (a card thumbnail without description next to its title, an avatar next to the author name).
 - Don't lazy-load the LCP image.
 - Don't use raw `<img>` tags with Butterfly media URLs — you lose srcset, retina, and preload.
 - Don't pad `widths` with sizes the layout never uses at any breakpoint.
@@ -169,4 +174,4 @@ No fade-in on images: an `<img>` kept at `opacity: 0` until hydration is invisib
 - [ ] `sizes` tells the browser the render width at each breakpoint?
 - [ ] LCP image has `lazyload={false}` and `priority`, and it is the only `priority` image of the page?
 - [ ] `sizes` computed from the real grid (992px / 656px from `md`)?
-- [ ] `alt` is descriptive (or `""` only if purely decorative)?
+- [ ] `alt` is descriptive (or `""` only if decorative: it repeats the text next to it)?
