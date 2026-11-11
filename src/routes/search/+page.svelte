@@ -83,18 +83,22 @@
       <span class="fs-minion text-light-500">Page {data.layer['page.index']}</span>
     {/if}
 
-    <form action="/search/" method="GET" role="search" class="flex flex-col gap-2 sm:flex-row">
-      <input
-        autocomplete="off"
-        name="query"
-        type="text"
-        aria-label="Search news, topics and more"
-        placeholder="Search news, topics and more"
-        value={data.layer['page.query'] || ''}
-        class="flex-auto"
-      />
-      <input type="submit" value="Search" class="btn min-w-[10.5rem]" />
-    </form>
+    <!-- <search> landmark (no role="search"), /search without a trailing slash (no redirect) -->
+    <search>
+      <form action="/search" method="GET" class="flex flex-col gap-2 sm:flex-row">
+        <label for="search-query" class="sr-only">Search news, topics and more</label>
+        <input
+          id="search-query"
+          autocomplete="off"
+          name="query"
+          type="search"
+          placeholder="Search news, topics and more"
+          value={data.layer['page.query'] || ''}
+          class="flex-auto"
+        />
+        <button type="submit" class="btn min-w-[10.5rem]">Search</button>
+      </form>
+    </search>
   </header>
 
   {#if data.feeds.tags}

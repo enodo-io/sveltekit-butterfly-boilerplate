@@ -16,7 +16,7 @@
 </script>
 
 {#if element.data.length}
-  <aside class="post--related">
+  <aside class="post--related" aria-label={element.title || 'Related articles'}>
     {#if element.title}
       <p class="post--related--title">{element.title}</p>
     {/if}
