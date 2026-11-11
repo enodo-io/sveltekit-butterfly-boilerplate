@@ -75,7 +75,7 @@
   sizes={media && srcset.length ? sizes : undefined}
   width={width}
   height={height}
-  alt={alt || media?.attributes.description}
+  alt={alt || media?.attributes.description || ''}
   loading={lazyload ? 'lazy' : undefined}
   fetchpriority={lazyload ? undefined : 'high'}
   onload={() => (loaded = true)}

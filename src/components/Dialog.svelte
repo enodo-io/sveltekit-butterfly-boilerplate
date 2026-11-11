@@ -6,9 +6,11 @@
     open: boolean;
     onClose?: () => void;
     content: Snippet;
+    /** accessible name of the dialog */
+    label?: string;
   };
 
-  const { open = false, onClose = () => {}, content }: Props = $props();
+  const { open = false, onClose = () => {}, content, label = 'Media viewer' }: Props = $props();
 
   let dialog: HTMLDialogElement;
 
@@ -34,8 +36,9 @@
   };
 </script>
 
-<dialog bind:this={dialog} onclose={onClose} onclick={handleClick}>
+<dialog bind:this={dialog} onclose={onClose} onclick={handleClick} aria-label={label}>
   <button
+    type="button"
     class="close fixed top-2 right-2 z-modal p-4 text-light"
     aria-label="Close modal"
     onclick={() => dialog.close()}

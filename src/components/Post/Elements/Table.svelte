@@ -32,6 +32,7 @@
           <tr>
             {#each row as cell, ci (ci)}
               <th
+                scope="col"
                 colspan={cell.colspan || undefined}
                 rowspan={cell.rowspan || undefined}
                 style:text-align={cell.align || undefined}

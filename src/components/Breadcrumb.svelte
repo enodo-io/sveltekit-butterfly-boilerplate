@@ -12,7 +12,7 @@
 
 {#if breadcrumb?.length > 1}
   <nav class="-mb-4 fs-minion" aria-label="Breadcrumb">
-    <ul role="list">
+    <ol>
       {#each breadcrumb as element, i (element.position)}
         {#if i === 0}
           <li><a href={resolve('/')} aria-label={String(element.name)}><Home size={16} /></a></li>
@@ -30,7 +30,7 @@
           </li>
         {/if}
       {/each}
-    </ul>
+    </ol>
   </nav>
 {/if}
 
@@ -38,7 +38,7 @@
   a {
     text-decoration: none;
   }
-  ul {
+  ol {
     display: flex;
     align-items: center;
     list-style: none;

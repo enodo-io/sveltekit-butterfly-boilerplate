@@ -30,6 +30,7 @@
 </script>
 
 {#if media}
+  <!-- no captions track until the CMS provides a VTT (an empty <track> is invalid HTML) -->
   <video
     bind:this={video}
     controls
@@ -41,7 +42,6 @@
   >
     <source src={getMediaUrl({ media, definition: 'hd', ext: 'mp4' })} type="video/mp4" />
     <source src={getMediaUrl({ media, definition: 'sd', ext: 'mp4' })} type="video/mp4" />
-    <track kind="captions" />
   </video>
 {:else}
   <div class="error">Video not available</div>

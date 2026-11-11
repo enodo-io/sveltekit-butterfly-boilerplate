@@ -77,7 +77,7 @@
   class="fixed right-0 bottom-0 left-0 z-nav-fixed bg-light font-brand whitespace-nowrap text-light-800 md:sticky md:top-0"
 >
   <div class="flex items-center justify-between p-2">
-    <nav aria-label="Home" class="relative flex items-center font-brand sm:gap-2">
+    <div class="relative flex items-center font-brand sm:gap-2">
       <img src="/favicon.svg" width="48" height="48" alt="" />
       <a
         href={resolve('/')}
@@ -85,14 +85,16 @@
         aria-current={currentPage === resolve('/') ? 'page' : undefined}
         ><span class="sr-only sm:not-sr-only">{page.data.settings.title}</span></a
       >
-    </nav>
+    </div>
 
-    <nav class="flex items-center">
+    <nav class="flex items-center" aria-label="Main menu">
+      <!-- open/closed is exposed by popovertarget (aria-expanded): the name stays the same -->
       <button
         id="burger"
+        type="button"
         popovertarget="menu"
         class="p-2 md:hidden"
-        aria-label={menu ? 'Close navigation' : 'Open navigation'}
+        aria-label="Menu"
       >
         {#if !menu}
           <Menu />
@@ -161,7 +163,7 @@
             {/each}
           {/snippet}
           {@render categoriesMenu(page.data.categories.data, null)}
-          <li class="relative flex items-center justify-between gap-3 py-2" aria-label="Search">
+          <li class="relative flex items-center justify-between gap-3 py-2">
             <a class="search" href={resolve('/search')}> Search </a>
             <Search size={20} />
           </li>

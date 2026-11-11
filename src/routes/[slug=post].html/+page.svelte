@@ -17,6 +17,19 @@
 
   let { data }: PageProps = $props();
 
+  // Web Share where available (mobile), else copy the link (desktop Firefox has no navigator.share)
+  let copied = $state(false);
+  const share = async () => {
+    const shared = { title: data.meta.title, text: data.meta.description, url: data.meta.url };
+    if (navigator.share) {
+      await navigator.share(shared).catch(() => {});
+      return;
+    }
+    await navigator.clipboard?.writeText(shared.url);
+    copied = true;
+    setTimeout(() => (copied = false), 2000);
+  };
+
   let post: Butterfly.Post = $derived(data.scope.data);
   /** partner content (flag `sponso`): one line above the title, `rel="sponsored"` on its external links */
   let sponsored = $derived(hasFlag(post, 'sponso'));
@@ -152,17 +165,9 @@
           <Authorship authors={authors} resources={data.scope.included} />
         {/if}
 
-        <button
-          class="btn btn__sm"
-          onclick={() =>
-            navigator.share({
-              title: data.meta.title,
-              text: data.meta.description,
-              url: data.meta.url,
-            })}
-        >
+        <button type="button" class="btn btn__sm" onclick={share}>
           <Share size={20} />
-          Share
+          {copied ? 'Link copied' : 'Share'}
         </button>
       </div>
     </header>
@@ -173,13 +178,13 @@
       sponsored={sponsored}
     />
   </article>
-  <aside class="sticky top-12 flex flex-col gap-7">
+  <aside class="sticky top-12 flex flex-col gap-7" aria-labelledby="related-title">
     <div class="flex flex-col gap-4">
       {#await data.feeds.related}
         {@const width = (Math.random() * (80 - 30) + 30).toFixed(2)}
-        <span class="shimmer fs-paragon" style:width="{width}%">&nbsp;</span>
+        <span class="shimmer fs-paragon" style:width="{width}%" aria-hidden="true">&nbsp;</span>
       {:then}
-        <span class="fs-paragon font-bold text-light-700">Related</span>
+        <h2 id="related-title" class="fs-paragon font-bold text-light-700">Related articles</h2>
       {/await}
       <Feed feed={data.feeds.related} length={3} resume={false} thumbnail={true} />
     </div>

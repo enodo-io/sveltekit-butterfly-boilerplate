@@ -15,8 +15,7 @@
 {#snippet content()}
   {#if media}
     <audio controls>
-      <source src={getMediaUrl({ media, definition: 'hd', ext: 'mp3' })} type="audio/mp3" />
-      <track kind="captions" />
+      <source src={getMediaUrl({ media, definition: 'hd', ext: 'mp3' })} type="audio/mpeg" />
     </audio>
   {:else}
     <p class="error">Audio not available</p>

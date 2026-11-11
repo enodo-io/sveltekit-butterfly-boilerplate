@@ -1,7 +1,6 @@
 <script lang="ts">
   import type * as Butterfly from '@enodo/butterfly-ts';
 
-  import { getMediaUrl } from '$lib/getMediaUrl';
   import { breakpoints } from '$lib/breakpoints';
   import Image from '$components/Image.svelte';
   import Video from '$components/Video.svelte';
@@ -23,36 +22,26 @@
       (r: Butterfly.Resource) =>
         ['image', 'video', 'audio'].includes(r.type) && r.id === item.mediaId,
     ) as Butterfly.Media | undefined}
-    <figure class="post--gallery--media">
-      {#if media}
-        <!-- eslint-disable svelte/no-navigation-without-resolve -->
-        <a
-          onclick={(e) => {
-            e.preventDefault();
-            current = { media, item };
-          }}
-          href={getMediaUrl({
-            media,
-            ext: media.type === 'video' ? 'mp4' : media.type === 'audio' ? 'mp3' : undefined,
-            definition: media.type === 'video' ? 'hd' : undefined,
-          }) as `https://${string}`}
-          target="_blank"
-          rel="noopener external"
-        >
-          <Image
-            media={media}
-            alt={item.description}
-            width={180}
-            format="square"
-            widths={[180, 120]}
-            sizes={sizes}
-          />
-        </a>
-        <!-- eslint-enable svelte/no-navigation-without-resolve -->
-      {:else}
-        <p class="error px-2 py-3 text-center">Media not available</p>
-      {/if}
-    </figure>
+    <li>
+      <figure class="post--gallery--media">
+        {#if media}
+          <!-- opens the viewer (<dialog>): an action, so a button, not a link -->
+          <button type="button" class="block w-full" onclick={() => (current = { media, item })}>
+            <span class="sr-only">Enlarge</span>
+            <Image
+              media={media}
+              alt={item.description}
+              width={180}
+              format="square"
+              widths={[180, 120]}
+              sizes={sizes}
+            />
+          </button>
+        {:else}
+          <p class="error px-2 py-3 text-center">Media not available</p>
+        {/if}
+      </figure>
+    </li>
   {/each}
 </ul>
 
@@ -95,7 +84,7 @@
 />
 
 <style lang="scss">
-  .post--gallery--media a {
+  .post--gallery--media button {
     cursor: zoom-in;
   }
   .post--media {

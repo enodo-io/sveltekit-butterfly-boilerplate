@@ -20,7 +20,7 @@
       >
     </p>
   </div>
-  <nav aria-label="Main pages">
+  <nav aria-label="Footer">
     <ul class="grid grid-flow-col grid-rows-4 gap-2 text-center fs-minion">
       <li>
         <a

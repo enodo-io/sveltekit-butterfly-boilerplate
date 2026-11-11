@@ -75,6 +75,7 @@
   >
     {#if onload && next && current !== max}
       <button
+        type="button"
         class="btn"
         aria-controls={controls}
         use:inview
