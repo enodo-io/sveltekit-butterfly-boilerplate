@@ -17,7 +17,7 @@ import path from 'node:path';
 import zlib from 'node:zlib';
 
 const BUDGET = {
-  jsKb: 72, // first-load JS of any route, gzip (62.6 kB on 2026-11-11)
+  jsKb: 72, // first-load JS of any route, gzip (65.9 kB on 2026-11-11, hooks entry included)
   cssKb: 12, // main stylesheet, gzip
   fonts: 30, // font files (woff/woff2) in the build
 };
@@ -34,7 +34,10 @@ const closure = (key, seen = new Set()) => {
 };
 const kb = (bytes) => Math.round(bytes / 102.4) / 10;
 
-const entry = Object.keys(manifest).find((k) => k.endsWith('runtime/client/entry.js'));
+// the two client entries: the kit runtime (start) and the generated app (hooks, router)
+const entries = Object.keys(manifest).filter(
+  (k) => k.endsWith('runtime/client/entry.js') || /generated\/client-optimized\/app\.js$/.test(k),
+);
 const nodes = Object.keys(manifest).filter((k) =>
   /generated\/client-optimized\/nodes\/\d+\.js$/.test(k),
 );
@@ -45,7 +48,9 @@ const rows = nodes
   .filter((k) => k !== layout && !k.endsWith('/nodes/1.js'))
   .map((node) => {
     const files = new Set();
-    [entry, layout, node].forEach((k) => closure(k).forEach((f) => files.add(manifest[f].file)));
+    [...entries, layout, node].forEach((k) =>
+      closure(k).forEach((f) => files.add(manifest[f].file)),
+    );
     const size = [...files].reduce((sum, f) => sum + gz(f), 0);
     return { route: path.basename(node), kb: kb(size) };
   });
