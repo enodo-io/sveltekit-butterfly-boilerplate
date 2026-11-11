@@ -39,6 +39,8 @@
 
   // heading levels (no skip) and unique anchors of the titles / FAQ questions
   const outline = $derived(postOutline(body));
+  // the LCP image of a post: an image among its first two blocks (above the fold)
+  const lcpIndex = $derived(body.slice(0, 2).findIndex((b) => b.type === 'image'));
 
   // read by InlineNodes/Link.svelte
   setContext('postSponsored', () => sponsored);
@@ -96,6 +98,7 @@
           resources={resources as never}
           level={outline[i]?.level as never}
           id={outline[i]?.id as never}
+          priority={(i === lcpIndex) as never}
         />
       </div>
     {:else}
@@ -104,6 +107,7 @@
         resources={resources as never}
         level={outline[i]?.level as never}
         id={outline[i]?.id as never}
+        priority={(i === lcpIndex) as never}
       />
     {/if}
   {:else if dev}

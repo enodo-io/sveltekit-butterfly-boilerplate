@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "echo '{\"hookSpecificOutput\":{\"hookEventName\":\"SessionStart\",\"additionalContext\":\"Butterfly SvelteKit boilerplate session. Architectural invariants live in CLAUDE.md + .claude/skills/*. Use the right skill BEFORE editing — do not guess. Scaffolding + audits available as slash commands (/new-route, /new-taxonomy, /new-jsonld, /new-feed, /translate-to, /change-palette, /audit-seo, /check-butterfly-env, /add-static-page). Specialist subagents under .claude/agents/ (butterfly-explorer, seo-auditor, a11y-auditor, perf-reviewer).\"}}'",
+            "command": "echo '{\"hookSpecificOutput\":{\"hookEventName\":\"SessionStart\",\"additionalContext\":\"Butterfly SvelteKit boilerplate session. Architectural invariants live in CLAUDE.md + .claude/skills/*. Use the right skill BEFORE editing — do not guess. Scaffolding + audits available as slash commands (/new-route, /new-taxonomy, /new-jsonld, /new-feed, /translate-to, /change-palette, /audit-seo, /check-butterfly-env, /add-static-page). Specialist subagents under .claude/agents/ (butterfly-explorer, seo-auditor, semantic-html-auditor, perf-reviewer).\"}}'",
             "timeout": 5
           }
         ]

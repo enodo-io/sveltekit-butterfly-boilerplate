@@ -10,12 +10,14 @@
 
   a {
     text-decoration: none;
-    &:after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      z-index: 1;
-    }
+  }
+
+  /* stretched link: the title link covers the whole card (seo-links skill) */
+  &--title a:after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: var(--z-selected);
   }
 
   &--thumb {

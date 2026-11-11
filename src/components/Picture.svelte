@@ -1,6 +1,7 @@
 <script lang="ts">
   import Image from './Image.svelte';
   import { getMediaUrl } from '$lib/getMediaUrl';
+  import { snapWidth } from '$lib/imageWidths';
 
   import type * as Butterfly from '@enodo/butterfly-ts';
 
@@ -38,9 +39,9 @@
         as="image"
         fetchpriority="high"
         media={src.query}
-        imagesrcset={getMediaUrl({ media, format, width: src.width }) +
+        imagesrcset={getMediaUrl({ media, format, width: snapWidth(src.width) }) +
           ' 1x, ' +
-          getMediaUrl({ media, format, width: src.width * 2 }) +
+          getMediaUrl({ media, format, width: snapWidth(src.width * 2) }) +
           ' 2x'}
       />
     {/each}
@@ -52,9 +53,9 @@
     {#each srcset as src (src.query)}
       <source
         media={src.query}
-        srcset={getMediaUrl({ media, format, width: src.width }) +
+        srcset={getMediaUrl({ media, format, width: snapWidth(src.width) }) +
           ' 1x, ' +
-          getMediaUrl({ media, format, width: src.width * 2 }) +
+          getMediaUrl({ media, format, width: snapWidth(src.width * 2) }) +
           ' 2x'}
       />
     {/each}

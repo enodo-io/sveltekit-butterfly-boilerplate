@@ -4,8 +4,13 @@
   import Media from './Media.svelte';
   import { getRelated } from '@enodo/butterfly-ts';
 
-  type Props = { element: Butterfly.PostBody.Image; resources: Butterfly.Resource[] };
-  const { element, resources }: Props = $props();
+  // priority: the image opens the post body (set by Body): it is the LCP candidate
+  type Props = {
+    element: Butterfly.PostBody.Image;
+    resources: Butterfly.Resource[];
+    priority?: boolean;
+  };
+  const { element, resources, priority = false }: Props = $props();
 
   const media = $derived(
     getRelated<Butterfly.Image>({ type: 'image', id: element.data.mediaId }, resources),
@@ -17,7 +22,8 @@
     <picture>
       <Image
         media={media}
-        lazyload={true}
+        lazyload={!priority}
+        priority={priority}
         width={media.attributes.width}
         sizes="(min-width: 1008px) 656px, calc(100vw - 16px)"
         alt={element.data.description.length

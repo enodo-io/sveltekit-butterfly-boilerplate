@@ -12,7 +12,8 @@
 </script>
 
 <figure class="post--quote">
-  <blockquote cite={source.url}>
+  <!-- cite takes a URL: only an http(s) source -->
+  <blockquote cite={source.url && /^https?:\/\//.test(source.url) ? source.url : undefined}>
     <p><InlineNodes nodes={element.data.value} /></p>
   </blockquote>
 

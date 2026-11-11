@@ -31,20 +31,20 @@
     </h1>
   </header>
 
-  <div id="authors" class="grid gap-4 sm:grid-cols-2">
+  <ul id="authors" class="grid gap-4 sm:grid-cols-2">
     {#await data.feeds.authors}
       <!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
       {#each Array.from({ length: 8 }) as _, i (i)}
         {@const width = (Math.random() * (80 - 30) + 30).toFixed(2)}
-        <div class="flex flex-row-reverse items-center justify-end gap-4">
+        <li class="flex flex-row-reverse items-center justify-end gap-4" aria-hidden="true">
           <span class="shimmer fs-trafalgar" style:width="{width}%">&nbsp;</span>
           <div class="shimmer rounded-full" style:width="64px" style:height="64px"></div>
-        </div>
+        </li>
       {/each}
     {:then authors}
       {#each authors.data as author, i (author.id)}
         {@const thumb: Butterfly.Media | undefined = getRelated(author.relationships.thumbnail.data, authors.included)}
-        <div class="relative flex flex-row-reverse items-center justify-end gap-4">
+        <li class="relative flex flex-row-reverse items-center justify-end gap-4">
           <h2 class="fs-trafalgar font-bold text-light-700">
             <a class="link--overlay" href={resolve(`/authors/${author.id}`)}
               >{author.attributes.name}</a
@@ -70,10 +70,10 @@
               <Avatar size={40} />
             </div>
           {/if}
-        </div>
+        </li>
       {/each}
     {/await}
-  </div>
+  </ul>
 
   {#await data.feeds.authors then authors}
     <Pagination

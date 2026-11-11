@@ -198,12 +198,8 @@
   </article>
   <aside class="sticky top-12 flex flex-col gap-7" aria-labelledby="related-title">
     <div class="flex flex-col gap-4">
-      {#await data.feeds.related}
-        {@const width = (Math.random() * (80 - 30) + 30).toFixed(2)}
-        <span class="shimmer fs-paragon" style:width="{width}%" aria-hidden="true">&nbsp;</span>
-      {:then}
-        <h2 id="related-title" class="fs-paragon font-bold text-light-700">Related articles</h2>
-      {/await}
+      <!-- always rendered: the aside is labelled by it, also while the posts load -->
+      <h2 id="related-title" class="fs-paragon font-bold text-light-700">Related articles</h2>
       <!-- the aside is a third of the 992px column from md, full width below -->
       <ul class="flex flex-col gap-4">
         <Feed
