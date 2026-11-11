@@ -47,7 +47,7 @@
       text-decoration: none;
     }
     :global(blockquote.twitter-tweet p a) {
-      color: #1d9bf0;
+      color: #0f72c2; /* X blue darkened to 5:1 on white (#1d9bf0 is 3:1) */
     }
     :global(blockquote.twitter-tweet a:hover),
     :global(blockquote.twitter-tweet a:focus-visible) {

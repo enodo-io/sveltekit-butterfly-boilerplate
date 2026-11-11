@@ -28,6 +28,30 @@ export default defineConfig(
     },
   },
   {
+    // Semantic HTML / SEO rules of the project (skills html-first, seo-links)
+    files: ['**/*.svelte'],
+    rules: {
+      // every <button> says what it is (no implicit submit)
+      'svelte/button-has-type': 'error',
+      // target="_blank" always with rel (noopener)
+      'svelte/no-target-blank': ['error', { allowReferrer: true }],
+      'no-restricted-syntax': [
+        'error',
+        {
+          // the anchor text is the SEO signal of a link: never a vague one
+          selector:
+            "SvelteElement[name.name='a'] > SvelteText[value=/^\\s*(read more|learn more|click here|here|more|lire la suite|en savoir plus|cliquez ici|ici|plus)\\s*\\.?\\s*$/i]",
+          message: 'Vague anchor text: write what the target page is about (seo-links skill).',
+        },
+        {
+          selector:
+            "SvelteElement[name.name='a'] SvelteAttribute[key.name='href'] > SvelteLiteral[value=/^#?$/]",
+          message: 'href="#" / empty href: use a <button> for an action, a real URL for a link.',
+        },
+      ],
+    },
+  },
+  {
     files: ['**/*.svelte', '**/*.svelte.ts', '**/*.svelte.js'],
     languageOptions: {
       parserOptions: {

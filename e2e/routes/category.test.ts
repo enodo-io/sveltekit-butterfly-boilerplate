@@ -64,7 +64,7 @@ test.describe('Category Page', () => {
     expect(hasJsonLdData, `JSON-LD should exist on ${categoryPath}`).toBe(true);
   });
 
-  test('should have WebPage in JSON-LD', async ({ page }) => {
+  test('should have CollectionPage (a WebPage with its ItemList) in JSON-LD', async ({ page }) => {
     const categoryPath = await getRandomCategory();
 
     if (!categoryPath) {
@@ -73,7 +73,7 @@ test.describe('Category Page', () => {
     }
 
     await page.goto(categoryPath);
-    const hasWebPage = await hasJsonLdType(page, 'WebPage');
+    const hasWebPage = await hasJsonLdType(page, 'CollectionPage');
     expect(hasWebPage).toBe(true);
   });
 

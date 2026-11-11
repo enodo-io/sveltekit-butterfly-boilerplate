@@ -66,12 +66,13 @@
 </script>
 
 <svelte:head>
-  {#if priority && media}
+  <!-- the LCP image is preloaded, the default image too when there is no media -->
+  {#if priority}
     <link
       rel="preload"
       as="image"
       fetchpriority="high"
-      href={getMediaUrl({ media, format, width: snapWidth(width) })}
+      href={media ? getMediaUrl({ media, format, width: snapWidth(width) }) : defaultThumb}
       imagesrcset={media && srcset.length ? srcset : undefined}
       imagesizes={media && srcset.length ? sizes : undefined}
     />

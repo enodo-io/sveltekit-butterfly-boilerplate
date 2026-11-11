@@ -20,9 +20,12 @@
     "lint": "prettier --check . && eslint .",
     "test:unit": "vitest",
     "test": "npm run test:unit -- --run && npm run test:e2e",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "budget": "node scripts/check-budget.js",
+    "test:quality": "playwright test e2e/quality.test.ts"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
     "@enodo/butterfly-tracker": "^1.0.0",
     "@enodo/butterfly-ts": "^1.1.2",
     "@eslint/compat": "^2.0.2",
@@ -48,6 +51,7 @@
     "eslint-plugin-svelte": "^3.0.0",
     "feed": "^6.0.0",
     "globals": "^17.4.0",
+    "html-validate": "^11.21.0",
     "marked": "^15.0.12",
     "mustache": "^4.2.0",
     "playwright": "^1.53.0",

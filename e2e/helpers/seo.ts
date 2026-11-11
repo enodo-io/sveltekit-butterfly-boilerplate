@@ -203,59 +203,31 @@ export async function testJsonLd(page: Page): Promise<SEOTestResult> {
   return { passed: true, message: `Valid JSON-LD found (${jsonLdElements} element(s))` };
 }
 
+/**
+ * One LCP image per page: at most one image preload, and the image fetched with
+ * fetchpriority="high" (when there is one) has its preload. Other images above
+ * the fold are just not lazy: preloading them all would compete with the LCP.
+ */
 export async function testPreloadLinks(page: Page): Promise<SEOTestResult> {
-  // Get all img tags that are NOT lazy loaded
-  const nonLazyImages = await page.locator('img:not([loading="lazy"])').all();
+  const preloads = await page.locator('link[rel="preload"][as="image"]').count();
+  const high = await page.locator('img[fetchpriority="high"]').all();
 
-  const missingPreloads: string[] = [];
-
-  for (const img of nonLazyImages) {
+  if (preloads > 1 && (await page.locator('picture source').count()) === 0) {
+    return { passed: false, message: `${preloads} image preloads (one LCP image per page)` };
+  }
+  if (high.length > 1) {
+    return { passed: false, message: `${high.length} images with fetchpriority="high"` };
+  }
+  for (const img of high) {
     const src = await img.getAttribute('src');
-
-    if (!src) continue;
-
-    // Skip inline data URIs
-    if (src.startsWith('data:')) {
-      continue;
-    }
-
-    // Skip thumb.jpg (now in assets, may have hash in filename)
-    if (src?.includes('thumb.jpg')) {
-      continue;
-    }
-
-    // Skip SVG files (small and fast to load)
-    if (src.endsWith('.svg') || src.includes('.svg')) {
-      continue;
-    }
-
-    // Skip favicon and small icons
-    if (src.includes('favicon') || src.includes('logo-88x31')) {
-      continue;
-    }
-
-    // Skip small assets
-    if (src.includes('/_app/immutable/assets/')) {
-      continue;
-    }
-
-    // Check if there's a corresponding preload link
-    const hasPreload =
-      (await page.locator(`link[rel="preload"][as="image"][href="${src}"]`).count()) > 0;
-
-    if (!hasPreload) {
-      missingPreloads.push(src);
+    if (
+      src &&
+      (await page.locator(`link[rel="preload"][as="image"][href="${src}"]`).count()) === 0
+    ) {
+      return { passed: false, message: `LCP image without preload: ${src}` };
     }
   }
-
-  if (missingPreloads.length > 0) {
-    return {
-      passed: false,
-      message: `Missing preload links for ${missingPreloads.length} image(s): ${missingPreloads.slice(0, 3).join(', ')}${missingPreloads.length > 3 ? '...' : ''}`,
-    };
-  }
-
-  return { passed: true, message: 'All non-lazy images have preload links' };
+  return { passed: true, message: `${high.length} LCP image, ${preloads} preload(s)` };
 }
 
 export async function runAllSEOTests(page: Page): Promise<Array<SEOTestResult & { name: string }>> {

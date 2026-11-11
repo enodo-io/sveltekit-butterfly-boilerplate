@@ -9,6 +9,8 @@ export type JsonLdType =
   | 'NewsArticle'
   | 'BlogPosting'
   | 'WebPage'
+  | 'CollectionPage'
+  | 'VideoObject'
   | 'WebSite'
   | 'ProfilePage'
   | 'Organization'

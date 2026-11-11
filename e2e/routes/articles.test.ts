@@ -35,9 +35,9 @@ test.describe('Articles Page', () => {
     expect(hasJsonLdData).toBe(true);
   });
 
-  test('should have WebPage in JSON-LD', async ({ page }) => {
+  test('should have CollectionPage (a WebPage with its ItemList) in JSON-LD', async ({ page }) => {
     await page.goto('/articles');
-    const hasWebPage = await hasJsonLdType(page, 'WebPage');
+    const hasWebPage = await hasJsonLdType(page, 'CollectionPage');
     expect(hasWebPage).toBe(true);
   });
 

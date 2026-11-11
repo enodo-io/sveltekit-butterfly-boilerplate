@@ -22,6 +22,16 @@
     };
   };
   const { element }: Props = $props();
+
+  // no text at all (empty strings, empty nodes)
+  const isEmpty = (content: unknown): boolean => {
+    if (content == null) return true;
+    if (typeof content === 'string') return content.trim() === '';
+    if (Array.isArray(content)) return content.every(isEmpty);
+    if (typeof content === 'object' && 'value' in content)
+      return isEmpty((content as { value: unknown }).value);
+    return (content as { type?: string }).type !== 'break' ? false : true;
+  };
 </script>
 
 <figure class="post--table">
@@ -35,15 +45,20 @@
           {#each element.data.head as row, ri (ri)}
             <tr>
               {#each row as cell, ci (ci)}
-                <th
-                  scope="col"
-                  colspan={cell.colspan || undefined}
-                  rowspan={cell.rowspan || undefined}
-                  style:text-align={cell.align || undefined}
-                  style:vertical-align={cell.valign || undefined}
-                >
-                  <InlineNodes nodes={cell.content as BodyInlineNode[]} />
-                </th>
+                <!-- an empty header cell (a corner) is a td: a th must name its column -->
+                {#if isEmpty(cell.content)}
+                  <td colspan={cell.colspan || undefined} rowspan={cell.rowspan || undefined}></td>
+                {:else}
+                  <th
+                    scope="col"
+                    colspan={cell.colspan || undefined}
+                    rowspan={cell.rowspan || undefined}
+                    style:text-align={cell.align || undefined}
+                    style:vertical-align={cell.valign || undefined}
+                  >
+                    <InlineNodes nodes={cell.content as BodyInlineNode[]} />
+                  </th>
+                {/if}
               {/each}
             </tr>
           {/each}

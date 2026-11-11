@@ -118,6 +118,13 @@
     padding-bottom: 0.5rem;
   }
 
+  /* touch targets of at least 24px (WCAG 2.2 target size) */
+  .post--related--list a {
+    display: inline-block;
+    min-height: 24px;
+    padding-block: 0.125rem;
+  }
+
   @media (min-width: 600px) {
     .post--video video {
       max-height: 70vh;

@@ -65,7 +65,7 @@
     }
 
     :global(blockquote.tiktok-embed a) {
-      color: #fe2c55;
+      color: #d1123f; /* TikTok red darkened to 5.4:1 on white (#fe2c55 is 3.7:1) */
       text-decoration: none;
       font-weight: 700;
     }
@@ -76,7 +76,7 @@
     }
 
     :global(blockquote.tiktok-embed p a[href*='/tag/']) {
-      color: #8fbee9;
+      color: #1a66c9; /* 5.5:1 on white (#8fbee9 was 2:1) */
       font-weight: 700;
     }
 
