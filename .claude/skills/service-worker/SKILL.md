@@ -5,10 +5,12 @@ description: Edit or extend `src/service-worker.ts`. Use when changing the cachi
 
 # `src/service-worker.ts`
 
-The project ships a production-grade service worker with two cache buckets:
+The service worker makes repeat visits fast and gives an offline fallback. It never stands between the browser and the network when it brings nothing: every request it intercepts costs the worker boot time.
 
-- **`cache-${version}`** — app shell + static files (`build`, `files` from `$service-worker`). Cleaned on activation of a new deployment.
-- **`cache-media`** — immutable media from `PUBLIC_MEDIA_URL`. **Not** version-bucketed, **not** cleaned on activation. Butterfly media URLs are content-hashed, so the same URL always returns the same bytes.
+- **`cache-${version}`**: the app JS/CSS (`build`), precached on install; the other build/static files (fonts, favicons, images of `static/`) cached on first use. Cache-first: these files are immutable for a deployment.
+- **`pages-${version}`**: the last 30 HTML pages, for the offline fallback only.
+
+Both are versioned and dropped on activation of the next deployment.
 
 SvelteKit registers the service worker automatically when `src/service-worker.ts` exists.
 
@@ -17,19 +19,29 @@ SvelteKit registers the service worker automatically when `src/service-worker.ts
 ## Mental model
 
 ```
-Request
+Request (GET)
    │
-   ├─ origin === PUBLIC_MEDIA_URL
-   │     → cache-first, fallback to network, populate cache-media
+   ├─ other origin (Butterfly API and media, GTM, embeds…)
+   │     → not intercepted (the browser HTTP cache handles media)
    │
-   ├─ origin === self (app shell, static, HTML)
-   │     → network-first with cache-${version} fallback for offline
+   ├─ navigation (HTML)
+   │     → network-first via navigation preload (the request starts while
+   │       the worker boots), copy kept in pages-${version} for offline
    │
-   └─ other origins (GTM, analytics, third-party)
-         → pass through to network
+   ├─ same origin, in build/files
+   │     → cache-first (precached JS/CSS, the rest cached on first use)
+   │
+   └─ anything else same origin (__data.json, sitemaps, feeds…)
+         → not intercepted
 ```
 
-Read the file — it's ~200 lines, well-commented. Don't restate the full logic here; read the source when in doubt.
+Rules that keep it fast:
+
+- **Navigation preload stays enabled** (`activate`). Without it every HTML request waits for the worker to boot.
+- **Precache JS/CSS only.** Precaching `files` and every font subset downloads megabytes nobody asked for on the first visit.
+- **`return` (no `respondWith`) for what is not cached.** `respondWith(fetch())` adds latency and turns network errors into generic failures.
+- **No cache without a bound.** Unique URLs (search, `__data.json?x-sveltekit-invalidated`) would grow it forever.
+- **Never cache cross-origin `<img>` responses**: they are opaque (`status 0`), unreadable, and the HTTP cache already keeps them.
 
 ---
 
@@ -40,13 +52,13 @@ Read the file — it's ~200 lines, well-commented. Don't restate the full logic 
 Example: cache Fontsource-served fonts separately (though Fontsource is served from the same origin via Vite, so this is rare).
 
 1. Declare a new constant: `const FONT_CACHE = 'cache-fonts'`.
-2. Add an origin check in `fetch` handler similar to `isMediaRequest`.
+2. Add an origin check in the `fetch` handler, before the "other origin" `return`.
 3. Decide the strategy (cache-first for immutable, stale-while-revalidate for mutable).
 4. **Update the activation cleanup** — either add the cache to the exclusion list (keep it) or include it in the cleanup (version it).
 
-### Change app shell cache strategy
+### Change the HTML strategy
 
-The current strategy is network-first with cache fallback for resilience. Don't flip to cache-first without understanding the revalidation story — cached HTML can stick to the user's device across deploys and create stale UIs.
+HTML is network-first with an offline copy. Don't flip it to cache-first: cached HTML sticks to the user's device across deploys and serves stale content.
 
 ### Add offline fallback page
 
@@ -60,7 +72,7 @@ Create `src/routes/offline.svelte` (or similar), add it to `ASSETS` on install, 
 - **Don't cache API responses** from Butterfly unless you have a strong reason. Butterfly serves short TTLs and the server hooks into `api.get` + SvelteKit's `fetch` already handle SSR caching.
 - **Don't forget to `clone()` responses** before putting them in the cache — responses are one-shot streams.
 - **Don't bump `CACHE` manually** — it's tied to `version` from `$service-worker`, which changes on every build.
-- **Don't change `MEDIA_CACHE` naming** — the persistent cache survives across versions on purpose. Renaming it orphans old caches on every deploy.
+- **Don't add a persistent (unversioned) cache** without an eviction policy: nothing ever cleans it.
 
 ---
 
@@ -81,9 +93,8 @@ Clear the service worker between tests: DevTools → Application → "Clear site
 
 ## Debugging checklist
 
-- Resource not cached? → log `request.url` inside the relevant branch, check origin comparisons and `isMediaRequest`.
+- Resource not cached? → only same-origin `build`/`files` are; check the path is in `$service-worker`'s `build` or `files`.
 - Old content sticking after deploy? → verify `CACHE` is tied to `version`, check the activation event's cache cleanup.
-- Media cache growing unbounded? → add an LRU eviction based on `Response` timestamps, or a max-entries guard on `cache-media`.
 - Service worker not updating? → in DevTools → Application, tick "Update on reload" or "Skip waiting".
 
 ---

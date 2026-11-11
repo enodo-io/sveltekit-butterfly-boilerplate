@@ -7,248 +7,98 @@
 // Ensures that the `$service-worker` import has proper type definitions
 /// <reference types="@sveltejs/kit" />
 
-// Only necessary if you have an import from `$env/static/public`
-/// <reference types="../.svelte-kit/ambient.d.ts" />
+/**
+ * Service worker: fast repeat visits and an offline fallback, without ever
+ * standing between the browser and the network when it brings nothing.
+ *
+ * - App JS/CSS (`build`): precached on install, served cache-first (immutable,
+ *   versioned by the deployment).
+ * - Other build/static files (fonts, favicons, images of `static/`): cache-first,
+ *   cached on first use only (no megabytes of unused fonts on the first visit).
+ * - Navigations (HTML): network-first through navigation preload (the request
+ *   starts while the worker boots), the last pages kept for offline only.
+ * - Everything else (`__data.json`, sitemaps, feeds, Butterfly API and media, GTM,
+ *   embeds…): not intercepted, the browser and the HTTP caches handle it.
+ */
 
 import { build, files, version } from '$service-worker';
-import { PUBLIC_BASE_URL, PUBLIC_API_URL, PUBLIC_MEDIA_URL } from '$env/static/public';
 
-// This gives `self` the correct types
 const self = globalThis.self as unknown as ServiceWorkerGlobalScope;
 
-// Create a unique cache name for this deployment
 const CACHE = `cache-${version}`;
+const PAGES = `pages-${version}`;
+/** HTML pages kept for the offline fallback */
+const MAX_PAGES = 30;
 
-// Create a persistent cache for external media (doesn't change with version)
-// This cache is NOT cleaned on activation, as media URLs are immutable
-const MEDIA_CACHE = 'cache-media';
-
-const ASSETS = [
-  ...build, // the app itself
-  ...files, // everything in `static`
-];
-
-function isMediaRequest(url: URL): boolean {
-  try {
-    const mediaUrl = new URL(PUBLIC_MEDIA_URL);
-    return url.origin === mediaUrl.origin;
-  } catch {
-    return false;
-  }
-}
-
-function parseCacheControl(cacheControl: string | null): Map<string, string | number | boolean> {
-  const directives = new Map<string, string | number | boolean>();
-
-  if (!cacheControl) return directives;
-
-  cacheControl.split(',').forEach((directive) => {
-    const trimmed = directive.trim().toLowerCase();
-
-    if (trimmed === 'no-store' || trimmed === 'no-cache' || trimmed === 'must-revalidate') {
-      directives.set(trimmed, true);
-    } else {
-      const [key, value] = trimmed.split('=');
-      if (key && value) {
-        const numValue = parseInt(value, 10);
-        directives.set(key.trim(), isNaN(numValue) ? value.trim() : numValue);
-      } else if (key) {
-        directives.set(key.trim(), true);
-      }
-    }
-  });
-
-  return directives;
-}
-
-function shouldCacheResponse(response: Response): boolean {
-  const cacheControl = response.headers.get('Cache-Control');
-  const directives = parseCacheControl(cacheControl);
-
-  if (directives.has('no-store')) {
-    return false;
-  }
-
-  return true;
-}
-
-function isCacheExpired(response: Response): boolean {
-  const cacheControl = response.headers.get('Cache-Control');
-  const directives = parseCacheControl(cacheControl);
-  const expires = response.headers.get('Expires');
-
-  if (directives.has('no-cache') || directives.has('must-revalidate')) {
-    return true;
-  }
-
-  // Check max-age
-  if (directives.has('max-age')) {
-    const maxAge = directives.get('max-age') as number;
-    const dateHeader = response.headers.get('Date');
-
-    if (dateHeader) {
-      const cacheDate = new Date(dateHeader).getTime();
-      const now = Date.now();
-      const ageSeconds = Math.floor((now - cacheDate) / 1000);
-
-      return ageSeconds >= maxAge;
-    }
-  }
-
-  // Check s-maxage (shared max-age)
-  if (directives.has('s-maxage')) {
-    const sMaxAge = directives.get('s-maxage') as number;
-    const dateHeader = response.headers.get('Date');
-
-    if (dateHeader) {
-      const cacheDate = new Date(dateHeader).getTime();
-      const now = Date.now();
-      const ageSeconds = Math.floor((now - cacheDate) / 1000);
-
-      return ageSeconds >= sMaxAge;
-    }
-  }
-
-  // Check Expires header
-  if (expires) {
-    const expireDate = new Date(expires).getTime();
-    const now = Date.now();
-
-    return now >= expireDate;
-  }
-
-  // If no expiration info, consider it valid (for backwards compatibility)
-  return false;
-}
-
-// Check if a request should be cached based on URL
-// Cache resources from our own domain or Butterfly API/media
-// Everything else (trackers, ads, scripts, etc.) is not cached
-function shouldCacheByUrl(url: URL): boolean {
-  try {
-    const baseUrl = new URL(PUBLIC_BASE_URL);
-    const mediaUrl = new URL(PUBLIC_MEDIA_URL);
-    const apiUrl = new URL(PUBLIC_API_URL);
-
-    // Whitelist: always cache if same origin as site, API, or media domain
-    if (
-      url.origin === baseUrl.origin ||
-      url.origin === mediaUrl.origin ||
-      url.origin === apiUrl.origin
-    ) {
-      return true;
-    }
-
-    return false;
-  } catch {
-    return false;
-  }
-}
+// app shell: JS and CSS only (fonts, favicons… are cached when actually used)
+const PRECACHE = build.filter((file) => /\.(js|css)$/.test(file));
+const STATIC = new Set([...build, ...files]);
 
 self.addEventListener('install', (event) => {
-  async function addFilesToCache() {
-    const cache = await caches.open(CACHE);
-    await cache.addAll(ASSETS);
-  }
-
-  event.waitUntil(addFilesToCache());
+  event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(PRECACHE)));
 });
 
 self.addEventListener('activate', (event) => {
-  // Remove previous cached data from disk
-  // Note: MEDIA_CACHE is preserved as media URLs are immutable
-  async function deleteOldCaches() {
-    for (const key of await caches.keys()) {
-      // Keep the current cache and the media cache (persistent)
-      if (key !== CACHE && key !== MEDIA_CACHE) {
-        await caches.delete(key);
+  event.waitUntil(
+    (async () => {
+      // previous deployments, and the former unbounded caches (cache-media…)
+      for (const key of await caches.keys()) {
+        if (key !== CACHE && key !== PAGES) await caches.delete(key);
       }
-    }
-  }
-
-  event.waitUntil(deleteOldCaches());
+      // the HTML request starts in parallel with the worker boot
+      await self.registration.navigationPreload?.enable();
+    })(),
+  );
 });
 
+async function fromCache(request: Request): Promise<Response> {
+  const cache = await caches.open(CACHE);
+  const cached = await cache.match(request);
+  if (cached) return cached;
+  const response = await fetch(request);
+  if (response.ok) await cache.put(request, response.clone());
+  return response;
+}
+
+async function keepPage(request: Request, response: Response): Promise<void> {
+  const cache = await caches.open(PAGES);
+  await cache.put(request, response);
+  const keys = await cache.keys();
+  for (const old of keys.slice(0, Math.max(0, keys.length - MAX_PAGES))) {
+    await cache.delete(old);
+  }
+}
+
+async function navigate(event: FetchEvent): Promise<Response> {
+  try {
+    const response =
+      ((await event.preloadResponse) as Response | undefined) ?? (await fetch(event.request));
+    if (response.ok && !response.headers.get('cache-control')?.includes('no-store')) {
+      event.waitUntil(keepPage(event.request, response.clone()));
+    }
+    return response;
+  } catch (err) {
+    const cached = await caches.match(event.request, { cacheName: PAGES });
+    if (cached) return cached;
+    throw err;
+  }
+}
+
 self.addEventListener('fetch', (event) => {
-  // ignore POST requests etc
-  if (event.request.method !== 'GET') return;
+  const { request } = event;
+  if (request.method !== 'GET') return;
 
-  async function respond() {
-    const url = new URL(event.request.url);
+  const url = new URL(request.url);
+  // other origins (API, media, GTM, embeds): not intercepted
+  if (url.origin !== self.location.origin) return;
 
-    // Check if we should cache this request based on URL
-    // Allow all requests to pass through, but only cache what we want
-    const shouldCacheUrl = shouldCacheByUrl(url);
-
-    // If URL doesn't match our criteria, fetch without caching
-    if (!shouldCacheUrl) {
-      try {
-        return await fetch(event.request);
-      } catch {
-        // If fetch fails for excluded domains, just throw (don't try to cache)
-        throw new Error('[SW] Fetch failed');
-      }
-    }
-
-    // immutable cache from butterfly medias
-    const isMedia = isMediaRequest(url);
-    const mediaCache = isMedia ? await caches.open(MEDIA_CACHE) : null;
-
-    if (isMedia && mediaCache) {
-      const mediaCachedResponse = await mediaCache.match(event.request);
-      if (mediaCachedResponse && !isCacheExpired(mediaCachedResponse)) {
-        return mediaCachedResponse;
-      }
-    }
-
-    const cache = await caches.open(CACHE);
-
-    // `build`/`files` can always be served from the cache
-    if (ASSETS.includes(url.pathname)) {
-      const response = await cache.match(url.pathname);
-
-      if (response) {
-        return response;
-      }
-    }
-
-    const cachedResponse = await cache.match(event.request);
-    if (cachedResponse && !isCacheExpired(cachedResponse)) {
-      return cachedResponse;
-    }
-
-    try {
-      const response = await fetch(event.request);
-
-      if (!(response instanceof Response)) {
-        throw new Error('[SW] Invalid response from fetch');
-      }
-
-      if (response.status === 200 && shouldCacheResponse(response)) {
-        if (isMedia && mediaCache) {
-          mediaCache.put(event.request, response.clone());
-        } else {
-          cache.put(event.request, response.clone());
-        }
-      }
-
-      return response;
-    } catch (err) {
-      if (isMedia && mediaCache) {
-        const mediaCachedResponse = await mediaCache.match(event.request);
-        if (mediaCachedResponse) {
-          return mediaCachedResponse;
-        }
-      }
-
-      const cachedResponse = await cache.match(event.request);
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-
-      throw err;
-    }
+  if (request.mode === 'navigate') {
+    event.respondWith(navigate(event));
+    return;
   }
 
-  event.respondWith(respond());
+  if (STATIC.has(url.pathname)) {
+    event.respondWith(fromCache(request));
+  }
+  // anything else (__data.json, sitemaps, feeds…): not intercepted
 });
