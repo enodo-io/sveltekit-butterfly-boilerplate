@@ -97,6 +97,9 @@ describe('dataLayer — Butterfly tracker sink', () => {
       fetch,
       location: { href: `https://site.test/${href}` },
     };
+    // @enodo/butterfly-tracker reads the global navigator and fetch
+    vi.stubGlobal('navigator', navigator);
+    vi.stubGlobal('fetch', fetch);
   };
   const sentBody = async (call: unknown[]) => JSON.parse(await (call[1] as Blob).text());
 
@@ -111,6 +114,7 @@ describe('dataLayer — Butterfly tracker sink', () => {
   });
   afterEach(() => {
     delete mocks.env.PUBLIC_BUTTERFLY_TRACKER_URL;
+    vi.unstubAllGlobals();
     delete (globalThis as unknown as { document?: unknown }).document;
   });
 
