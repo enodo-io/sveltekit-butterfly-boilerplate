@@ -100,7 +100,7 @@ The helper short-circuits on the server, so you can call `track` / `push` from a
 
 ## Butterfly tracker sink (first-party, cookieless)
 
-`track('pageview', layer)` also sends a hit to the Butterfly tracker. On by default: the URL is derived from `PUBLIC_API_URL` (`{id}.pubbtf.eno.do` → `{id}.tbtf.eno.do`, `api{x}.site` → `t{x}.site`, see `trackerUrl()`); `PUBLIC_BUTTERFLY_TRACKER_URL` overrides it, `off` disables it. Nothing to call: every `pageview` already goes through it. Other events and `push()` never reach the tracker.
+`track('pageview', layer)` also sends a hit to the Butterfly tracker when `PUBLIC_BUTTERFLY_TRACKER=true` (off by default). The URL is derived from `PUBLIC_API_URL` (`{id}.pubbtf.eno.do` → `{id}.tbtf.eno.do`, `api{x}.site` → `t{x}.site`, see `trackerUrl()`); `PUBLIC_BUTTERFLY_TRACKER_URL` overrides it. Nothing to call: every `pageview` already goes through it. Other events and `push()` never reach the tracker.
 
 - `POST {PUBLIC_BUTTERFLY_TRACKER_URL}/h`, body `text/plain` JSON → a CORS simple request, no preflight. `navigator.sendBeacon` first, `fetch(…, { keepalive: true, credentials: 'omit' })` as fallback. Fire-and-forget: never throws, never blocks, no-op on the server.
 - **Not consent-gated** (no `withConsent` / `whenCmpReady`): no cookie, no storage, no identifier, so it fits the CNIL audience-measurement exemption and counts every visit. Never add an identifier to it — that would require consent.

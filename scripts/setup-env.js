@@ -446,30 +446,40 @@ async function main() {
     print('  │  📈  Butterfly audience tracker (optional)      │', 'yellow');
     print('  └─────────────────────────────────────────────────┘', 'yellow');
     console.log('');
-    print('      Cookieless pageview hits, no consent needed', 'gray');
-    print(
-      '      Default: https://{propertyId}.tbtf.eno.do (or your custom tracker domain)',
-      'gray',
-    );
+    print('      Cookieless pageview hits, no consent needed. Off by default:', 'gray');
+    print('      only when Enodo has activated the tracker for this property.', 'gray');
     console.log('');
+    const enableTracker = (
+      await question(
+        colors.brightYellow + '  ▶ ' + colors.white + 'Enable the tracker? (y/N): ' + colors.reset,
+      )
+    )
+      .trim()
+      .toLowerCase();
+    console.log('');
+    if (enableTracker === 'y' || enableTracker === 'yes') {
+      envVars.PUBLIC_BUTTERFLY_TRACKER = 'true';
+    }
     const propertyId = (envVars.PUBLIC_API_URL || '').match(
       /^https:\/\/(\d+)\.pubbtf\.eno\.do/,
     )?.[1];
     const defaultTracker = propertyId ? `https://${propertyId}.tbtf.eno.do` : '';
-    print(
-      defaultTracker
-        ? `      Press Enter to use ${defaultTracker}, "-" to skip.`
-        : '      Press Enter to skip.',
-      'dim',
-    );
-    console.log('');
-    const trackerUrl = (
-      await question(colors.brightYellow + '  ▶ ' + colors.white + 'Tracker URL: ' + colors.reset)
-    ).trim();
-    if (trackerUrl !== '-' && (trackerUrl || defaultTracker)) {
-      envVars.PUBLIC_BUTTERFLY_TRACKER_URL = (trackerUrl || defaultTracker).replace(/\/+$/, '');
+    if (envVars.PUBLIC_BUTTERFLY_TRACKER) {
+      print(
+        defaultTracker
+          ? `      Press Enter to use ${defaultTracker}, "-" to derive it from the API URL.`
+          : '      Press Enter to derive it from the API URL.',
+        'dim',
+      );
+      console.log('');
+      const trackerUrl = (
+        await question(colors.brightYellow + '  ▶ ' + colors.white + 'Tracker URL: ' + colors.reset)
+      ).trim();
+      if (trackerUrl !== '-' && (trackerUrl || defaultTracker)) {
+        envVars.PUBLIC_BUTTERFLY_TRACKER_URL = (trackerUrl || defaultTracker).replace(/\/+$/, '');
+      }
+      console.log('');
     }
-    console.log('');
   }
 
   // ============================================================
@@ -510,9 +520,12 @@ async function main() {
     envContent += `PUBLIC_GTM_ID=${envVars.PUBLIC_GTM_ID}\n`;
   }
 
-  if (envVars.PUBLIC_BUTTERFLY_TRACKER_URL) {
+  if (envVars.PUBLIC_BUTTERFLY_TRACKER) {
     envContent += '\n# Butterfly audience tracker (cookieless pageviews)\n';
-    envContent += `PUBLIC_BUTTERFLY_TRACKER_URL=${envVars.PUBLIC_BUTTERFLY_TRACKER_URL}\n`;
+    envContent += 'PUBLIC_BUTTERFLY_TRACKER=true\n';
+    if (envVars.PUBLIC_BUTTERFLY_TRACKER_URL) {
+      envContent += `PUBLIC_BUTTERFLY_TRACKER_URL=${envVars.PUBLIC_BUTTERFLY_TRACKER_URL}\n`;
+    }
   }
 
   const envPath = path.join(process.cwd(), '.env');

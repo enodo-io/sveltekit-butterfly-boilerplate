@@ -105,6 +105,7 @@ describe('dataLayer — Butterfly tracker sink', () => {
 
   beforeEach(() => {
     mocks.dev = false;
+    mocks.env.PUBLIC_BUTTERFLY_TRACKER = 'true';
     mocks.env.PUBLIC_BUTTERFLY_TRACKER_URL = 'https://42.tbtf.eno.do';
     delete mocks.env.PUBLIC_BUTTERFLY_TRACKER_DEV;
     sendBeacon = vi.fn(() => true);
@@ -113,6 +114,7 @@ describe('dataLayer — Butterfly tracker sink', () => {
     resetTrackerState();
   });
   afterEach(() => {
+    delete mocks.env.PUBLIC_BUTTERFLY_TRACKER;
     delete mocks.env.PUBLIC_BUTTERFLY_TRACKER_URL;
     vi.unstubAllGlobals();
     delete (globalThis as unknown as { document?: unknown }).document;
@@ -199,7 +201,17 @@ describe('dataLayer — Butterfly tracker sink', () => {
     expect(fetch).toHaveBeenCalledTimes(1);
   });
 
-  it('is on by default: URL derived from PUBLIC_API_URL', () => {
+  it('is off unless PUBLIC_BUTTERFLY_TRACKER=true', () => {
+    delete mocks.env.PUBLIC_BUTTERFLY_TRACKER;
+    track('pageview', { 'content.type': 'home' });
+    mocks.env.PUBLIC_BUTTERFLY_TRACKER = 'false';
+    track('pageview', { 'content.type': 'post', 'content.id': 1 });
+    expect(sendBeacon).not.toHaveBeenCalled();
+    expect(fetch).not.toHaveBeenCalled();
+    expect(window.dataLayer).toHaveLength(2);
+  });
+
+  it('once enabled, the URL is derived from PUBLIC_API_URL', () => {
     delete mocks.env.PUBLIC_BUTTERFLY_TRACKER_URL;
     mocks.env.PUBLIC_API_URL = 'https://apibe.touslesresultats.com';
     track('pageview', { 'content.type': 'home' });
@@ -236,6 +248,7 @@ describe('dataLayer — Butterfly tracker sink', () => {
     );
     expect(trackerUrl(undefined, 'https://42.pubbtf.eno.do')).toBe('https://42.tbtf.eno.do');
     expect(trackerUrl('off', 'https://42.pubbtf.eno.do')).toBeNull();
+    expect(trackerUrl(undefined, 'https://42.pubbtf.eno.do', '')).toBeNull();
   });
 
   it('is disabled in dev unless PUBLIC_BUTTERFLY_TRACKER_DEV=true', () => {

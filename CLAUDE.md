@@ -98,7 +98,7 @@ Optional:
 - `PUBLIC_INDEXABLE` — set to `false` on staging/dev
 - `PUBLIC_GTM_ID`
 - `PUBLIC_SENTRY_DSN` — Sentry, server + browser, errors only (nothing without it, nothing in dev)
-- `PUBLIC_BUTTERFLY_TRACKER_URL` — Butterfly audience tracker (`https://{propertyId}.tbtf.eno.do`), cookieless pageview hits from `$lib/dataLayer`, not consent-gated; on by default (derived from `PUBLIC_API_URL`: `{id}.pubbtf.eno.do` → `{id}.tbtf.eno.do`, `api{x}.site` → `t{x}.site`), `off` disables, nothing in dev unless `PUBLIC_BUTTERFLY_TRACKER_DEV=true`
+- `PUBLIC_BUTTERFLY_TRACKER_URL` — Butterfly audience tracker (`https://{propertyId}.tbtf.eno.do`), cookieless pageview hits from `$lib/dataLayer`, not consent-gated; off unless `PUBLIC_BUTTERFLY_TRACKER=true`, URL derived from `PUBLIC_API_URL`: `{id}.pubbtf.eno.do` → `{id}.tbtf.eno.do`, `api{x}.site` → `t{x}.site` unless set, nothing in dev unless `PUBLIC_BUTTERFLY_TRACKER_DEV=true`
 
 Butterfly CMS prerequisites: taxonomy `tags`, post type `page`, custom feed `featured`. Optional: flag `sponso` and custom field `sponsor` for partner content (badge, `rel="sponsored"` links, out of the news sitemap, `AdvertiserContentArticle`). See README for details.
 

@@ -62,13 +62,15 @@ export function toHit(layer: LayerData): Hit | null {
 }
 
 /**
- * `PUBLIC_BUTTERFLY_TRACKER_URL` when set (`off` disables the tracker), otherwise
- * derived from `PUBLIC_API_URL`: the tracker is on by default.
+ * Off unless `PUBLIC_BUTTERFLY_TRACKER=true`. Then `PUBLIC_BUTTERFLY_TRACKER_URL` when
+ * set (`off` disables), otherwise derived from `PUBLIC_API_URL`.
  */
 export function trackerUrl(
   explicit: string | undefined = env.PUBLIC_BUTTERFLY_TRACKER_URL,
   apiUrl: string | undefined = env.PUBLIC_API_URL,
+  on: string | undefined = env.PUBLIC_BUTTERFLY_TRACKER,
 ): string | null {
+  if (on !== 'true') return null;
   return resolveTrackerUrl(explicit, apiUrl);
 }
 
@@ -97,9 +99,9 @@ export function resetTrackerState(): void {
  * with the referrer hostname (`r`), skips `page.index > 1` (pagination, infinite
  * scroll) and sends the same hit for the same URL only once in a row.
  *
- * On by default (URL derived from `PUBLIC_API_URL`, see {@link trackerUrl});
- * `PUBLIC_BUTTERFLY_TRACKER_URL=off` disables it. Never in dev unless
- * `PUBLIC_BUTTERFLY_TRACKER_DEV=true`.
+ * Off by default: `PUBLIC_BUTTERFLY_TRACKER=true` turns it on (URL derived from
+ * `PUBLIC_API_URL` or `PUBLIC_BUTTERFLY_TRACKER_URL`, see {@link trackerUrl}). Never
+ * in dev unless `PUBLIC_BUTTERFLY_TRACKER_DEV=true`.
  */
 function sendHit(layer: LayerData): void {
   try {
