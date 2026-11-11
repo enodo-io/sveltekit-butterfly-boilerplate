@@ -328,18 +328,16 @@ The pages of one post (articles, static pages) carry a **cache tag** (`42:post:1
 
 Set `BUTTERFLY_PROPERTY_ID` to enable the tags, and `CACHE_TAGS` to the cache in front of the website (`$lib/server/cacheTags`):
 
-| `CACHE_TAGS`     | Header              |
-| ---------------- | ------------------- |
-| `xkey` (default) | `xkey` (Varnish)    |
-| `cloudflare`     | `Cache-Tag`         |
-| `fastly`         | `Surrogate-Key`     |
-| `vercel`         | `Vercel-Cache-Tag`  |
-| `netlify`        | `Netlify-Cache-Tag` |
-| `none`           | no tag, no long TTL |
+| `CACHE_TAGS`     | Header                          |
+| ---------------- | ------------------------------- |
+| `xkey` (default) | `xkey` (Varnish, Enodo hosting) |
+| `cloudflare`     | `Cache-Tag`                     |
+| `fastly`         | `Surrogate-Key`                 |
+| `vercel`         | `Vercel-Cache-Tag`              |
+| `netlify`        | `Netlify-Cache-Tag`             |
+| `none`           | no tag, no long TTL             |
 
-**Hosted by Enodo**: keep `xkey`, Butterfly purges the Enodo Varnish. Nothing else to do.
-
-**Another CDN**: Butterfly calls its purge API through a webhook: back-office › Plugins › **Hooks** › « Ajouter un endpoint », events `post.*`, `sitemap.changed`, `txtfile.changed`, « Regroupement » on (purge APIs are rate limited). The `{cacheTags}` placeholder holds the keys to purge; in a JSON body, `"{cacheTags}"` alone stays a list. Store the API token in the plugin « Secrets » and use it as `{secret:name}`.
+**CDN purges**: Butterfly calls its purge API through a webhook: back-office › Plugins › **Hooks** › « Ajouter un endpoint », events `post.*`, `sitemap.changed`, `txtfile.changed`, « Regroupement » on (purge APIs are rate limited). The `{cacheTags}` placeholder holds the keys to purge; in a JSON body, `"{cacheTags}"` alone stays a list. Store the API token in the plugin « Secrets » and use it as `{secret:name}`.
 
 | CDN        | `POST` URL                                                                          | Header                                      | Body                                                    |
 | ---------- | ----------------------------------------------------------------------------------- | ------------------------------------------- | ------------------------------------------------------- |
