@@ -7,7 +7,7 @@ import * as env from '$env/static/private';
  * lists keep their short TTL (see the README, « Cache and purges »).
  *
  * .env: `BUTTERFLY_PROPERTY_ID` (no tag without it) and `CACHE_TAGS`, the
- * cache in front of the website: `xkey` (default, the Varnish of Enodo),
+ * cache in front of the website: `xkey` (default, Varnish),
  * `cloudflare`, `fastly`, `vercel`, `netlify` or `none`.
  */
 
