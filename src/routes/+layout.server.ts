@@ -5,6 +5,7 @@ import { PUBLIC_LANGUAGE } from '$env/static/public';
 import { error } from '@sveltejs/kit';
 import httpErrors from '$lib/httpErrors';
 import api from '$lib/api';
+import { allCategories } from '$lib/server/categories';
 
 export const load: ServerLoad = async ({ fetch }) => {
   if (!PUBLIC_LANGUAGE) {
@@ -14,11 +15,7 @@ export const load: ServerLoad = async ({ fetch }) => {
   try {
     const [settings, categories] = await Promise.all([
       api.get<Butterfly.Property>({ fetch, path: '/v1/' }),
-      api.get<Butterfly.Category[]>({
-        fetch,
-        endpoint: 'categories',
-        query: { page: { size: 100 } },
-      }),
+      allCategories(fetch),
     ]);
     return {
       settings: settings.data.attributes,

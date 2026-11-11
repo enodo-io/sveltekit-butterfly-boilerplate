@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { getMediaUrl } from '$lib/getMediaUrl';
+  import { snapWidth, srcsetWidths } from '$lib/imageWidths';
   import defaultThumb from '$assets/images/thumb.jpg';
 
   import type { HTMLImgAttributes } from 'svelte/elements';
@@ -45,9 +46,9 @@
     sizes = '100vw',
     widths = [320, 380, 480, 768, 990],
     alt,
+    // widths (and 2x) snapped to the shared ladder (lib/imageWidths): fewer, cacheable variants
     srcset = media
-      ? [...new Set(widths.flatMap((w) => [w, w * 2]))]
-          .filter((w) => w <= media.attributes.width)
+      ? srcsetWidths(widths, (media.attributes as { width?: number }).width || 2560)
           .map((w) => `${getMediaUrl({ media, format, width: w })} ${w}w`)
           .join(', ')
       : '',
@@ -70,7 +71,7 @@
       rel="preload"
       as="image"
       fetchpriority="high"
-      href={getMediaUrl({ media, format, width })}
+      href={getMediaUrl({ media, format, width: snapWidth(width) })}
       imagesrcset={media && srcset.length ? srcset : undefined}
       imagesizes={media && srcset.length ? sizes : undefined}
     />
@@ -78,7 +79,7 @@
 </svelte:head>
 
 <img
-  src={media ? getMediaUrl({ media, format, width }) : defaultThumb}
+  src={media ? getMediaUrl({ media, format, width: snapWidth(width) }) : defaultThumb}
   srcset={media && srcset.length ? srcset : undefined}
   sizes={media && srcset.length ? sizes : undefined}
   width={width}

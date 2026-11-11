@@ -7,6 +7,11 @@
   type Props = {
     media?: Butterfly.Media;
     lazyload?: boolean;
+    /**
+     * LCP candidate: one preload per <source> (with its media query, so only
+     * the matching one downloads) and fetchpriority="high" on the <img>.
+     */
+    priority?: boolean;
     format?: 'default' | 'source' | 'thumb' | 'square' | 'cover' | 'stories';
     width?: number;
     srcset?: { query: string; width: number }[];
@@ -16,6 +21,7 @@
   const {
     media,
     lazyload = true,
+    priority = false,
     format = 'default',
     width = 380,
     srcset = [],
@@ -23,6 +29,23 @@
     ...others
   }: Props = $props();
 </script>
+
+<svelte:head>
+  {#if priority && media}
+    {#each srcset as src (src.query)}
+      <link
+        rel="preload"
+        as="image"
+        fetchpriority="high"
+        media={src.query}
+        imagesrcset={getMediaUrl({ media, format, width: src.width }) +
+          ' 1x, ' +
+          getMediaUrl({ media, format, width: src.width * 2 }) +
+          ' 2x'}
+      />
+    {/each}
+  {/if}
+</svelte:head>
 
 <picture {...others}>
   {#if media}
@@ -38,7 +61,8 @@
   {/if}
   <Image
     media={media}
-    lazyload={lazyload}
+    lazyload={lazyload && !priority}
+    fetchpriority={priority ? 'high' : undefined}
     format={format}
     width={width}
     widths={[]}

@@ -20,6 +20,8 @@
 
   let video = $state<HTMLVideoElement | undefined>(undefined);
 
+  // preload="none": nothing is downloaded before play (the poster shows the
+  // frame), so choosing SD on a slow connection here wastes no request
   onMount(() => {
     const connection =
       navigator.connection || navigator.mozConnection || navigator.webkitConnection;
@@ -34,7 +36,7 @@
   <video
     bind:this={video}
     controls
-    preload="metadata"
+    preload="none"
     poster={getMediaUrl({ media, width: 1080 })}
     playsinline
     aria-label={alt}

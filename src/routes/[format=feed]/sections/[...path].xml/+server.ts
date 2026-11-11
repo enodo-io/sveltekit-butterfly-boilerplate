@@ -1,6 +1,6 @@
 import { error } from '@sveltejs/kit';
 import { getCategoryChildrenIds } from '@enodo/butterfly-ts';
-import api from '$lib/api';
+import { allCategories } from '$lib/server/categories';
 import httpErrors from '$lib/httpErrors';
 import {
   feedError,
@@ -11,19 +11,11 @@ import {
 } from '$lib/server/feed';
 
 import type { RequestHandler } from './$types';
-import type * as Butterfly from '@enodo/butterfly-ts';
 
 export const GET: RequestHandler = async ({ fetch, params }) => {
   const path = `/${params.path}`;
   try {
-    const [settings, categories] = await Promise.all([
-      feedSettings(fetch),
-      api.get<Butterfly.Category[]>({
-        fetch,
-        endpoint: 'categories',
-        query: { page: { size: 100 } },
-      }),
-    ]);
+    const [settings, categories] = await Promise.all([feedSettings(fetch), allCategories(fetch)]);
     const category = categories.data.find((c) => c.attributes.path === path);
     if (!category) error(404, httpErrors[404]);
 
