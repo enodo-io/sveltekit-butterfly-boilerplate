@@ -35,7 +35,7 @@
     return window.__oembedLoaded[script];
   };
 
-  onMount(async () => {
+  const render = async () => {
     try {
       await createScript();
 
@@ -49,8 +49,32 @@
     } catch (err) {
       console.error(err);
     }
+  };
+
+  let container: HTMLDivElement;
+
+  // The network SDKs (widgets.js, FB SDK, embed.js…) are heavy main-thread work:
+  // loaded when the embed comes near the viewport, not right after hydration.
+  onMount(() => {
+    if (!('IntersectionObserver' in window)) {
+      void render();
+      return;
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          observer.disconnect();
+          void render();
+        }
+      },
+      { rootMargin: '600px 0px' },
+    );
+    observer.observe(container);
+    return () => observer.disconnect();
   });
 </script>
 
-<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-{@html stripScripts(element.data.oembed?.html)}
+<div bind:this={container}>
+  <!-- eslint-disable-next-line svelte/no-at-html-tags -->
+  {@html stripScripts(element.data.oembed?.html)}
+</div>
