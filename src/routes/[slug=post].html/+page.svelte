@@ -5,6 +5,7 @@
 
   import { resolve } from '$app/paths';
   import { generateJsonLd } from '$lib/JsonLD';
+  import { absoluteUrl } from '$lib/seo';
   import { getMediaUrl } from '$lib/getMediaUrl';
   import { getRelated } from '@enodo/butterfly-ts';
   import { formatRelativeDate } from '$lib/formatRelativeDate';
@@ -63,10 +64,11 @@
 </script>
 
 <svelte:head>
+  <!-- Open Graph article namespace: `article:*` (ogp.me/ns/article), not `og:article:*` -->
   <meta property="og:type" content="article" />
-  <meta property="og:article:published_time" content={post.attributes.publishedAt} />
+  <meta property="article:published_time" content={post.attributes.publishedAt} />
   {#if post.attributes.updatedAt > post.attributes.publishedAt}
-    <meta property="og:article:modified_time" content={post.attributes.updatedAt} />
+    <meta property="article:modified_time" content={post.attributes.updatedAt} />
   {/if}
 
   {#each Object.entries(post.attributes.hreflangs) as [lang, url] (lang)}
@@ -74,15 +76,16 @@
   {/each}
 
   {#each authors as author (author.id)}
-    <meta property="og:article:author" content={author.attributes.name} />
+    <!-- article:author is a profile URL, not a name -->
+    <meta property="article:author" content={absoluteUrl(`/authors/${author.id}`)} />
   {/each}
 
   {#if section}
-    <meta property="og:article:section" content={section.attributes.name} />
+    <meta property="article:section" content={section.attributes.name} />
   {/if}
 
   {#each tags as tag (tag.id)}
-    <meta property="og:article:tag" content={tag.attributes.name} />
+    <meta property="article:tag" content={tag.attributes.name} />
   {/each}
 
   {#each videos as video (video.id)}
@@ -100,7 +103,7 @@
       property="og:audio"
       content={getMediaUrl({ media: audio, definition: 'hd', ext: 'mp3' })}
     />
-    <meta property="og:audio:type" content="audio/mp4" />
+    <meta property="og:audio:type" content="audio/mpeg" />
   {/each}
 
   {#if jsonLd}
@@ -141,7 +144,7 @@
       {#if new Date(post.attributes.publishedAt) >= new Date(post.attributes.updatedAt)}
         {@render date(post.attributes.publishedAt, 'Published')}
       {:else}
-        {@render date(post.attributes.publishedAt, 'Updated')}
+        {@render date(post.attributes.updatedAt, 'Updated')}
       {/if}
 
       <div class="flex flex-wrap items-center gap-4">

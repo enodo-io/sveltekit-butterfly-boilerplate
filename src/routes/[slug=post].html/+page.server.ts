@@ -4,6 +4,7 @@ import api from '$lib/api';
 import { PUBLIC_BASE_URL } from '$env/static/public';
 import { CACHE_CONTROL } from '$lib/cacheControl';
 import { cacheTags, taggedCacheControl } from '$lib/server/cacheTags';
+import { absoluteUrl, ROBOTS_INDEX, ROBOTS_NOINDEX } from '$lib/seo';
 import { ApiError, RedirectError } from '@enodo/butterfly-ts';
 
 import type { PageServerLoad } from './$types';
@@ -31,10 +32,11 @@ export const load: PageServerLoad = async ({ fetch, params, isDataRequest, setHe
       throw new ApiError(404, httpErrors[404]);
     }
 
-    // redirect to correct canonical if it is on domain
+    // redirect to correct canonical if it is on domain. Compared with PUBLIC_BASE_URL,
+    // not url.origin: behind a proxy the origin is internal and every post would 301 to itself
     if (
       post.data.attributes.canonical &&
-      post.data.attributes.canonical !== `${url.origin}${url.pathname}` &&
+      post.data.attributes.canonical !== absoluteUrl(url.pathname) &&
       post.data.attributes.canonical.startsWith(PUBLIC_BASE_URL)
     ) {
       throw new RedirectError(301, `${post.data.attributes.canonical}${url.search}`);
@@ -48,25 +50,33 @@ export const load: PageServerLoad = async ({ fetch, params, isDataRequest, setHe
       );
     }
 
-    let robots = 'index,follow,all,max-snippet:-1,max-image-preview:standard';
+    let robots = ROBOTS_INDEX;
     if (
       !post.data.attributes.publishedAt ||
       new Date() < new Date(post.data.attributes.publishedAt)
     )
-      robots = 'noindex,follow';
+      robots = ROBOTS_NOINDEX;
     else if (post.data.attributes.body?.find((item) => item.type === 'video'))
       robots = robots + ',max-video-preview:10';
 
+    // Related: the posts sharing a tag, else the posts of the same category. The
+    // relationship type is `term<tags>` (singular), the filter `terms<tags>` (plural).
+    const tagIds = post.data.relationships.terms.data
+      .filter((t: Butterfly.Related) => t.type === 'term<tags>')
+      .map((t) => t.id);
+    const categoryId = post.data.relationships.category.data?.id;
     const related = api.get<Butterfly.Post[]>({
       fetch,
       endpoint: 'posts',
       query: {
         filter: {
           id: `-${id}`,
-          'terms<tags>': post.data.relationships.terms.data
-            .filter((t: Butterfly.Related) => t.type === 'terms<tags>')
-            .map((t) => t.id)
-            .join(','),
+          types: '-page',
+          ...(tagIds.length
+            ? { 'terms<tags>': tagIds.join(',') }
+            : categoryId
+              ? { categories: String(categoryId) }
+              : {}),
         },
         page: {
           size: 3,
@@ -87,7 +97,11 @@ export const load: PageServerLoad = async ({ fetch, params, isDataRequest, setHe
       meta: {
         title: post.data.attributes.title,
         description: post.data.attributes.resume,
-        url: `${PUBLIC_BASE_URL}/${post.data.attributes.slug}-${post.data.id}.html`,
+        // the canonical of the page: the CMS one when set (e.g. syndicated content), so
+        // canonical, og:url and the JSON-LD url always agree
+        url:
+          post.data.attributes.canonical ||
+          `${PUBLIC_BASE_URL}/${post.data.attributes.slug}-${post.data.id}.html`,
         robots,
       },
       scope: post,

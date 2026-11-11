@@ -18,6 +18,7 @@
   import { onNavigate } from '$app/navigation';
   import { getRelated } from '@enodo/butterfly-ts';
   import { getMediaUrl } from '$lib/getMediaUrl';
+  import { absoluteUrl, ROBOTS_INDEX } from '$lib/seo';
   import Header from '$components/Layout/Header.svelte';
   import Footer from '$components/Layout/Footer.svelte';
   import GTM from '$components/GTM.svelte';
@@ -38,9 +39,9 @@
 </script>
 
 <svelte:head>
-  <link rel="icon" type="image/svg+xml" sizes="any" href="favicon.svg" />
+  <link rel="icon" type="image/svg+xml" sizes="any" href="/favicon.svg" />
 
-  <link rel="icon" type="icon/png" sizes="180x180" href="/favicon-180.png" />
+  <link rel="icon" type="image/png" sizes="180x180" href="/favicon-180.png" />
 
   <link rel="shortcut icon" href="/favicon.ico" />
 
@@ -64,7 +65,7 @@
       name="robots"
       content={PUBLIC_INDEXABLE === 'false'
         ? 'noindex,nofollow'
-        : page.data.meta.robots || 'index,follow,all,max-snippet:-1,max-image-preview:standard'}
+        : page.data.meta.robots || ROBOTS_INDEX}
     />
 
     {#if page.url.pathname !== '/'}
@@ -80,14 +81,8 @@
 
     <meta property="og:description" content={page.data.meta.description} />
 
-    <!-- prettier-ignore -->
-
-    <link
-		rel="canonical"
-		href={page.data.layer['content.type'] === 'post' && (page.data.scope as Butterfly.ApiResponse<Butterfly.Post>).data.attributes.canonical
-			? (page.data.scope as Butterfly.ApiResponse<Butterfly.Post>).data.attributes.canonical
-			: page.data.meta.url}
-	/>
+    <!-- meta.url is the canonical (a post's CMS canonical included): same URL for og:url and JSON-LD -->
+    <link rel="canonical" href={page.data.meta.url} />
 
     <meta property="og:url" content={page.data.meta.url} />
 
@@ -104,7 +99,8 @@
         })}
       />
     {:else}
-      <meta property="og:image" content={defaultThumb} />
+      <!-- the default image is a build asset (relative path): og:image must be absolute -->
+      <meta property="og:image" content={absoluteUrl(defaultThumb)} />
     {/if}
 
     <meta property="og:image:width" content="1366" />

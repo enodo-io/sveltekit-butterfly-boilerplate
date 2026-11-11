@@ -1,5 +1,7 @@
 import { PUBLIC_BASE_URL } from '$env/static/public';
 import { CACHE_CONTROL } from '$lib/cacheControl';
+import { pageParam } from '$lib/server/pageParam';
+import { ROBOTS_NOINDEX } from '$lib/seo';
 import { error } from '@sveltejs/kit';
 import httpErrors from '$lib/httpErrors';
 import api from '$lib/api';
@@ -16,7 +18,7 @@ export const load: PageServerLoad = async ({
   isDataRequest,
   setHeaders,
 }) => {
-  const page = Math.max(1, parseInt(url.searchParams.get('page') || '1', 10));
+  const page = pageParam(url);
   const { categories } = await parent();
 
   const path = `/${params.path}`;
@@ -54,6 +56,9 @@ export const load: PageServerLoad = async ({
     return p;
   })();
 
+  // an empty listing (page 1, page 2+ already 404s) is a thin page: not indexed
+  const empty = !isDataRequest && (await posts).data.length === 0;
+
   setHeaders({ 'cache-control': CACHE_CONTROL.medium });
   return {
     layer: {
@@ -62,9 +67,13 @@ export const load: PageServerLoad = async ({
       'content.id': category.data.id,
     },
     meta: {
+      robots: empty ? ROBOTS_NOINDEX : undefined,
       url: `${PUBLIC_BASE_URL}${category.data.attributes.path}` + (page > 1 ? `?page=${page}` : ''),
       title: category.data.attributes.name + (page > 1 ? ` - Page ${page}` : ''),
-      description: (page > 1 ? `Page ${page}: ` : '') + category.data.attributes.description,
+      description:
+        (page > 1 ? `Page ${page}: ` : '') +
+        (category.data.attributes.description ||
+          `All the articles about ${category.data.attributes.name}.`),
     },
     scope: category,
     feeds: {

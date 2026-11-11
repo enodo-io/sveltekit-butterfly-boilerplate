@@ -1,5 +1,7 @@
 import { PUBLIC_BASE_URL } from '$env/static/public';
 import { CACHE_CONTROL } from '$lib/cacheControl';
+import { pageParam } from '$lib/server/pageParam';
+import { ROBOTS_NOINDEX } from '$lib/seo';
 import { error, redirect } from '@sveltejs/kit';
 import httpErrors from '$lib/httpErrors';
 import api from '$lib/api';
@@ -8,10 +10,10 @@ import type { PageServerLoad } from './$types';
 import type * as Butterfly from '@enodo/butterfly-ts';
 
 export const load: PageServerLoad = async ({ url, fetch, isDataRequest, setHeaders }) => {
-  const page: number = Math.max(1, parseInt(url.searchParams.get('page') || '1', 10));
+  const page = pageParam(url);
   const query: string | null = url.searchParams.get('query');
 
-  if ((query && query.length <= 0) || (!query && page > 1)) {
+  if (!query && page > 1) {
     redirect(301, `/search`);
   }
 
@@ -56,7 +58,7 @@ export const load: PageServerLoad = async ({ url, fetch, isDataRequest, setHeade
         });
 
   const params: string[] = [];
-  if (query) params.push(`query=${query}`);
+  if (query) params.push(`query=${encodeURIComponent(query)}`);
   if (page > 1) params.push(`page=${page}`);
 
   setHeaders({ 'cache-control': CACHE_CONTROL.short });
@@ -67,9 +69,7 @@ export const load: PageServerLoad = async ({ url, fetch, isDataRequest, setHeade
       'content.type': 'search',
     },
     meta: {
-      robots: query
-        ? 'noindex,follow'
-        : 'index,follow,all,max-snippet:-1,max-image-preview:standard',
+      robots: query ? ROBOTS_NOINDEX : undefined,
       url: `${PUBLIC_BASE_URL}/search` + (params.length ? `?${params.join('&')}` : ''),
       title: query ? `Search results for ${query}` + (page > 1 ? ` - Page ${page}` : '') : 'Search',
       description:

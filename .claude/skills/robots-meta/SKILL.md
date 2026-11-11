@@ -9,8 +9,10 @@ The layout emits a `<meta name="robots">` tag based on `data.meta.robots` (from 
 
 ## Default policy
 
-- `PUBLIC_INDEXABLE === 'true'` (or undefined) → default to `index,follow` for every route that doesn't override `meta.robots`.
-- `PUBLIC_INDEXABLE === 'false'` → force `noindex,nofollow` on every page (staging/dev). Route-level overrides still apply.
+- `PUBLIC_INDEXABLE === 'true'` (or undefined) → `ROBOTS_INDEX` from `$lib/seo` (`index,follow,max-snippet:-1,max-image-preview:large`) for every route that doesn't override `meta.robots`. `max-image-preview:large` is what makes the site eligible to the large cards of Google Discover: never drop it.
+- `PUBLIC_INDEXABLE === 'false'` → force `noindex,nofollow` on every page (staging/dev), route overrides included.
+- An override uses the constants of `$lib/seo` (`ROBOTS_NOINDEX`), never a hand-written string.
+- An empty listing (page 1 of a category, tag or author without posts) is `ROBOTS_NOINDEX`; page 2+ beyond the last one is a 404 (`pageParam`, see `route-server`).
 
 **Most routes should not set `meta.robots`.** Leave it unset so the default flows through.
 
@@ -78,7 +80,7 @@ Do **not** `noindex` page 2+ of a listing. Modern Google indexes paginated serie
 
 ## Interaction with `PUBLIC_INDEXABLE=false`
 
-When staging sets `PUBLIC_INDEXABLE=false`, the layout emits `noindex,nofollow` for every page. Route overrides still take effect, so a route setting `robots: 'index,follow'` **would override** the staging block — which is almost always a mistake. Don't force-index from a route.
+When staging sets `PUBLIC_INDEXABLE=false`, the layout emits `noindex,nofollow` for every page, whatever the route returns. Don't force-index from a route anyway.
 
 ---
 
@@ -87,7 +89,10 @@ When staging sets `PUBLIC_INDEXABLE=false`, the layout emits `noindex,nofollow` 
 The layout's `+layout.svelte` contains the `<svelte:head>` with:
 
 ```svelte
-<meta name="robots" content={data.meta.robots ?? (PUBLIC_INDEXABLE === 'false' ? 'noindex,nofollow' : 'index,follow')} />
+<meta
+  name="robots"
+  content={PUBLIC_INDEXABLE === 'false' ? 'noindex,nofollow' : page.data.meta.robots || ROBOTS_INDEX}
+/>
 ```
 
 If you change this logic, mirror the change in this skill.

@@ -1,5 +1,7 @@
 import { PUBLIC_BASE_URL } from '$env/static/public';
 import { CACHE_CONTROL } from '$lib/cacheControl';
+import { pageParam } from '$lib/server/pageParam';
+import { ROBOTS_NOINDEX } from '$lib/seo';
 import { error, redirect } from '@sveltejs/kit';
 import httpErrors from '$lib/httpErrors';
 import api from '$lib/api';
@@ -9,7 +11,7 @@ import type { PageServerLoad } from './$types';
 import type * as Butterfly from '@enodo/butterfly-ts';
 
 export const load: PageServerLoad = async ({ url, params, fetch, isDataRequest, setHeaders }) => {
-  const page = Math.max(1, parseInt(url.searchParams.get('page') || '1', 10));
+  const page = pageParam(url);
   const { id } = params;
 
   if (!id || !id.length) {
@@ -57,6 +59,9 @@ export const load: PageServerLoad = async ({ url, params, fetch, isDataRequest, 
     return p;
   })();
 
+  // an empty listing (page 1, page 2+ already 404s) is a thin page: not indexed
+  const empty = !isDataRequest && (await posts).data.length === 0;
+
   setHeaders({ 'cache-control': CACHE_CONTROL.medium });
   return {
     layer: {
@@ -66,6 +71,7 @@ export const load: PageServerLoad = async ({ url, params, fetch, isDataRequest, 
       'content.taxonomy': String(tag.data.relationships.taxonomy?.data?.id ?? 'tags'),
     },
     meta: {
+      robots: empty ? ROBOTS_NOINDEX : undefined,
       url: `${PUBLIC_BASE_URL}/tags/${id}` + (page > 1 ? `?page=${page}` : ''),
       title: tag.data.attributes.name + (page > 1 ? ` - Page ${page}` : ''),
       description:

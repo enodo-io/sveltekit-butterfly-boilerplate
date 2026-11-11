@@ -108,8 +108,10 @@ posts: isDataRequest && posts ? posts : await posts,
 
 ## Pagination pattern
 
+`pageParam` (`$lib/server/pageParam`) reads `?page=`: 1 when absent, `?page=1` 301s to the clean URL (no duplicate), anything but a positive integer is a 404 (never `NaN` sent to the API). An empty page 1 is `noindex` (see `robots-meta`).
+
 ```ts
-const page = Math.max(1, parseInt(url.searchParams.get('page') || '1', 10));
+const page = pageParam(url);
 
 return {
   layer: {
