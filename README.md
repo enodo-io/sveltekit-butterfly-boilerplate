@@ -825,7 +825,7 @@ Minimal `<video>` wrapper with HD/SD sources and poster, `preload="none"` (nothi
 
 The boilerplate includes typed JSON-LD schemas using `schema-dts`, linked by stable `@id`s (`#organization`, `#website`, `/authors/{id}#author`):
 
-- **Home**: **WebSite** (`inLanguage`, publisher; no SearchAction, retired by Google) + **Organization** (square logo `/favicon-512.png`, `sameAs` from the property custom field `sameAs`)
+- **Home**: **WebSite** (`inLanguage`, publisher, SearchAction kept for the other engines though Google retired the sitelinks search box) + **Organization** (square logo `/favicon-512.png`, `sameAs` from the property custom field `sameAs`)
 - **Article / NewsArticle / AdvertiserContentArticle**: images 1:1 and 16:9 at 1200px (default image without thumbnail), `dateModified`, `articleSection`, `keywords`, the Organization as publisher, **Person** authors (profile URL, no email or telephone), the **WebPage** with its **BreadcrumbList**
   - **FAQPage** alongside the Article for posts with FAQ blocks (FAQ rich results are restricted since 2023)
   - **VideoObject** for each native video and YouTube / Vimeo / Dailymotion embed

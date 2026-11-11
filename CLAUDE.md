@@ -70,7 +70,7 @@ True multi-language support (multiple locales live in the same deployment) is **
 
 ### SEO head contract
 
-The layout renders the head from `data.meta`: `<link rel="canonical">`, `og:url` and the JSON-LD `url` are all `meta.url` (absolute, `PUBLIC_BASE_URL` / `absoluteUrl()` from `$lib/seo`, never `url.origin`); robots from `ROBOTS_INDEX` / `ROBOTS_NOINDEX` (`$lib/seo`, `max-image-preview:large` by default); description clamped to 160 characters; absolute `og:image` + `og:image:alt` + `twitter:card`. Listings read `?page` through `pageParam` (`?page=1` → 301, invalid → 404) and are `noindex` when empty. Structured data comes from `src/lib/JsonLD/` only (shared `@id`s in `ids.ts`, no `SearchAction`). See `route-server`, `robots-meta`, `jsonld-schema`.
+The layout renders the head from `data.meta`: `<link rel="canonical">`, `og:url` and the JSON-LD `url` are all `meta.url` (absolute, `PUBLIC_BASE_URL` / `absoluteUrl()` from `$lib/seo`, never `url.origin`); robots from `ROBOTS_INDEX` / `ROBOTS_NOINDEX` (`$lib/seo`, `max-image-preview:large` by default); description clamped to 160 characters; absolute `og:image` + `og:image:alt` + `twitter:card`. Listings read `?page` through `pageParam` (`?page=1` → 301, invalid → 404) and are `noindex` when empty. Structured data comes from `src/lib/JsonLD/` only (shared `@id`s in `ids.ts`; the WebSite keeps its `SearchAction` for the other engines). See `route-server`, `robots-meta`, `jsonld-schema`.
 
 ### Quality gate
 

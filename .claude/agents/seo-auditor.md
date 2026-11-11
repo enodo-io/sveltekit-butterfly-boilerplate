@@ -54,7 +54,7 @@ Then fetch rendered pages from a local server (background, stopped at the end): 
 
 ### Structured data (parse the JSON-LD of each fetched page)
 
-- Home: `WebSite` (`@id` `/#website`, `inLanguage`, `publisher` → `/#organization`, **no `SearchAction`**) + `Organization` (`@id`, `url`, square `logo` 512px, `sameAs` from the property custom field).
+- Home: `WebSite` (`@id` `/#website`, `inLanguage`, `publisher` → `/#organization`, `SearchAction` kept on purpose (other engines)) + `Organization` (`@id`, `url`, square `logo` 512px, `sameAs` from the property custom field).
 - Article: `Article`/`NewsArticle`/`AdvertiserContentArticle`, `headline`, `image` = 1:1 + 16:9 at 1200px (default image when no thumbnail), `datePublished`, `dateModified`, `articleSection`, `keywords`, `author` = Person nodes `@id` `/authors/{id}#author` with `url` = profile (no email/telephone), `publisher` → Organization, `mainEntityOfPage` = WebPage with breadcrumb.
 - FAQ posts: Article **and** FAQPage. Videos: one `VideoObject` per native video and YouTube/Vimeo/Dailymotion embed, with `name`, `thumbnailUrl`, `uploadDate`.
 - Listings: `CollectionPage` + `ItemList` of the post URLs (SSR). Author: `ProfilePage` whose `mainEntity` has the same `@id` as the article authors.
