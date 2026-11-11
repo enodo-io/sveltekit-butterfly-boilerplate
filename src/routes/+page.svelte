@@ -49,7 +49,16 @@
 </svelte:head>
 
 <section id="featured">
-  <Feed feed={data.feeds.featured} format="square" length={1} heading="h1" lazyloadAfter={3} />
+  <!-- featured image: 5fr of a 5fr/7fr grid from sm, in the 992px column from md -->
+  <Feed
+    feed={data.feeds.featured}
+    format="square"
+    length={1}
+    heading="h1"
+    lazyloadAfter={3}
+    priority
+    sizes="(min-width: 1008px) 413px, (min-width: 600px) 41vw, 100vw"
+  />
 </section>
 
 {#each Object.entries(data.feeds.categories) as [id, feed], i (id)}
@@ -64,7 +73,7 @@
     </header>
     <div class="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
       <!-- prettier-ignore -->
-      <Feed feed={feed as Promise<Butterfly.ApiResponse<Butterfly.Post[]>>} length={4} lazyloadAfter={i > 0 ? 0 : 3} />
+      <Feed feed={feed as Promise<Butterfly.ApiResponse<Butterfly.Post[]>>} length={6} lazyloadAfter={i > 0 ? 0 : 3} />
     </div>
   </section>
 {/each}

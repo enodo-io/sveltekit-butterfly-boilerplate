@@ -13,6 +13,8 @@
     format?: 'default' | 'source' | 'thumb' | 'square' | 'cover' | 'stories';
     heading?: 'h1' | 'h2' | 'h3' | 'h4';
     lazyloadAfter?: number;
+    /** the first card's image is the LCP candidate of the page (see Image) */
+    priority?: boolean;
     thumbnail?: boolean;
     resume?: boolean;
     widths?: number[];
@@ -26,6 +28,7 @@
     format = 'thumb',
     heading = 'h3',
     lazyloadAfter = 0,
+    priority = false,
     thumbnail = true,
     resume = true,
     sizes = `(min-width: ${breakpoints.md}px) 320px, ` +
@@ -76,6 +79,7 @@
       format={format}
       heading={heading}
       lazyload={i >= lazyloadAfter}
+      priority={priority && i === 0}
       thumbnail={thumbnail}
       resume={resume}
       widths={widths}

@@ -9,6 +9,11 @@
   type Props = HTMLImgAttributes & {
     media?: Butterfly.Media;
     lazyload?: boolean;
+    /**
+     * The LCP candidate: preloaded and fetched first (`fetchpriority="high"`).
+     * One per page at most; other above-the-fold images are just not lazy.
+     */
+    priority?: boolean;
     format?: 'default' | 'source' | 'thumb' | 'square' | 'cover' | 'stories';
     width?: number;
     height?: number;
@@ -28,6 +33,7 @@
   const {
     media,
     lazyload = true,
+    priority = false,
     format = 'default',
     width = 380,
     height = Math.round(
@@ -58,10 +64,11 @@
 </script>
 
 <svelte:head>
-  {#if !lazyload && media}
+  {#if priority && media}
     <link
       rel="preload"
       as="image"
+      fetchpriority="high"
       href={getMediaUrl({ media, format, width })}
       imagesrcset={media && srcset.length ? srcset : undefined}
       imagesizes={media && srcset.length ? sizes : undefined}
@@ -76,28 +83,14 @@
   width={width}
   height={height}
   alt={alt || media?.attributes.description || ''}
-  loading={lazyload ? 'lazy' : undefined}
-  fetchpriority={lazyload ? undefined : 'high'}
+  loading={lazyload && !priority ? 'lazy' : undefined}
+  fetchpriority={priority ? 'high' : undefined}
   onload={() => (loaded = true)}
   class:loaded={loaded}
   bind:this={element}
   {...others}
 />
 
-<style lang="scss">
-  img[loading='lazy'] {
-    opacity: 0;
-    transition:
-      transform 0.5s ease,
-      opacity 600ms ease-in-out;
-  }
-  img.loaded {
-    opacity: 1;
-  }
-  @media (prefers-reduced-motion: reduce) {
-    img[loading='lazy'] {
-      opacity: 1;
-      transition: none !important;
-    }
-  }
-</style>
+<!-- No fade-in: an image kept at opacity 0 until hydration sets .loaded is
+     invisible before the JS runs, and not counted as the LCP by Chrome.
+     `.loaded` only stops the placeholder shimmer (base.css). -->

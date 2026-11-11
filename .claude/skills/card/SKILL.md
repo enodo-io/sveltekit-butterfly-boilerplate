@@ -22,7 +22,7 @@ description: Create a semantic, accessible, SEO-friendly card component. Use whe
 
 ### Case 1 — Image from the Butterfly CMS API → use `<Image>` component
 
-The Butterfly media API automatically serves the right format (WebP, AVIF, JPEG…) based on the browser's `Accept` header. No `<picture>` / `<source>` needed. Use the `<Image>` Svelte component which handles `srcset`, `sizes`, lazy loading, preload link, and the fade-in animation automatically.
+The Butterfly media API automatically serves the right format (WebP, AVIF, JPEG…) based on the browser's `Accept` header. No `<picture>` / `<source>` needed. Use the `<Image>` Svelte component which handles `srcset`, `sizes`, lazy loading and, with `priority`, the preload link of the LCP image.
 
 ```svelte
 <script>
@@ -40,7 +40,7 @@ The Butterfly media API automatically serves the right format (WebP, AVIF, JPEG�
   alt="Dark chocolate squares on a wooden board"
 />
 
-<!-- Above the fold (hero card): disables lazy, adds fetchpriority="high" + <link rel="preload"> -->
+<!-- The LCP image (one per page): not lazy, fetchpriority="high" + <link rel="preload"> -->
 <Image
   class="card__image"
   media={post.attributes.image}
@@ -49,6 +49,7 @@ The Butterfly media API automatically serves the right format (WebP, AVIF, JPEG�
   sizes="(min-width: 768px) 33vw, 100vw"
   alt="Dark chocolate squares on a wooden board"
   lazyload={false}
+  priority
 />
 ```
 

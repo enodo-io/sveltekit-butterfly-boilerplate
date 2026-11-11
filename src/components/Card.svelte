@@ -15,6 +15,8 @@
     heading?: 'h1' | 'h2' | 'h3' | 'h4';
     format?: 'default' | 'source' | 'thumb' | 'square' | 'cover' | 'stories';
     lazyload?: boolean;
+    /** the LCP candidate of the page (see Image) */
+    priority?: boolean;
     thumbnail?: boolean;
     resume?: boolean;
     widths?: number[];
@@ -30,6 +32,7 @@
     format = 'thumb',
     heading = 'h3',
     lazyload = true,
+    priority = false,
     thumbnail = true,
     resume = true,
     sizes = `(min-width: ${breakpoints.md}px) 320px, ` +
@@ -65,6 +68,7 @@
     >
       <Image
         lazyload={lazyload}
+        priority={priority}
         media={thumb}
         width={width}
         widths={widths}

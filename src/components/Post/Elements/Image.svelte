@@ -19,6 +19,7 @@
         media={media}
         lazyload={true}
         width={media.attributes.width}
+        sizes="(min-width: 1008px) 656px, calc(100vw - 16px)"
         alt={element.data.description.length
           ? element.data.description
           : media.attributes.description || undefined}

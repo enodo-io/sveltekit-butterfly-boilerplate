@@ -186,7 +186,14 @@
       {:then}
         <h2 id="related-title" class="fs-paragon font-bold text-light-700">Related articles</h2>
       {/await}
-      <Feed feed={data.feeds.related} length={3} resume={false} thumbnail={true} />
+      <!-- the aside is a third of the 992px column from md, full width below -->
+      <Feed
+        feed={data.feeds.related}
+        length={3}
+        resume={false}
+        thumbnail={true}
+        sizes="(min-width: 1008px) 320px, calc(100vw - 16px)"
+      />
     </div>
   </aside>
 </section>

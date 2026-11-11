@@ -67,7 +67,7 @@
   </header>
 
   <div id="posts" class="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
-    <Feed feed={data.feeds.posts} length={18} lazyloadAfter={3} heading="h2" />
+    <Feed feed={data.feeds.posts} length={18} lazyloadAfter={3} heading="h2" priority />
     {#each more as posts, i (i)}
       <Feed feed={posts} length={18} heading="h2" />
     {/each}

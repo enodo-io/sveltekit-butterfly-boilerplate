@@ -90,6 +90,8 @@
             <Image
               class="w-full"
               lazyload={false}
+              priority
+              sizes="(min-width: 1008px) 992px, calc(100vw - 16px)"
               media={thumb}
               alt={thumb?.attributes.description ||
                 category.data.attributes.description ||
@@ -118,7 +120,7 @@
   </header>
 
   <div id="posts" class="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
-    <Feed feed={data.feeds.posts} length={18} lazyloadAfter={3} heading="h2" />
+    <Feed feed={data.feeds.posts} length={18} lazyloadAfter={3} heading="h2" priority={!thumb} />
     {#each more as posts, i (i)}
       <Feed feed={posts} length={18} heading="h2" />
     {/each}

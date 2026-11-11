@@ -118,12 +118,20 @@ Lazy loading the LCP image kills Core Web Vitals. For the **first** image on a p
   sizes="100vw"
   alt={article.attributes.title}
   lazyload={false}
+  priority
 />
 ```
 
-`lazyload={false}` removes `loading="lazy"`, adds `fetchpriority="high"`, and emits a `<link rel="preload">` in `<svelte:head>`.
+Two props, two jobs:
+
+- `lazyload={false}`: no `loading="lazy"` (every image above the fold).
+- `priority`: `fetchpriority="high"` on the `<img>` and a `<link rel="preload" fetchpriority="high">` in `<svelte:head>`. **One image per page at most**, the LCP candidate: several "high" images compete with each other and with the CSS, and a small avatar must never get it.
 
 Other images on the page stay with the default `lazyload={true}`.
+
+### `sizes` must match the real layout
+
+`sizes` tells the browser the rendered width before the CSS is known. Compute it from the grid: the `<main>` column is `max-w-screen-md` (1008px) minus `p-2`, so **992px from `md`, `calc(100vw - 16px)` below**. A post body is `col-span-2` of 3 (`656px` from `md`); the home featured image is the `5fr` of a `5fr/7fr` grid (`413px` from `md`, `41vw` from `sm`). `100vw` on an image that renders at 656px downloads a file twice too big; `320px` on one that renders at 413px makes the LCP image blurry.
 
 ---
 
@@ -132,10 +140,12 @@ Other images on the page stay with the default `lazyload={true}`.
 `<Feed>` exposes `lazyloadAfter` — the first N cards render eagerly (e.g. `lazyloadAfter={3}` for a 3-column grid), the rest lazy-load:
 
 ```svelte
-<Feed feed={posts} length={9} lazyloadAfter={3} />
+<Feed feed={posts} length={9} lazyloadAfter={3} priority />
 ```
 
-Set this to match the cards that are above the fold.
+Set this to match the cards that are above the fold. `priority` makes the first card's image the LCP candidate: only when nothing above the feed (a hero image) already is. `length` (the skeleton count) must equal the page size of the query, or the layout shifts when the cards arrive.
+
+No fade-in on images: an `<img>` kept at `opacity: 0` until hydration is invisible before the JS runs, and not counted as the LCP.
 
 ---
 
@@ -157,5 +167,6 @@ Set this to match the cards that are above the fold.
 - [ ] `format` matches the visual slot (thumb/square/cover/stories)?
 - [ ] `widths` bracket the real rendered widths at each breakpoint?
 - [ ] `sizes` tells the browser the render width at each breakpoint?
-- [ ] LCP image has `lazyload={false}`?
+- [ ] LCP image has `lazyload={false}` and `priority`, and it is the only `priority` image of the page?
+- [ ] `sizes` computed from the real grid (992px / 656px from `md`)?
 - [ ] `alt` is descriptive (or `""` only if purely decorative)?
