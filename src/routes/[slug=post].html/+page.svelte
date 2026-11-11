@@ -6,6 +6,7 @@
   import { resolve } from '$app/paths';
   import { generateJsonLd } from '$lib/JsonLD';
   import { absoluteUrl } from '$lib/seo';
+  import { env } from '$env/dynamic/public';
   import { getMediaUrl } from '$lib/getMediaUrl';
   import { getRelated } from '@enodo/butterfly-ts';
   import { formatRelativeDate } from '$lib/formatRelativeDate';
@@ -42,6 +43,14 @@
         ? ['FAQPage']
         : []),
     ]),
+  );
+  let hreflangs: Record<string, string> = $derived(
+    Object.keys(post.attributes.hreflangs || {}).length
+      ? {
+          ...(env.PUBLIC_LANGUAGE ? { [env.PUBLIC_LANGUAGE]: data.meta.url } : {}),
+          ...post.attributes.hreflangs,
+        }
+      : {},
   );
   let section: Butterfly.Category | null = $derived(
     post.relationships.category.data?.id
@@ -90,7 +99,9 @@
     <meta property="article:modified_time" content={post.attributes.updatedAt} />
   {/if}
 
-  {#each Object.entries(post.attributes.hreflangs) as [lang, url] (lang)}
+  <!-- hreflang: the translations of the CMS plus the page itself (Google ignores a
+       set whose pages do not reference themselves) -->
+  {#each Object.entries(hreflangs) as [lang, url] (lang)}
     <link rel="alternate" hreflang={lang} href={url} />
   {/each}
 
