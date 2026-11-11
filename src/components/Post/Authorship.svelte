@@ -39,7 +39,7 @@
             class="shrink-0 rounded-full border bg-light-100 border-light-075{i > 0
               ? ' -ml-4'
               : ''}"
-            alt={author.attributes.name}
+            alt=""
           />
         {/if}
       {/each}
@@ -47,7 +47,7 @@
     <p>
       By
       {#each authors as author, i (author.id)}
-        <a href={resolve(`/authors/${author.id}`)}>{author.attributes.name}</a>{i <
+        <a href={resolve(`/authors/${author.id}`)} rel="author">{author.attributes.name}</a>{i <
         authors.length - 2
           ? ', '
           : i === authors.length - 2

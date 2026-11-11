@@ -87,6 +87,11 @@
     gap: 0.5rem;
   }
 
+  .post--table--scroll {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
   .post--table table {
     width: 100%;
     border-collapse: collapse;

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { tick } from 'svelte';
   import { deepPagination } from 'deep-pagination';
   import { inview } from 'svelte-inview';
   import { resolve } from '$app/paths';
@@ -33,6 +34,8 @@
   let loading = false;
   let hide = $state(false);
   let loadedCount = $state(0);
+  /** polite announcement of each loaded page (screen readers) */
+  let status = $state('');
   let pages = $derived(deepPagination({ current, max, pad }).pages);
 
   const loadMore = async (e: CustomEvent | MouseEvent, force: boolean = false) => {
@@ -57,9 +60,17 @@
         // pair lets analytics distinguish engagement from successful content loads.
         track(event, { ...page.data.layer, 'page.index': current + loadedCount + 1 });
       }
+      const list = controls ? document.getElementById(controls) : null;
+      const before = list?.querySelectorAll('article').length ?? 0;
       next = await onload();
       loadedCount += 1;
       loading = false;
+      await tick();
+      const cards = list?.querySelectorAll('article');
+      status = `${(cards?.length ?? before) - before} more items loaded`;
+      // on a click, the focus goes to the first new item (the button may be
+      // gone): not on infinite scroll, where moving the focus would jump
+      if (force) cards?.[before]?.querySelector<HTMLElement>('a')?.focus();
     }
   };
 </script>
@@ -117,6 +128,7 @@
       {/if}
     </ul>
   </nav>
+  <p class="sr-only" role="status">{status}</p>
 {/if}
 
 <style lang="scss">

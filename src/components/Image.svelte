@@ -19,6 +19,7 @@
     height?: number;
     widths?: number[];
     sizes?: string;
+    /** `''` = decorative (the image repeats adjacent text); undefined = the media description */
     alt?: string;
     srcset?: string;
   };
@@ -82,7 +83,7 @@
   sizes={media && srcset.length ? sizes : undefined}
   width={width}
   height={height}
-  alt={alt || media?.attributes.description || ''}
+  alt={alt ?? (media?.attributes.description || '')}
   loading={lazyload && !priority ? 'lazy' : undefined}
   fetchpriority={priority ? 'high' : undefined}
   onload={() => (loaded = true)}

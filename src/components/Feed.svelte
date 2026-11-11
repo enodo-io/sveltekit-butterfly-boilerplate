@@ -1,4 +1,5 @@
 <script lang="ts">
+  // Renders <li> items: place it in a <ul> (a list of N articles for screen readers).
   import type * as Butterfly from '@enodo/butterfly-ts';
   import type { HTMLAttributes } from 'svelte/elements';
 
@@ -46,53 +47,59 @@
     {@const w2 = (Math.random() * (100 - 80) + 80).toFixed(2)}
     {@const w3 = (Math.random() * (100 - 80) + 80).toFixed(2)}
     {@const w4 = (Math.random() * (80 - 10) + 10).toFixed(2)}
-    <article class="card card__loading" {...others}>
-      <div class="card--content">
-        <svelte:element this={heading || 'h3'} class="card--title shimmer" style:width="{w1}%">
-          &nbsp;
-        </svelte:element>
-        {#if resume}
-          <p class="card--resume">
-            <span class="shimmer" style:width="{w2}%">&nbsp;</span>
-            <span class="shimmer" style:width="{w3}%">&nbsp;</span>
-            <span class="shimmer" style:width="{w4}%">&nbsp;</span>
-          </p>
+    <!-- placeholder while the feed loads: hidden from assistive technologies -->
+    <li class="grid" aria-hidden="true">
+      <article class="card card__loading" {...others}>
+        <div class="card--content">
+          <svelte:element this={heading || 'h3'} class="card--title shimmer" style:width="{w1}%">
+            &nbsp;
+          </svelte:element>
+          {#if resume}
+            <p class="card--resume">
+              <span class="shimmer" style:width="{w2}%">&nbsp;</span>
+              <span class="shimmer" style:width="{w3}%">&nbsp;</span>
+              <span class="shimmer" style:width="{w4}%">&nbsp;</span>
+            </p>
+          {/if}
+        </div>
+        {#if thumbnail}
+          <picture
+            class="card--thumb shimmer"
+            class:card--thumb__square={format === 'square'}
+            class:card--thumb__cover={format === 'cover'}
+            class:card--thumb__stories={format === 'stories'}
+          >
+          </picture>
         {/if}
-      </div>
-      {#if thumbnail}
-        <picture
-          class="card--thumb shimmer"
-          class:card--thumb__square={format === 'square'}
-          class:card--thumb__cover={format === 'cover'}
-          class:card--thumb__stories={format === 'stories'}
-        >
-        </picture>
-      {/if}
-    </article>
+      </article>
+    </li>
   {/each}
 {:then posts}
   {#each posts.data as post, i (post.id)}
-    <Card
-      post={post}
-      included={posts.included}
-      width={width}
-      format={format}
-      heading={heading}
-      lazyload={i >= lazyloadAfter}
-      priority={priority && i === 0}
-      thumbnail={thumbnail}
-      resume={resume}
-      widths={widths}
-      sizes={sizes}
-      {...others}
-    />
+    <li class="grid">
+      <Card
+        post={post}
+        included={posts.included}
+        width={width}
+        format={format}
+        heading={heading}
+        lazyload={i >= lazyloadAfter}
+        priority={priority && i === 0}
+        thumbnail={thumbnail}
+        resume={resume}
+        widths={widths}
+        sizes={sizes}
+        {...others}
+      />
+    </li>
   {/each}
 {:catch error}
-  <p class="error grid--col-all grid--row-all">
+  <li class="error grid--col-all grid--row-all">
     {#if error.message === 'Failed to fetch' || error.message === 'Request timed out'}
-      🚨 {error.message}. Check your network connection and try again.
+      <span aria-hidden="true">🚨</span>
+      {error.message}. Check your network connection and try again.
     {:else}
-      🚨 An error has occurred while loading data, please try again later.
+      <span aria-hidden="true">🚨</span> An error has occurred while loading data, please try again later.
     {/if}
-  </p>
+  </li>
 {/await}

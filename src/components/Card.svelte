@@ -73,7 +73,7 @@
         width={width}
         widths={widths}
         sizes={sizes}
-        alt={thumb?.attributes.description || post.attributes.title}
+        alt={thumb?.attributes.description || ''}
         format={format}
       />
     </picture>

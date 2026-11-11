@@ -131,7 +131,8 @@
   {/if}
 </svelte:head>
 
-<section class="flex flex-col gap-4 md:grid md:grid-cols-3 md:items-start">
+<!-- layout wrapper only (no heading of its own): a div, not a section -->
+<div class="flex flex-col gap-4 md:grid md:grid-cols-3 md:items-start">
   <article id="scope" class="post col-span-2 flex flex-col gap-7">
     <header class="flex flex-col gap-4">
       {#if tags.length}
@@ -193,13 +194,15 @@
         <h2 id="related-title" class="fs-paragon font-bold text-light-700">Related articles</h2>
       {/await}
       <!-- the aside is a third of the 992px column from md, full width below -->
-      <Feed
-        feed={data.feeds.related}
-        length={3}
-        resume={false}
-        thumbnail={true}
-        sizes="(min-width: 1008px) 320px, calc(100vw - 16px)"
-      />
+      <ul class="flex flex-col gap-4">
+        <Feed
+          feed={data.feeds.related}
+          length={3}
+          resume={false}
+          thumbnail={true}
+          sizes="(min-width: 1008px) 320px, calc(100vw - 16px)"
+        />
+      </ul>
     </div>
   </aside>
-</section>
+</div>

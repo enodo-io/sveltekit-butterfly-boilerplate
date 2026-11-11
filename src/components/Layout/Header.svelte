@@ -7,8 +7,6 @@
 
   const currentPage = $derived(page.url.pathname);
 
-  let scrollY = $state(0);
-  let lastY = $state(0);
   let show = $state(true);
   let menu = $state(false);
   let menuPopover: HTMLElement;
@@ -49,16 +47,29 @@
     document.querySelector('.skip-link')?.toggleAttribute('inert', menu);
   });
 
-  // Auto-hide header on scroll
+  // Auto-hide header on scroll (mobile): a passive listener, at most once per
+  // frame, the last position kept outside the reactive state (no effect re-run
+  // per scroll event)
   $effect(() => {
-    if (menu) return;
-
-    if (scrollY > lastY + 5) {
-      show = false;
-    } else if (scrollY < lastY - 5) {
-      show = true;
-    }
-    lastY = scrollY;
+    let lastY = window.scrollY;
+    let frame = 0;
+    const onScroll = () => {
+      if (frame) return;
+      frame = requestAnimationFrame(() => {
+        frame = 0;
+        const y = window.scrollY;
+        if (!menu) {
+          if (y > lastY + 5) show = false;
+          else if (y < lastY - 5) show = true;
+        }
+        lastY = y;
+      });
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      cancelAnimationFrame(frame);
+    };
   });
 
   $effect(() => {
@@ -69,8 +80,6 @@
     return () => menuPopover.removeEventListener('toggle', handler);
   });
 </script>
-
-<svelte:window bind:scrollY={scrollY} />
 
 <header
   class:visible={show}
@@ -182,7 +191,9 @@
     transition:
       transform 250ms var(--tw-ease, ease),
       opacity 250ms var(--tw-ease, ease);
-    &.visible {
+    /* hidden on scroll, but never while it holds the keyboard focus */
+    &.visible,
+    &:focus-within {
       transform: translateY(0);
       opacity: 1;
     }

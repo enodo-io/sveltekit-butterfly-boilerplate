@@ -60,7 +60,7 @@
                 width={64}
                 widths={[64]}
                 sizes="64px"
-                alt={thumb?.attributes.description || author.attributes.name}
+                alt=""
                 format="square"
                 class="bg-light-100"
               />

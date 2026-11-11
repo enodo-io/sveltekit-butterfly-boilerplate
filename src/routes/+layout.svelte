@@ -139,7 +139,7 @@
   {/if}
 </svelte:head>
 
-<a href="#page" class="skip-link" aria-label="Skip to main content"></a>
+<a href="#page" class="skip-link z-modal">Skip to main content</a>
 
 <Header />
 
@@ -158,15 +158,11 @@
   .skip-link {
     position: absolute;
     left: -9999px;
-    z-index: 9999;
     padding: 0.5rem 1rem;
     background: var(--color-light-700);
     color: var(--color-light);
     text-decoration: none;
     border-radius: var(--radius-sm);
-    &:after {
-      content: attr(aria-label);
-    }
     &:focus {
       left: 6px;
       top: 7px;

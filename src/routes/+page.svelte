@@ -54,16 +54,18 @@
 <h1 class="sr-only">{data.meta.title}</h1>
 
 <section id="featured">
-  <!-- featured image: 5fr of a 5fr/7fr grid from sm, in the 992px column from md -->
-  <Feed
-    feed={data.feeds.featured}
-    format="square"
-    length={1}
-    heading="h2"
-    lazyloadAfter={3}
-    priority
-    sizes="(min-width: 1008px) 413px, (min-width: 600px) 41vw, 100vw"
-  />
+  <ul>
+    <!-- featured image: 5fr of a 5fr/7fr grid from sm, in the 992px column from md -->
+    <Feed
+      feed={data.feeds.featured}
+      format="square"
+      length={1}
+      heading="h2"
+      lazyloadAfter={3}
+      priority
+      sizes="(min-width: 1008px) 413px, (min-width: 600px) 41vw, 100vw"
+    />
+  </ul>
 </section>
 
 {#each Object.entries(data.feeds.categories) as [id, feed], i (id)}
@@ -80,10 +82,10 @@
         >All {category.attributes.name} articles</a
       >
     </header>
-    <div class="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+    <ul class="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
       <!-- prettier-ignore -->
       <Feed feed={feed as Promise<Butterfly.ApiResponse<Butterfly.Post[]>>} length={6} lazyloadAfter={i > 0 ? 0 : 3} />
-    </div>
+    </ul>
   </section>
 {/each}
 

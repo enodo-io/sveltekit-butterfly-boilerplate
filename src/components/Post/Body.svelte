@@ -2,6 +2,7 @@
   import { dev } from '$app/environment';
   import type * as Butterfly from '@enodo/butterfly-ts';
   import { setContext } from 'svelte';
+  import { postOutline } from '$lib/postOutline';
 
   import title from './Elements/Title.svelte';
   import paragraph from './Elements/Paragraph.svelte';
@@ -35,6 +36,9 @@
   };
 
   const { body, resources, sponsored = false }: Props = $props();
+
+  // heading levels (no skip) and unique anchors of the titles / FAQ questions
+  const outline = $derived(postOutline(body));
 
   // read by InlineNodes/Link.svelte
   setContext('postSponsored', () => sponsored);
@@ -87,10 +91,20 @@
         renders as.
       -->
       <div data-template={(element as { template?: string }).template}>
-        <Component element={element as never} resources={resources as never} />
+        <Component
+          element={element as never}
+          resources={resources as never}
+          level={outline[i]?.level as never}
+          id={outline[i]?.id as never}
+        />
       </div>
     {:else}
-      <Component element={element as never} resources={resources as never} />
+      <Component
+        element={element as never}
+        resources={resources as never}
+        level={outline[i]?.level as never}
+        id={outline[i]?.id as never}
+      />
     {/if}
   {:else if dev}
     <!-- unknown block type: visible in dev only, nothing in production -->

@@ -101,7 +101,8 @@
     0 1px 4px hsla(0deg, 0%, 0%, 0.1);
 
   --bg-modal: rgba(48, 51, 107, 0.7);
-  --focus-ring: 0.25rem solid rgba(100, 116, 139, 0.5);
+  /* opaque, >= 3:1 on light backgrounds; the white inner ring keeps it visible on dark ones */
+  --focus-ring: 2px solid var(--color-light-700);
 }
 
 @utility link--overlay {
@@ -124,4 +125,6 @@
 
 *:focus-visible {
   outline: var(--focus-ring);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px var(--color-light);
 }

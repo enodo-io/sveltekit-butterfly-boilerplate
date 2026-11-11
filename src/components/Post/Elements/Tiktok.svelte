@@ -68,7 +68,6 @@
       color: #fe2c55;
       text-decoration: none;
       font-weight: 700;
-      outline: none;
     }
 
     :global(blockquote.tiktok-embed a:hover),

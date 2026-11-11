@@ -90,7 +90,7 @@
 </svelte:head>
 
 <section class="flex flex-col gap-7">
-  <header class="flex flex-col gap-4" id="Scope">
+  <header class="flex flex-col gap-4" id="scope">
     <div class="flex flex-wrap items-center gap-4">
       {#if thumb}
         <picture
@@ -102,7 +102,7 @@
             width={64}
             widths={[64]}
             sizes="64px"
-            alt={data.meta.title}
+            alt=""
             format="square"
             class="bg-light-100"
           />
@@ -121,12 +121,12 @@
     {/if}
   </header>
 
-  <div id="posts" class="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+  <ul id="posts" class="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
     <Feed feed={data.feeds.posts} length={18} lazyloadAfter={3} heading="h2" priority />
     {#each more as posts, i (i)}
       <Feed feed={posts} length={18} heading="h2" />
     {/each}
-  </div>
+  </ul>
 
   {#await data.feeds.posts then posts}
     <Pagination

@@ -1,11 +1,10 @@
 <script lang="ts">
   import type * as Butterfly from '@enodo/butterfly-ts';
-  import slugify from 'slugify';
   import InlineNodes from '../InlineNodes.svelte';
 
+  // id: unique anchor from the post outline (lib/postOutline, set by Body)
   type Props = { element: Butterfly.PostBody.FAQ; id?: string };
-  const { element, id = slugify(element.data.question, { lower: true, strict: true }) }: Props =
-    $props();
+  const { element, id }: Props = $props();
 </script>
 
 <div class="post--faq">

@@ -36,7 +36,14 @@
   };
 </script>
 
-<dialog bind:this={dialog} onclose={onClose} onclick={handleClick} aria-label={label}>
+<!-- closedby="any": native light dismiss (backdrop click, Esc); handleClick is the fallback -->
+<dialog
+  bind:this={dialog}
+  onclose={onClose}
+  onclick={handleClick}
+  aria-label={label}
+  closedby="any"
+>
   <button
     type="button"
     class="close fixed top-2 right-2 z-modal p-4 text-light"

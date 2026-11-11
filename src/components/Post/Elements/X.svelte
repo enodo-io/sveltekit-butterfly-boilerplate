@@ -45,12 +45,12 @@
     :global(blockquote.twitter-tweet a) {
       font-weight: normal;
       text-decoration: none;
-      outline: 0 none;
     }
     :global(blockquote.twitter-tweet p a) {
       color: #1d9bf0;
     }
-    :global(blockquote.twitter-tweet a:hover) :global(blockquote.twitter-tweet a:focus) {
+    :global(blockquote.twitter-tweet a:hover),
+    :global(blockquote.twitter-tweet a:focus-visible) {
       text-decoration: underline;
     }
   }

@@ -1,11 +1,12 @@
 <script lang="ts">
-  import slugify from 'slugify';
   import type * as Butterfly from '@enodo/butterfly-ts';
 
-  type Props = { element: Butterfly.PostBody.Title; id?: string };
-  const { element, id = slugify(element.data, { lower: true, strict: true }) }: Props = $props();
+  // level / id: from the post outline (lib/postOutline, set by Body): no level
+  // skip, unique anchors. Without them, the CMS level as is.
+  type Props = { element: Butterfly.PostBody.Title; level?: number; id?: string };
+  const { element, level, id }: Props = $props();
 
-  const nodeName = $derived(element.type.replace('title', 'h'));
+  const nodeName = $derived(level ? `h${level}` : element.type.replace('title', 'h'));
 </script>
 
 <svelte:element this={nodeName} id={id} class="post--{element.type}">{element.data}</svelte:element>
