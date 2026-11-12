@@ -92,7 +92,7 @@ The design is **intentionally neutral** to give you full creative freedom, while
 ### Analytics
 
 - **Google Tag Manager**: Built-in integration with configurable data layer
-- Data layer includes: `app.version`, `app.platform`, `app.env`, `page.index`, `page.query`, `content.type`, `content.id`, `content.taxonomy`, `content.group`, `content.flags`, `content.tags`
+- Data layer includes: `app.version`, `app.platform`, `app.env`, `page.index`, `page.query`, `page.results`, `content.type`, `content.id`, `content.taxonomy`, `content.group`, `content.flags`, `content.tags`
 
 ### Architecture
 
@@ -894,6 +894,7 @@ Every navigation pushes a `pageview` event with these fields (defined in `App.Pa
 
 - `page.index`: current pagination page
 - `page.query`: search query (on `/search`)
+- `page.results`: number of results of the search (on `/search`, `0` = no result)
 
 **Content scope:**
 
@@ -924,7 +925,7 @@ Intent events (`load_more_click` / `infinite_scroll`) fire **before** the API ca
 
 ### Butterfly tracker
 
-With `PUBLIC_BUTTERFLY_TRACKER=true` (off by default; tracker URL derived from `PUBLIC_API_URL`, `PUBLIC_BUTTERFLY_TRACKER_URL` to override), every navigation `pageview` also sends a first-party, cookieless hit to the Butterfly tracker (`POST {url}/h`, `text/plain` JSON via `sendBeacon`): `{ t: content.type, id?: content.id, tx?: content.taxonomy, pi?: page.index, q?: page.query }`. It is not consent-gated — no cookie, no storage, no identifier (CNIL audience-measurement exemption). Infinite-scroll loads and `?page=N` pages (`page.index > 1`) are not counted, nor is anything sent in dev unless `PUBLIC_BUTTERFLY_TRACKER_DEV=true`. See the `gtm-events` skill.
+With `PUBLIC_BUTTERFLY_TRACKER=true` (off by default; tracker URL derived from `PUBLIC_API_URL`, `PUBLIC_BUTTERFLY_TRACKER_URL` to override), every navigation `pageview` also sends a first-party, cookieless hit to the Butterfly tracker (`POST {url}/h`, `text/plain` JSON via `sendBeacon`): `{ t: content.type, id?: content.id, tx?: content.taxonomy, pi?: page.index, q?: page.query, n?: page.results }` (`n: 0` feeds the "No results" searches of the back office). It is not consent-gated — no cookie, no storage, no identifier (CNIL audience-measurement exemption). Infinite-scroll loads and `?page=N` pages (`page.index > 1`) are not counted, nor is anything sent in dev unless `PUBLIC_BUTTERFLY_TRACKER_DEV=true`. See the `gtm-events` skill.
 
 ### Custom Events
 

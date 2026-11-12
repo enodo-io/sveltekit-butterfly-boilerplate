@@ -32,6 +32,7 @@ Every navigation pushes these (defined in `App.PageData.layer`, plus app-level f
 
 - `page.index` — current pagination page
 - `page.query` — search query
+- `page.results` — number of search results (`0` = no result; the tracker sends it as `n`)
 
 **Content scope** — per navigation:
 
@@ -125,6 +126,7 @@ Payload (short keys on purpose, `toHit()` in `$lib/dataLayer`):
 | `tx` | `content.taxonomy` | term pages only (`tags`)                                 |
 | `pi` | `page.index`       | when present (always 1, see above)                       |
 | `q`  | `page.query`       | search only                                              |
+| `n`  | `page.results`     | search only: result count, `0` = a search with no result |
 | `e`  | —                  | `1` on the first hit after a full page load (entry)      |
 | `r`  | `document.referrer`| entry hit only: referrer HOSTNAME, never the full URL    |
 

@@ -13,6 +13,7 @@ interface PageData {
     'content.type': string; // REQUIRED
     'page.index'?: number;
     'page.query'?: string;
+    'page.results'?: number;
     'content.id'?: number | string; // required in practice on post/page/category/tag/author
     'content.taxonomy'?: string; // term pages: taxonomy slug
     'content.group'?: string;
