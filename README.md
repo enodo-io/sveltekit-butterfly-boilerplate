@@ -1064,7 +1064,7 @@ npm run format         # Format code
 - **Pre-commit hook** (`.githooks/pre-commit`, installed by `npm install`): `npm run lint` (Prettier + ESLint) and `npm run check`. ESLint also enforces semantic HTML rules: every `<button>` has a `type`, `target="_blank"` has a `rel`, no vague anchor text (« read more », « lire la suite »…), no `href="#"` or empty `href`.
 - **`npm run test:quality`** (`e2e/quality.test.ts`) on pages picked from the API (home, listings, a category, a tag, an author, static pages, search, the richest post): html-validate (recommended + a11y) on the server HTML; the SEO head contract (canonical = `og:url`, absolute `og:image`, `max-image-preview:large`, `twitter:card`, `article:*` namespace, JSON-LD that parses, one `h1`, no heading skip, at most one high-priority image); axe-core WCAG 2.2 AA + best practices, also with the mobile menu and the media viewer open.
 - **`npm run budget`** (`scripts/check-budget.js`, after `npm run build`): first-load JS ≤ 72 kB gzip per route, main CSS ≤ 12 kB gzip, ≤ 30 font files.
-- **CI** (`.github/workflows/quality.yml`), on pushes to `master` and pull requests: lint, check, unit tests, build + budget; then the e2e suite on the demo API when the `DEMO_API_KEY` repository secret is set (Settings › Secrets and variables › Actions; it becomes `PUBLIC_API_KEY`). Without the secret the e2e job is skipped.
+- **CI** (`.github/workflows/quality.yml`), on pushes to `master` and pull requests: lint, check, unit tests, build + budget; then the e2e suite on the demo API (property 42). Its public key is written in the workflow: it is sent by every browser in `X-Butterfly-Key`, so it is not a secret. A site forked from the boilerplate puts its own public key there.
 
 ## AI-assisted Development
 

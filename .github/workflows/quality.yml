@@ -1,7 +1,6 @@
 # Quality gate of the boilerplate: lint (incl. the semantic HTML rules), types,
 # unit tests, build + performance budget, then the e2e suite on the demo API
-# (html-validate, SEO head contract, axe-core, route tests) when the
-# DEMO_API_KEY secret is set.
+# (html-validate, SEO head contract, axe-core, route tests).
 name: quality
 
 on:
@@ -30,19 +29,17 @@ jobs:
     runs-on: ubuntu-latest
     needs: static
     env:
-      DEMO_API_KEY: ${{ secrets.DEMO_API_KEY }}
+      # public key of the demo property (42): sent by every browser in
+      # X-Butterfly-Key, read-only on published content, not a secret
+      DEMO_API_KEY: 887bd55418b0edc23263e5a5296d6f26
     steps:
       - uses: actions/checkout@v4
-        if: env.DEMO_API_KEY != ''
       - uses: actions/setup-node@v4
-        if: env.DEMO_API_KEY != ''
         with:
           node-version: 24
           cache: npm
-      - if: env.DEMO_API_KEY != ''
-        run: |
-          npm ci
-          npx playwright install --with-deps chromium
-          cp .env.example .env
-          sed -i "s|^PUBLIC_API_KEY=.*|PUBLIC_API_KEY=${DEMO_API_KEY}|" .env
-          npm run test:e2e
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: cp .env.example .env
+      - run: sed -i "s|^PUBLIC_API_KEY=.*|PUBLIC_API_KEY=${DEMO_API_KEY}|" .env
+      - run: npm run test:e2e

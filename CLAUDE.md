@@ -77,7 +77,7 @@ The layout renders the head from `data.meta`: `<link rel="canonical">`, `og:url`
 - **Pre-commit** (`.githooks/pre-commit`): `npm run lint` + `npm run check`. ESLint enforces `button-has-type`, `no-target-blank`, no vague anchor text, no `href="#"`.
 - **`npm run test:quality`** (`e2e/quality.test.ts`, real API of `.env`): html-validate on the SSR HTML, the SEO head contract (canonical = `og:url`, absolute `og:image`, `max-image-preview:large`, `twitter:card`, no `og:article:*`, JSON-LD parses, one `h1`, no heading skip, one high-priority image), axe-core WCAG 2.2 AA (also with the menu and the media viewer open).
 - **`npm run budget`** (`scripts/check-budget.js`, after a build): first-load JS ≤ 72 kB gz per route, main CSS ≤ 12 kB gz, ≤ 30 font files.
-- **CI** (`.github/workflows/quality.yml`): lint, check, unit, build + budget on every push to `master` and PR; the e2e suite on the demo API when the `DEMO_API_KEY` repository secret is set.
+- **CI** (`.github/workflows/quality.yml`): lint, check, unit, build + budget on every push to `master` and PR; then the e2e suite on the demo API (property 42; its public key is in the workflow, it is not a secret).
 
 ## Design system rules
 
