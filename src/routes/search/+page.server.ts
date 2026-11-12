@@ -57,6 +57,13 @@ export const load: PageServerLoad = async ({ url, fetch, isDataRequest, setHeade
           },
         });
 
+  const postsFeed = await posts;
+
+  // the result count goes into the data layer (`page.results`, 0 = a search with
+  // no result, reported by the Butterfly tracker): the posts are awaited, not
+  // streamed on client navigations
+  const results = postsFeed ? (postsFeed.meta?.total ?? postsFeed.data.length) : undefined;
+
   const params: string[] = [];
   if (query) params.push(`query=${encodeURIComponent(query)}`);
   if (page > 1) params.push(`page=${page}`);
@@ -66,6 +73,7 @@ export const load: PageServerLoad = async ({ url, fetch, isDataRequest, setHeade
     layer: {
       'page.index': page,
       'page.query': query || undefined,
+      'page.results': results,
       'content.type': 'search',
     },
     meta: {
@@ -79,7 +87,7 @@ export const load: PageServerLoad = async ({ url, fetch, isDataRequest, setHeade
           : 'Search through our website to find articles, posts, and content that match your interests. Quickly discover the information you need.',
     },
     feeds: {
-      posts: isDataRequest && posts ? posts : await posts,
+      posts: postsFeed,
       tags: isDataRequest && tags ? tags : await tags,
     },
   };

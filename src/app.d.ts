@@ -13,6 +13,8 @@ declare global {
       layer: {
         'page.index'?: number;
         'page.query'?: string;
+        /** search: number of results (0 = no result) */
+        'page.results'?: number;
         'content.type': string;
         'content.id'?: number | string;
         'content.taxonomy'?: string;
