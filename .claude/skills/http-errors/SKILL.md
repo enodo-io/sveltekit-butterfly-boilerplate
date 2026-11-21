@@ -23,7 +23,7 @@ import httpErrors from '$lib/httpErrors';
 // httpErrors[503] = 'Our service is taking a nap 💤 Please try again later'
 ```
 
-Covered: 400, 401, 403, 404, 410, 422, 429, 500, 503. Unknown codes return `undefined` — fall back to 500 explicitly.
+Covered: 400, 401, 403, 404, 410, 422, 429, 451, 500, 503. Unknown codes return `undefined` — fall back to 500 explicitly.
 
 ---
 
@@ -58,11 +58,22 @@ if (!params.slug) {
   error(400, httpErrors[400]);
 }
 
-const post = await api.get({ fetch, endpoint: 'posts', id });
-if (post.data.attributes.status === 'deleted') {
-  error(410, httpErrors[410]);
+const page = Number(url.searchParams.get('page') ?? 1);
+if (page < 1) {
+  error(404, httpErrors[404]);
 }
 ```
+
+---
+
+## Deleted content (posts, categories, terms)
+
+Never test `status === 'deleted'`: public reads never return a deleted resource. The API answers the directive chosen on `DELETE` (`deleted: { httpCode, detail }`, 410 by default) in `errors[0]`, and `@enodo/butterfly-ts` throws:
+
+- `RedirectError(status, location)` for a redirect (301, 302, 307, 308): `redirect(err.status, err.location)`;
+- `ApiError(status)` for 404, 410 or 451 (legal removal, e.g. a DMCA notice): `error(err.status, httpErrors[err.status])`.
+
+Pattern 1 handles both. A page that resolves its resource from a list (categories from the layout) asks the API on a miss, so that a deleted category redirects or answers 410 / 451 instead of 404 (see `src/routes/[...path]/+page.server.ts`).
 
 `error(status, message)` throws and short-circuits the load.
 

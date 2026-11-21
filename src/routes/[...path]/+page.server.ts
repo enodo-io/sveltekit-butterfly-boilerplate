@@ -5,7 +5,7 @@ import { ROBOTS_NOINDEX } from '$lib/seo';
 import { error, redirect } from '@sveltejs/kit';
 import httpErrors from '$lib/httpErrors';
 import api from '$lib/api';
-import { getCategoryChildrenIds } from '@enodo/butterfly-ts';
+import { ApiError, RedirectError, getCategoryChildrenIds } from '@enodo/butterfly-ts';
 
 import type { PageServerLoad } from './$types';
 import type * as Butterfly from '@enodo/butterfly-ts';
@@ -34,6 +34,13 @@ export const load: PageServerLoad = async ({
       (c: Butterfly.Category) => c.attributes.path.toLowerCase() === lower,
     );
     if (match) redirect(301, `${match.attributes.path}${url.search}`);
+    // a deleted category answers as chosen on delete (redirect, 410, 451…)
+    try {
+      await api.get<Butterfly.Category>({ fetch, endpoint: 'categories', id: params.path });
+    } catch (err) {
+      if (err instanceof RedirectError) redirect(err.status, err.location);
+      if (err instanceof ApiError && err.status < 500) error(err.status, httpErrors[err.status]);
+    }
     error(404, httpErrors[404]);
   }
 

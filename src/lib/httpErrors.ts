@@ -17,6 +17,7 @@ const httpErrors: HttpErrors = {
   403: "Sorry, you don't have permission to view this 🚫",
   404: "Oops! The page you're looking for wandered off 🕵️‍♂️",
   410: 'This content has been deleted 😢',
+  451: 'This content has been removed for legal reasons ⚖️',
   422: "We couldn't process that – maybe check your input ✏️",
   429: "Whoa! You're going too fast 🚀 Slow down a bit",
   500: 'Oh no! Something went wrong on our side ⚡ Try refreshing the page.',

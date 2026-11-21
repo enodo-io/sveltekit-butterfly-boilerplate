@@ -3,7 +3,7 @@
   import { resolve } from '$app/paths';
   import { Home } from '@lucide/svelte';
 
-  /** 404 and 410 have their own texts; every other status reads the 500 texts. */
+  /** 404, 410 and 451 have their own texts; every other status reads the 500 texts. */
   const texts: Record<number, { title: string; text: string }> = {
     404: {
       title: 'Page not found',
@@ -12,6 +12,10 @@
     410: {
       title: 'Content removed',
       text: 'This content has been deleted and will not come back.',
+    },
+    451: {
+      title: 'Content unavailable',
+      text: 'This content has been removed for legal reasons.',
     },
     500: {
       title: 'Something went wrong',
