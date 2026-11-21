@@ -34,9 +34,14 @@ export const load: PageServerLoad = async ({
       (c: Butterfly.Category) => c.attributes.path.toLowerCase() === lower,
     );
     if (match) redirect(301, `${match.attributes.path}${url.search}`);
-    // a deleted category answers as chosen on delete (redirect, 410, 451…)
+    // a deleted category answers as chosen on delete (redirect, 410, 451…);
+    // the path is encoded: a nested category (`news/world`) is one id
     try {
-      await api.get<Butterfly.Category>({ fetch, endpoint: 'categories', id: params.path });
+      await api.get<Butterfly.Category>({
+        fetch,
+        endpoint: 'categories',
+        id: encodeURIComponent(params.path),
+      });
     } catch (err) {
       if (err instanceof RedirectError) redirect(err.status, err.location);
       if (err instanceof ApiError && err.status < 500) error(err.status, httpErrors[err.status]);
